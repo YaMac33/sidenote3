@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="ja" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Spark: インタラクティブ分析レポート</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Harmony (Stone neutrals with a muted cyan accent) -->
+    <!-- Application Structure Plan: A single-page application with a sticky top navigation for non-linear exploration. The structure is thematic: 1. Hero section for a high-level overview. 2. An interactive "How It Works" flowchart to explain the core process. 3. A "Key Concepts" section with clickable cards for digestible information. 4. A "Use Cases" section with an interactive chart filtered by user persona. 5. A "Competitive Landscape" radar chart for visual comparison. 6. A clear "Limitations" section. This structure allows different user types (developers, PMs, etc.) to quickly access relevant information, making the dense report content more engaging and understandable than a linear format. -->
+    <!-- Visualization & Content Choices: Report Info -> Goal -> Viz/Presentation -> Interaction -> Justification. | How Spark Works -> Organize -> HTML/CSS Flowchart -> Click to reveal details -> Visually breaks down the complex AI workflow. | Use Cases -> Compare -> Bar Chart (Chart.js) -> Persona buttons filter chart data -> Personalizes information and highlights benefits for specific roles. | Competitors -> Compare -> Radar Chart (Chart.js) -> Static visual comparison -> Provides a quick, multi-axial summary of Spark's market position. | Key Concepts -> Inform -> Clickable Cards (HTML/JS) -> Click to expand -> Prevents information overload by chunking concepts. This approach uses interactive elements to make data digestible and engaging. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: #f5f5f4; /* stone-100 */
+            color: #292524; /* stone-800 */
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .nav-link {
+            transition: color 0.3s ease, border-color 0.3s ease;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #0891b2; /* cyan-600 */
+            border-color: #0891b2;
+        }
+        .concept-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .concept-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+    </style>
+</head>
+<body class="bg-stone-100 text-stone-800">
+
+    <header id="header" class="bg-stone-100/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <h1 class="text-xl font-bold text-stone-900">GitHub Spark 分析</h1>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#overview" class="nav-link text-stone-600 px-3 py-2 rounded-md text-sm font-medium border-b-2 border-transparent">概要</a>
+                        <a href="#how-it-works" class="nav-link text-stone-600 px-3 py-2 rounded-md text-sm font-medium border-b-2 border-transparent">仕組み</a>
+                        <a href="#concepts" class="nav-link text-stone-600 px-3 py-2 rounded-md text-sm font-medium border-b-2 border-transparent">主要概念</a>
+                        <a href="#use-cases" class="nav-link text-stone-600 px-3 py-2 rounded-md text-sm font-medium border-b-2 border-transparent">用途</a>
+                        <a href="#competition" class="nav-link text-stone-600 px-3 py-2 rounded-md text-sm font-medium border-b-2 border-transparent">競合分析</a>
+                        <a href="#limitations" class="nav-link text-stone-600 px-3 py-2 rounded-md text-sm font-medium border-b-2 border-transparent">制約</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+
+        <section id="overview" class="text-center mb-16 md:mb-24 scroll-mt-20">
+            <h2 class="text-3xl md:text-5xl font-bold text-stone-900 mb-4">自然言語から、Webアプリを。</h2>
+            <p class="max-w-3xl mx-auto text-lg md:text-xl text-stone-600 mb-8">
+                GitHub Sparkは、AIが主体となりアプリケーションを生成する「AIネイティブ」開発時代の幕開けを象徴します。このツールは、自然言語の指示から、フロントエンド、バックエンド、データベースを含む完全なWebアプリを数分で構築し、開発の初期段階を劇的に加速させます。
+            </p>
+            <div class="flex justify-center items-center space-x-4 text-sm text-stone-500">
+                <span class="flex items-center"><span class="text-cyan-600 mr-2 text-xl">🚀</span>ラピッドプロトタイピング</span>
+                <span class="flex items-center"><span class="text-cyan-600 mr-2 text-xl">🔧</span>社内ツール開発</span>
+                <span class="flex items-center"><span class="text-cyan-600 mr-2 text-xl">🌐</span>開発の民主化</span>
+            </div>
+        </section>
+
+        <section id="how-it-works" class="mb-16 md:mb-24 scroll-mt-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-stone-900 mb-2">アイデアがアプリになるまで</h2>
+                <p class="text-lg text-stone-600">Sparkは対話的で反復的なプロセスを通じて、アイデアを形にします。各ステップをクリックして詳細を確認してください。</p>
+            </div>
+            <div class="flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-4">
+                <div id="step-prompt" class="workflow-step cursor-pointer p-6 bg-white rounded-lg shadow-md text-center w-full md:w-1/4 border-2 border-transparent hover:border-cyan-500 transition-all">
+                    <div class="text-4xl mb-3">💬</div>
+                    <h3 class="font-bold text-lg">1. プロンプト入力</h3>
+                    <p class="text-sm text-stone-500">アイデアを自然言語で記述</p>
+                </div>
+                <div class="text-2xl text-cyan-500 transform md:rotate-0 rotate-90">→</div>
+                <div id="step-agent" class="workflow-step cursor-pointer p-6 bg-white rounded-lg shadow-md text-center w-full md:w-1/4 border-2 border-transparent hover:border-cyan-500 transition-all">
+                    <div class="text-4xl mb-3">🤖</div>
+                    <h3 class="font-bold text-lg">2. AIエージェント実行</h3>
+                    <p class="text-sm text-stone-500">コード生成と環境構築</p>
+                </div>
+                <div class="text-2xl text-cyan-500 transform md:rotate-0 rotate-90">→</div>
+                <div id="step-app" class="workflow-step cursor-pointer p-6 bg-white rounded-lg shadow-md text-center w-full md:w-1/4 border-2 border-transparent hover:border-cyan-500 transition-all">
+                    <div class="text-4xl mb-3">🖥️</div>
+                    <h3 class="font-bold text-lg">3. ライブアプリ</h3>
+                    <p class="text-sm text-stone-500">即時デプロイと対話的改良</p>
+                </div>
+            </div>
+            <div id="workflow-details" class="mt-8 p-6 bg-white rounded-lg shadow-inner min-h-[150px] flex items-center justify-center">
+                <p class="text-stone-600 text-center">上のステップを選択して詳細を表示</p>
+            </div>
+        </section>
+
+        <section id="concepts" class="mb-16 md:mb-24 scroll-mt-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-stone-900 mb-2">Sparkを支える主要概念</h2>
+                <p class="text-lg text-stone-600">GitHub Sparkの独自性を理解するための3つの重要なコンセプト。</p>
+            </div>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="concept-card bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-bold mb-3 text-cyan-700">AIネイティブ vs AI支援</h3>
+                    <p class="text-stone-600">従来のAIがコードの一部を「支援」するのに対し、Sparkはアプリケーション全体を「自律的に生成」します。これは開発におけるAIの役割の根本的な転換です。</p>
+                </div>
+                <div class="concept-card bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-bold mb-3 text-cyan-700">マイクロアプリ構想</h3>
+                    <p class="text-stone-600">「一つのことをうまくやる」というUnix哲学に基づき、特定の課題解決に特化した小規模アプリの作成を推奨。これによりAIによる生成の成功率を高めます。</p>
+                </div>
+                <div class="concept-card bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-bold mb-3 text-cyan-700">エスケープハッチ</h3>
+                    <p class="text-stone-600">生成されたアプリは標準的なGitHubリポジトリであり、いつでもプロのIDE（VS Codeなど）で編集可能。ベンダーロックインを防ぎ、本格開発への道を開きます。</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="use-cases" class="mb-16 md:mb-24 scroll-mt-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-stone-900 mb-2">誰が、何のために使うのか？</h2>
+                <p class="text-lg text-stone-600">ユーザーペルソナを選択して、具体的なユースケースとSparkがもたらす価値をご覧ください。</p>
+            </div>
+            <div class="flex justify-center flex-wrap gap-2 mb-8">
+                <button class="persona-btn active bg-cyan-600 text-white px-4 py-2 rounded-full text-sm" data-persona="founder">スタートアップ創業者</button>
+                <button class="persona-btn bg-white text-stone-700 px-4 py-2 rounded-full text-sm" data-persona="pm">プロダクトマネージャー</button>
+                <button class="persona-btn bg-white text-stone-700 px-4 py-2 rounded-full text-sm" data-persona="developer">エンタープライズ開発者</button>
+                <button class="persona-btn bg-white text-stone-700 px-4 py-2 rounded-full text-sm" data-persona="creator">非技術系クリエイター</button>
+            </div>
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div id="use-case-details" class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 id="use-case-title" class="text-2xl font-bold mb-3 text-cyan-800"></h3>
+                    <p id="use-case-description" class="text-stone-600 mb-4"></p>
+                    <div class="text-sm">
+                        <strong class="block text-stone-700">主な用途:</strong>
+                        <p id="use-case-example" class="text-stone-600"></p>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="useCaseChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section id="competition" class="mb-16 md:mb-24 scroll-mt-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-stone-900 mb-2">競合との比較</h2>
+                <p class="text-lg text-stone-600">AI駆動開発ツール市場におけるGitHub Sparkの独自の位置づけ。</p>
+            </div>
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div class="chart-container">
+                    <canvas id="competitionChart"></canvas>
+                </div>
+                <div class="space-y-4">
+                    <p class="text-stone-600">Sparkは、UIコンポーネント生成に特化する<strong class="text-cyan-700">v0.dev</strong>とは異なり、完全なフルスタックアプリを生成します。</p>
+                    <p class="text-stone-600">また、<strong class="text-cyan-700">Bubble</strong>のようなノーコードプラットフォームと違い、ベンダーロックインのない標準的なコード（React/TS）を出力する「エスケープハッチ」が最大の強みです。</p>
+                    <p class="text-stone-600">社内ツールに特化する<strong class="text-cyan-700">Retool</strong>と比較しても、汎用性とコードの所有権という点で優位性があります。</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="limitations" class="scroll-mt-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-stone-900 mb-2">能力と制約</h2>
+                <p class="text-lg text-stone-600">強力なツールである一方、導入前に理解すべき現在の制約事項。</p>
+            </div>
+            <div class="max-w-2xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div class="bg-white p-5 rounded-lg shadow-md flex items-start">
+                    <span class="text-2xl mr-4">🔒</span>
+                    <div>
+                        <h4 class="font-bold">技術スタックの制約</h4>
+                        <p class="text-sm text-stone-600">生成されるアプリはReactとTypeScriptに限定されます。</p>
+                    </div>
+                </div>
+                <div class="bg-white p-5 rounded-lg shadow-md flex items-start">
+                    <span class="text-2xl mr-4">🧩</span>
+                    <div>
+                        <h4 class="font-bold">複雑さの上限</h4>
+                        <p class="text-sm text-stone-600">大規模で複雑なシステムの構築には適さず、主に「ゼロからイチ」の段階で価値を発揮します。</p>
+                    </div>
+                </div>
+                <div class="bg-white p-5 rounded-lg shadow-md flex items-start">
+                    <span class="text-2xl mr-4">💰</span>
+                    <div>
+                        <h4 class="font-bold">利用料金モデル</h4>
+                        <p class="text-sm text-stone-600">Copilot Pro+サブスクリプションが必要で、メッセージ単位の利用制限があります。</p>
+                    </div>
+                </div>
+                <div class="bg-white p-5 rounded-lg shadow-md flex items-start">
+                    <span class="text-2xl mr-4">🛡️</span>
+                    <div>
+                        <h4 class="font-bold">AIの信頼性とセキュリティ</h4>
+                        <p class="text-sm text-stone-600">生成コードは完璧ではなく、バグや脆弱性を含む可能性があるため、人間の監督が不可欠です。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-stone-200 mt-16 md:mt-24">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center text-stone-600 text-sm">
+            <p>このインタラクティブレポートは、提供された「GitHub Spark 自然言語Webアプリ構築調査」レポートに基づき生成されました。</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const workflowSteps = {
+                prompt: {
+                    title: '1. プロンプト入力：アイデアの言語化',
+                    description: 'ユーザーは、作りたいアプリケーションのアイデアを自然言語（英語推奨）で入力します。テキストだけでなく、ワイヤーフレーム画像やマークダウン形式の仕様書をアップロードすることも可能で、AIがより多くの文脈を理解するのに役立ちます。'
+                },
+                agent: {
+                    title: '2. AIエージェント実行：自律的な構築',
+                    description: '入力されたプロンプトは、Claude Sonnet 4などの大規模言語モデル（LLM）によって分析されます。その後、AIエージェントがコードの記述、コマンドの実行、環境構築（データベースなど）を自律的に行い、React/TypeScriptベースのアプリケーションを生成します。'
+                },
+                app: {
+                    title: '3. ライブアプリ：対話的な改良サイクル',
+                    description: '生成されたアプリは即座にデプロイされ、操作可能なプレビューとして表示されます。ユーザーはプレビューを見ながら追加の指示を出し、対話的にアプリを改良していきます。この高速なフィードバックループがSpark開発の中核です。'
+                }
+            };
+
+            const workflowDetailsContainer = document.getElementById('workflow-details');
+            document.querySelectorAll('.workflow-step').forEach(step => {
+                step.addEventListener('click', () => {
+                    const stepId = step.id.split('-')[1];
+                    const details = workflowSteps[stepId];
+                    workflowDetailsContainer.innerHTML = `
+                        <div class="text-left max-w-2xl mx-auto">
+                            <h4 class="font-bold text-lg text-cyan-700 mb-2">${details.title}</h4>
+                            <p class="text-stone-600">${details.description}</p>
+                        </div>
+                    `;
+                    document.querySelectorAll('.workflow-step').forEach(s => s.classList.remove('border-cyan-500', 'bg-cyan-50'));
+                    step.classList.add('border-cyan-500', 'bg-cyan-50');
+                });
+            });
+
+            const useCaseData = {
+                founder: {
+                    title: 'スタートアップ創業者',
+                    description: 'ビジネスアイデアを迅速かつ低コストで検証し、プロダクトマーケットフィットを確かめるためにSparkを活用します。',
+                    example: 'ユーザーログインと基本的な機能を備えたSaaS製品のMVP（実用最小限の製品）',
+                    values: [90, 75, 60],
+                },
+                pm: {
+                    title: 'プロダクトマネージャー',
+                    description: '開発者に依頼することなく、機能するインタラクティブなプロトタイプを作成し、ステークホルダーとの合意形成やユーザーテストを円滑に進めます。',
+                    example: '新機能のためのクリック可能なユーザーフローデモ',
+                    values: [85, 95, 50],
+                },
+                developer: {
+                    title: 'エンタープライズ開発者',
+                    description: 'PoC（概念実証）の作成を加速させ、面倒な初期設定やボイラープレートコードの記述から解放されることで、本質的なロジック開発に集中します。',
+                    example: 'ステークホルダーレビュー用の新機能の機能プロトタイプ',
+                    values: [95, 60, 70],
+                },
+                creator: {
+                    title: '非技術系クリエイター',
+                    description: '技術的な壁を感じることなく、個人プロジェクトや趣味のアプリケーションを構築し、アイデアを形にする楽しさを体験します。',
+                    example: 'レシピ管理アプリ、旅行記録ツール、シンプルなゲーム',
+                    values: [70, 80, 100],
+                }
+            };
+
+            const useCaseTitle = document.getElementById('use-case-title');
+            const useCaseDescription = document.getElementById('use-case-description');
+            const useCaseExample = document.getElementById('use-case-example');
+            const personaBtns = document.querySelectorAll('.persona-btn');
+            
+            let useCaseChart;
+            const useCaseCtx = document.getElementById('useCaseChart').getContext('2d');
+
+            function updateUseCaseContent(persona) {
+                const data = useCaseData[persona];
+                useCaseTitle.textContent = data.title;
+                useCaseDescription.textContent = data.description;
+                useCaseExample.textContent = data.example;
+
+                if (useCaseChart) {
+                    useCaseChart.data.datasets[0].data = data.values;
+                    useCaseChart.update();
+                } else {
+                    useCaseChart = new Chart(useCaseCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: ['開発速度向上', 'コミュニケーション効率', '技術的障壁の低減'],
+                            datasets: [{
+                                label: '効果レベル',
+                                data: data.values,
+                                backgroundColor: ['#06b6d4', '#0891b2', '#0e7490'],
+                                borderRadius: 4,
+                            }]
+                        },
+                        options: {
+                            indexAxis: 'y',
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false },
+                                title: { display: true, text: 'ペルソナ別価値の比較' }
+                            },
+                            scales: {
+                                x: { max: 100, beginAtZero: true },
+                            }
+                        }
+                    });
+                }
+                
+                personaBtns.forEach(btn => {
+                    btn.classList.remove('active', 'bg-cyan-600', 'text-white');
+                    btn.classList.add('bg-white', 'text-stone-700');
+                    if(btn.dataset.persona === persona) {
+                        btn.classList.add('active', 'bg-cyan-600', 'text-white');
+                        btn.classList.remove('bg-white', 'text-stone-700');
+                    }
+                });
+            }
+
+            personaBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    updateUseCaseContent(btn.dataset.persona);
+                });
+            });
+
+            updateUseCaseContent('founder');
+
+            const competitionCtx = document.getElementById('competitionChart').getContext('2d');
+            new Chart(competitionCtx, {
+                type: 'radar',
+                data: {
+                    labels: ['フルスタック性', 'コード所有権', '非技術者向け', '拡張性', 'エコシステム'],
+                    datasets: [
+                        {
+                            label: 'GitHub Spark',
+                            data: [90, 95, 75, 90, 95],
+                            fill: true,
+                            backgroundColor: 'rgba(8, 145, 178, 0.2)',
+                            borderColor: 'rgb(8, 145, 178)',
+                            pointBackgroundColor: 'rgb(8, 145, 178)',
+                        },
+                        {
+                            label: 'v0.dev',
+                            data: [20, 80, 60, 70, 70],
+                             fill: true,
+                            backgroundColor: 'rgba(100, 116, 139, 0.2)',
+                            borderColor: 'rgb(100, 116, 139)',
+                            pointBackgroundColor: 'rgb(100, 116, 139)',
+                        },
+                        {
+                            label: 'Bubble',
+                            data: [85, 10, 95, 40, 50],
+                             fill: true,
+                            backgroundColor: 'rgba(249, 115, 22, 0.2)',
+                            borderColor: 'rgb(249, 115, 22)',
+                            pointBackgroundColor: 'rgb(249, 115, 22)',
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: { display: true, text: '主要ツールとの機能比較' },
+                        legend: { position: 'bottom' }
+                    },
+                    scales: {
+                        r: {
+                            angleLines: { display: false },
+                            suggestedMin: 0,
+                            suggestedMax: 100,
+                            pointLabels: { font: { size: 11 } }
+                        }
+                    }
+                }
+            });
+            
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.nav-link');
+            const headerHeight = document.getElementById('header').offsetHeight;
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        navLinks.forEach(link => {
+                            link.classList.remove('active');
+                            if (link.getAttribute('href').substring(1) === entry.target.id) {
+                                link.classList.add('active');
+                            }
+                        });
+                    }
+                });
+            }, { rootMargin: `-${headerHeight}px 0px 0px 0px`, threshold: 0.4 });
+
+            sections.forEach(section => {
+                observer.observe(section);
+            });
+        });
+    </script>
+</body>
+</html>
