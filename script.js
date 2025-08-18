@@ -38,7 +38,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // 3. GitHub APIから記事一覧を取得
     const username = "YaMac33";
-    const repoName = "SideNote";
+    const repoName = "sidenote3";
     const projectListContainer = document.getElementById("project-list-container");
 
     if (projectListContainer) {
