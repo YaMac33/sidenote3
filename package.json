@@ -1,0 +1,17 @@
+{
+  "name": "sidenote",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build:search": "pagefind --site ."
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@pagefind/default-ui": "^1.1.0",
+    "pagefind": "^1.1.0"
+  }
+}
