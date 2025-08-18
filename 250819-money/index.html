@@ -1,350 +1,488 @@
 <!DOCTYPE html>
+
+
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>25.8.19 電子決済の歴史と未来予測</title>
-    <meta name="description" content="貝殻から暗号資産まで、決済の全歴史を紐解き、その未来を展望する学習ノート。">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
-    <style>
-        body {
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-        main {
-            flex-grow: 1;
-            display: flex;
-            justify-content: center;
-            padding: 20px;
-        }
-        .content-wrapper {
-            display: flex;
-            width: 100%;
-            max-width: 1200px;
-        }
-        .main-article {
-            max-width: 800px;
-            width: 100%;
-            background-color: #FFFFFF;
-            padding: 40px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-        }
-        .main-article h1, .main-article h2, .main-article h3 {
-            color: #333333;
-        }
-        .main-article h1 {
-            font-size: 2.5rem;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #0d6efd;
-            padding-bottom: 10px;
-        }
-        .main-article h2 {
-            font-size: 2rem;
-            margin-top: 40px;
-            margin-bottom: 20px;
-            padding-bottom: 5px;
-            border-bottom: 1px solid #dee2e6;
-        }
-         .main-article h3 {
-            font-size: 1.5rem;
-            margin-top: 30px;
-            margin-bottom: 15px;
-        }
-        .main-article p {
-            line-height: 1.7;
-            color: #333333;
-        }
-        .main-article blockquote {
-            border-left: 4px solid #0d6efd;
-            padding-left: 20px;
-            margin: 20px 0;
-            color: #555;
-            background-color: #f8f9fa;
-            padding-top: 10px;
-            padding-bottom: 10px;
-        }
-        .main-article a {
-            color: #0d6efd;
-            text-decoration: underline;
-        }
-        .main-article table {
-            width: 100%;
-            margin: 20px 0;
-            border-collapse: collapse;
-        }
-        .main-article th, .main-article td {
-            border: 1px solid #dee2e6;
-            padding: 12px;
-            text-align: left;
-        }
-        .main-article th {
-            background-color: #f8f9fa;
-        }
-        .code-block-container {
-            position: relative;
-            margin: 20px 0;
-        }
-        .code-block {
-            background-color: #212529;
-            color: #f8f9fa;
-            padding: 20px;
-            border-radius: 5px;
-            overflow-x: auto;
-            font-family: 'Courier New', Courier, monospace;
-        }
-        .copy-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background-color: #6c757d;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        .copy-btn:hover {
-            background-color: #5a6268;
-        }
-        .toc {
-            position: sticky;
-            top: 100px;
-            width: 250px;
-            margin-left: 40px;
-            align-self: flex-start;
-        }
-        .toc h3 {
-            font-size: 1.2rem;
-            margin-bottom: 15px;
-            color: #333;
-        }
-        .toc ul {
-            list-style: none;
-            padding-left: 0;
-        }
-        .toc li a {
-            display: block;
-            padding: 8px 10px;
-            color: #555;
-            text-decoration: none;
-            border-left: 2px solid transparent;
-            transition: all 0.2s;
-        }
-        .toc li a:hover {
-            color: #0d6efd;
-            background-color: #e9ecef;
-        }
-        .toc li a.active {
-            color: #0d6efd;
-            font-weight: bold;
-            border-left: 2px solid #0d6efd;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>決済の進化：貝殻から暗号資産まで</title>
+  <meta name="description" content="物々交換から現金、クレジットカード、QRコード、暗号資産まで。決済手段の歴史と現在、そして未来を図解・比較しながら学べる技術ブログ。">
+  <!-- 共通スタイル -->
+  <link rel="stylesheet" href="../style.css">
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <!-- 記事固有スタイル（デザインパターンA） -->
+  <style>
+    :root{
+      --text:#333333;
+      --accent:#0d6efd;
+      --bg:#ffffff;
+      --code-bg:#212529;
+      --code-muted:#adb5bd;
+    }
+    body{background:#f8f9fa;}
+    .post-wrap{
+      max-width: 800px;
+      margin: 0 auto;
+      color: var(--text);
+    }
+    .article-header h1{
+      line-height: 1.25;
+      margin-bottom: .5rem;
+      word-break: keep-all;
+    }
+    .article-meta{
+      font-size:.9rem;color:#6c757d;
+    }
+    .article-content{
+      background: var(--bg);
+      border-radius: .75rem;
+      padding: 1.5rem;
+      box-shadow: 0 6px 16px rgba(0,0,0,.06);
+    }
+    .article-content h2{
+      margin-top: 2.25rem;
+      padding-top: .25rem;
+      margin-bottom: 1rem;
+      border-top: 1px solid #eef2f6;
+      scroll-margin-top: 100px; /* 固定ヘッダー分 */
+    }
+    .article-content h3{margin-top:1.25rem;}
+    .article-content p{line-height:1.75;}
+    .article-content a{color:var(--accent);}
+    .article-content blockquote{
+      margin:1.25rem 0;
+      padding: .75rem 1rem;
+      background:#fafafa;
+      border-left: 4px solid var(--accent);
+      color:#444;
+    }
 
-        @media (max-width: 992px) {
-            .toc {
-                display: none;
-            }
-            .main-article {
-                padding: 20px;
-            }
-        }
-    </style>
+
+/* コードブロック：ダークテーマ + コピーボタン */
+pre{
+  background: var(--code-bg);
+  color:#f8f9fa;
+  padding: 1rem 1.25rem;
+  border-radius:.5rem;
+  overflow:auto;
+  position: relative;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.05);
+}
+pre code{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size:.95rem;}
+.copy-btn{
+  position:absolute; top:.5rem; right:.5rem;
+  border:1px solid rgba(255,255,255,.25);
+  background: rgba(255,255,255,.08);
+  color:#fff; font-size:.8rem;
+  padding:.25rem .5rem; border-radius:.35rem;
+  cursor:pointer;
+}
+.copy-btn.copied{background:#198754;border-color:#198754;}
+
+/* 右側 追従目次（PCのみ表示） */
+.toc{
+  position: sticky;
+  top: 96px;
+  max-height: calc(100vh - 120px);
+  overflow:auto;
+  padding: 1rem;
+  border-radius:.75rem;
+  background:#fff;
+  box-shadow: 0 6px 16px rgba(0,0,0,.06);
+  border: 1px solid #eef2f6;
+}
+.toc h5{
+  font-size:.95rem; margin-bottom:.5rem; color:#6c757d;
+}
+.toc ul{list-style:none; margin:0; padding:0;}
+.toc li{margin:.25rem 0;}
+.toc a{
+  display:block; padding:.35rem .5rem; border-radius:.35rem;
+  color:#495057; text-decoration:none; font-size:.95rem;
+}
+.toc a.active, .toc a:hover{background: rgba(13,110,253,.08); color:#0d6efd;}
+
+@media (max-width: 991.98px){
+  .toc-col{display:none;}
+}
+
+/* 図表等 */
+.card-soft{
+  border:1px solid #eef2f6; border-radius:.75rem;
+  box-shadow: 0 6px 16px rgba(0,0,0,.05);
+}
+
+/* タブ */
+.tab-nav .nav-link{color:#6c757d;}
+.tab-nav .nav-link.active{color:#0d6efd; background: rgba(13,110,253,.08);}
+
+/* シンプルなタイムライン */
+.timeline{position:relative; padding-left:1rem; border-left:2px solid #e9ecef;}
+.timeline .tl-item{position:relative; padding:.5rem .5rem .5rem 1rem; margin:.25rem 0;}
+.timeline .tl-item::before{
+  content:""; position:absolute; left:-7px; top:12px; width:10px; height:10px; border-radius:999px; background:#fff; border:2px solid #adb5bd;
+}
+.fade-in{animation:fade .35s ease-out both;}
+@keyframes fade{from{opacity:0; transform: translateY(6px)} to{opacity:1; transform:none}}
+
+/* ブロックチェーン可視化 */
+.chain-wrap{overflow:auto; white-space:nowrap;}
+.block{
+  display:inline-block; vertical-align:top;
+  width:140px; min-height:120px;
+  margin:.5rem; padding:.5rem .5rem .5rem .75rem;
+  background:#fff; border:1px solid #e9ecef; border-radius:.5rem;
+  box-shadow: 0 4px 10px rgba(0,0,0,.06);
+  font-size:.85rem;
+}
+.block .muted{color:#6c757d; font-size:.75rem; word-break:break-all}
+.block + .block::before{content:"🔗"; margin-right:.25rem; margin-left:.25rem;}
+.new-block{animation:newblock .6s ease-out;}
+@keyframes newblock{from{opacity:0; transform:translateX(8px)} to{opacity:1; transform:none}}
+
+  </style>
 </head>
 <body>
 
-<main>
-    <div class="content-wrapper">
-        <article class="main-article">
-            <h1>24.08.19: 電子決済の歴史と未来予測</h1>
-            
-            <section id="chapter1">
-                <h2>第1章 お金の発明 - 商取引の礎</h2>
-                <h3>物々交換を超えて：直接交換の非効率性</h3>
-                <p>人類の経済活動の原点は、物々交換、すなわち財やサービスを直接交換することにあります。しかし、この方法は根本的な課題を抱えていました。「欲求の二重の一致」の問題です。つまり、自分が提供したいものを相手が欲しがり、かつ相手が提供したいものを自分が欲しがるという状況が同時に成立しなければ、取引は成立しません。この非効率性は、社会が複雑化し、分業が進むにつれて、経済成長の大きな足かせとなりました。</p>
-                <h3>最初の通貨：物品貨幣からリディアのエレクトロン貨へ</h3>
-                <p>最初期の「お金」は、それ自体に価値がある商品、すなわち物品貨幣でした。古代バビロニアでは大麦や羊毛が支払いに用いられるなど、地域ごとに価値が認められた産品が貨幣の役割を果たしました。しかし、決済の歴史における真の革命は、紀元前670年頃、リディア王国で世界初の鋳造貨幣「エレクトロン貨」が発明されたことです。これにより、人々は取引のたびに金属の重さを量る必要がなくなり、商取引の速度と信頼性が飛躍的に向上しました。</p>
-            </section>
-            
-            <section id="chapter2">
-                <h2>第2章 信用の誕生 - 財布なしで支払う時代</h2>
-                <h3>ダイナースクラブのひらめき</h3>
-                <p>20世紀、決済の歴史は物理的な現金から「信用（クレジット）」を基盤とする決済へと移行します。1950年、フランク・マクナマラがレストランで財布を忘れた経験から、「現金がなくても後で支払える仕組み」として世界初の多目的クレジットカード会社「ダイナースクラブ」が誕生しました。</p>
-                <h3>プラスチック革命と日本のクレジット社会</h3>
-                <p>カードは紙製からプラスチック製へと進化し、1960年代にはVisaやMastercardといった国際ブランドが登場。技術的には磁気ストライプの導入が普及を支えました。日本では1964年の東京オリンピックが起爆剤となり、外国人観光客を迎えるためにカード決済インフラの整備が急務となったことが、キャッシュレス化を後押ししました。</p>
-            </section>
 
-            <section id="chapter3">
-                <h2>第3章 日本のモバイル決済預言 - 「おサイフケータイ」の時代</h2>
-                <h3>FeliCaの衝撃とSuicaの誕生</h3>
-                <p>2000年代初頭、日本はソニーが開発した非接触ICカード技術「FeliCa」を中心に、独自のモバイル決済エコシステムを築き上げ、世界をリードしていました。0.1秒という圧倒的な処理速度を持つFeliCaは、2001年にJR東日本が導入したIC乗車券「Suica」で爆発的に普及。Suicaは単なる乗車券から、コンビニなどでも使える電子マネーへと進化しました。</p>
-                <h3>「おサイフケータイ」の実現</h3>
-                <p>2004年、NTTドコモがFeliCaチップを内蔵した携帯電話「おサイフケータイ」を発売。これは世界に先駆けた真のモバイルウォレットであり、携帯電話一つで電車に乗り、買い物をするというライフスタイルを実現しました。この高度に進化した「ガラパゴス」的な生態系は、後に登場するiPhoneが日本市場に適応せざるを得なくなるほど強力なものでした。</p>
-            </section>
+  <!-- ページ本体 -->
 
-            <section id="chapter4">
-                <h2>第4章 QRコードの跳躍 - 小さな正方形が世界の決済を変えた方法</h2>
-                <h3>QRコードの起源と中国での爆発的普及</h3>
-                <p>日本の「おサイフケータイ」が独自の進化を遂げる一方、1994年にデンソーウェーブが開発した「QRコード」が、世界の決済シーンを塗り替えました。特に中国では、クレジットカードの普及率が低く、偽札が横行するという社会背景の中、スマートフォンの普及と合わせてAlipayとWeChat PayがQRコード決済を一気に普及させました。導入コストの低さがその大きな要因でした。</p>
-                <h3>日本のQRコード決済市場</h3>
-                <p>日本では、PayPayが2018年末に実施した「100億円あげちゃうキャンペーン」のような、民間企業による大規模なマーケティングと、政府のキャッシュレス推進政策によって、QRコード決済市場が人為的に創出されました。中国が「必要性」から普及したのに対し、日本は「インセンティブ」によって普及したという対照的な背景があります。</p>
-            </section>
-            
-            <section id="chapter5">
-                <h2>第5章 現代の決済風景：比較分析</h2>
-                <p>現代の主要な電子決済手段である「クレジットカード」「非接触IC決済」「QRコード決済」を比較します。</p>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>特徴</th>
-                            <th>クレジットカード</th>
-                            <th>非接触IC決済 (例: Suica, iD)</th>
-                            <th>QRコード決済 (例: PayPay)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>支払方式</td>
-                            <td>後払い（ポストペイ）</td>
-                            <td>前払い（プリペイド）または後払い</td>
-                            <td>前払い、後払い、即時払い（口座直結）</td>
-                        </tr>
-                        <tr>
-                            <td>利用者体験</td>
-                            <td>スワイプ/挿入/タッチ。普遍的。</td>
-                            <td>タッチ＆ゴー。極めて高速。</td>
-                            <td>アプリ起動、スキャン/提示。やや遅い。</td>
-                        </tr>
-                        <tr>
-                            <td>店舗の導入コスト</td>
-                            <td>中～高（決済端末が必要）</td>
-                            <td>中（ICリーダーが必要）</td>
-                            <td>非常に低い（印刷したコードでも可）</td>
-                        </tr>
-                        <tr>
-                            <td>決済手数料</td>
-                            <td>最も高い（例：2～5%）</td>
-                            <td>中程度</td>
-                            <td>最も低い（キャンペーン中は無料の場合も）</td>
-                        </tr>
-                         <tr>
-                            <td>最大の利点</td>
-                            <td>グローバルな通用性、特典、信用枠</td>
-                            <td>比類なき決済スピードと利便性</td>
-                            <td>店舗側の低コスト、利用者への大規模還元</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </section>
 
-            <section id="chapter6">
-                <h2>第6章 次なるフロンティア - 暗号資産とブロックチェーン</h2>
-                <h3>ブロックチェーンとは？</h3>
-                <p>これまでの電子決済とは異なり、暗号資産は特定の管理者がいない「分散型」のシステムです。その核心技術が「ブロックチェーン」であり、「共有された公開ノート」に例えられます。取引記録（ブロック）が暗号技術によって鎖（チェーン）のようにつながることで、改ざんが極めて困難な台帳が実現されます。</p>
-                <blockquote>
-                    ブロックチェーンの真の革新性は、デジタルなお金そのものではなく、「仲介者を必要としない信頼（トラスト）」をシステムとして構築した点にあります。
-                </blockquote>
-            </section>
-            
-            <section id="chapter7">
-                <h2>第7章 決済手段としての暗号資産：約束と現実</h2>
-                <h3>普及を阻む課題</h3>
-                <p>暗号資産には低い取引手数料や高速な国際送金といった利点がありますが、決済手段として普及するには多くの課題が存在します。</p>
-                <ul>
-                    <li><strong>価格変動（ボラティリティ）:</strong> 価値が大きく変動するため、日常の支払いには不安定すぎる。</li>
-                    <li><strong>スケーラビリティ問題:</strong> 1秒間に処理できる取引件数が少なく、Visaなどには遠く及ばない。</li>
-                    <li><strong>ユーザー体験とセキュリティ:</strong> 利用には専門知識が必要で、秘密鍵の管理などセキュリティリスクが高い。</li>
-                    <li><strong>法規制の不確実性:</strong> 法的な位置づけが国によって異なり、先行きが不透明。</li>
+  <main class="container">
+    <div class="row g-4">
+      <div class="col-lg-8">
+        <article class="post-wrap">
+          <header class="article-header mb-3">
+            <h1 class="h2 fw-bold">25.08.19 決済の進化：貝殻から暗号資産まで</h1>
+            <div class="article-meta">公開日: <time datetime="2025-08-19">2025/08/19</time></div>
+          </header>
+
+
+      <section class="article-content">
+        <p class="lead">物々交換の時代から、現金、クレジットカード、そして暗号資産へ。決済手段の進化は、人類の経済と社会の歴史そのものです。本稿では、歴史・現代・未来の3つの観点から、図解とインタラクションで学びます。</p>
+
+        <blockquote>
+          決済の技術は「速度・コスト・信頼性」のトレードオフを最適化するための連続的な試行錯誤の歴史である。
+        </blockquote>
+
+        <h2 id="history">決済の歴史を辿る</h2>
+        <p>タイムラインの出来事を選ぶと、右下の解説が入れ替わります。</p>
+
+        <div class="row g-4">
+          <div class="col-md-6">
+            <div class="timeline">
+              <button class="btn btn-sm btn-outline-secondary tl-item w-100 text-start" data-target="h1">紀元前670年頃：鋳造貨幣の誕生</button>
+              <button class="btn btn-sm btn-outline-secondary tl-item w-100 text-start" data-target="h2">10世紀頃：紙幣の発明</button>
+              <button class="btn btn-sm btn-outline-secondary tl-item w-100 text-start" data-target="h3">1950年：クレジットカードの登場</button>
+              <button class="btn btn-sm btn-outline-secondary tl-item w-100 text-start" data-target="h4">2001年：交通系ICカードの普及</button>
+              <button class="btn btn-sm btn-outline-secondary tl-item w-100 text-start" data-target="h5">2004年：「おサイフケータイ」</button>
+              <button class="btn btn-sm btn-outline-secondary tl-item w-100 text-start" data-target="h6">2010年代：QRコード決済の跳躍</button>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div id="historyBox" class="card card-soft fade-in">
+              <div class="card-body">
+                <h3 class="h5 fw-bold mb-2" id="historyTitle">リディア王国のエレクトロン貨</h3>
+                <p id="historyText" class="mb-0">世界初の鋳造貨幣は、現在のトルコにあったリディア王国で発明されました。国家の刻印が重さと純度を保証し、取引の速度と信頼性を飛躍的に高めました。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h2 id="modern" class="mt-4">現代の決済を比較する</h2>
+        <p>主要な決済手段を「速度・店舗コスト・汎用性・特典・セキュリティ」でレーダーチャート比較。タブで詳細解説を切り替えできます。</p>
+
+        <div class="row g-4 align-items-center">
+          <div class="col-lg-6">
+            <div class="card card-soft">
+              <div class="card-body">
+                <canvas id="paymentChart" height="320" aria-label="決済手段の比較レーダーチャート"></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-6">
+            <ul class="nav nav-pills tab-nav mb-3" id="payTabs" role="tablist">
+              <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="tab-credit" data-bs-toggle="pill" data-bs-target="#pane-credit" type="button" role="tab">クレジットカード</button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tab-ic" data-bs-toggle="pill" data-bs-target="#pane-ic" type="button" role="tab">非接触IC決済</button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tab-qr" data-bs-toggle="pill" data-bs-target="#pane-qr" type="button" role="tab">QRコード決済</button>
+              </li>
+            </ul>
+            <div class="tab-content" id="payTabContent">
+              <div class="tab-pane fade show active" id="pane-credit" role="tabpanel" aria-labelledby="tab-credit">
+                <div class="card card-soft">
+                  <div class="card-body">
+                    <h3 class="h6 fw-bold">クレジットカード</h3>
+                    <p class="mb-2 small">利用者の「信用」を基盤とした後払い。グローバルな通用性と特典が強み。</p>
+                    <ul class="small mb-0">
+                      <li><strong>利点:</strong> 通用性・信用枠・特典</li>
+                      <li><strong>欠点:</strong> 店舗手数料が高め、使いすぎリスク</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              <div class="tab-pane fade" id="pane-ic" role="tabpanel" aria-labelledby="tab-ic">
+                <div class="card card-soft">
+                  <div class="card-body">
+                    <h3 class="h6 fw-bold">非接触IC決済 (Suica, iDなど)</h3>
+                    <p class="mb-2 small">リーダーにかざすだけで高速決済。交通・コンビニで真価を発揮。</p>
+                    <ul class="small mb-0">
+                      <li><strong>利点:</strong> 圧倒的なスピード・衛生的</li>
+                      <li><strong>欠点:</strong> 事前チャージ/エリア制約</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              <div class="tab-pane fade" id="pane-qr" role="tabpanel" aria-labelledby="tab-qr">
+                <div class="card card-soft">
+                  <div class="card-body">
+                    <h3 class="h6 fw-bold">QRコード決済 (PayPay等)</h3>
+                    <p class="mb-2 small">スマホで読み取り/提示。導入コストが低く、中小店舗で普及。</p>
+                    <ul class="small mb-0">
+                      <li><strong>利点:</strong> 導入容易・大規模還元</li>
+                      <li><strong>欠点:</strong> 操作の手間・通信/電池依存</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h2 id="future" class="mt-4">次なるフロンティア：暗号資産</h2>
+        <p>ブロックチェーンは分散型台帳技術。取引（ブロック）を暗号で鎖状に連結し、改ざん耐性と検証容易性を両立します。</p>
+
+        <div class="card card-soft mb-3">
+          <div class="card-body">
+            <h3 class="h6 fw-bold mb-2">ブロックチェーンを目で見る</h3>
+            <div class="chain-wrap" id="chainWrap" aria-live="polite"></div>
+            <div class="mt-3 d-flex gap-2">
+              <button id="addBlock" class="btn btn-sm btn-primary">新しい取引を追加</button>
+              <button id="resetChain" class="btn btn-sm btn-outline-secondary">リセット</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-md-6">
+            <div class="card card-soft h-100">
+              <div class="card-body">
+                <h3 class="h6 text-success fw-bold">約束：変える可能性</h3>
+                <ul class="mb-0 small">
+                  <li><strong>低い手数料:</strong> 中間業者を介さず国際送金コストを圧縮</li>
+                  <li><strong>高速送金:</strong> 24時間365日で数分処理</li>
+                  <li><strong>金融包摂:</strong> 口座を持てない人にもアクセス</li>
                 </ul>
-                <p>皮肉なことに、投資対象としての魅力を高めている「ボラティリティ」こそが、決済手段としての魅力を損なう最大の要因となっています。</p>
-            </section>
-
-            <section id="chapter8">
-                <h2>第8章 決済の未来：2035年への展望</h2>
-                <h3>ハイブリッドな未来へ</h3>
-                <p>決済の未来は、単一の技術がすべてを支配するのではなく、異なる技術がそれぞれの得意分野で共存するハイブリッドなエコシステムへと向かうでしょう。</p>
-                <ul>
-                    <li><strong>タッチ決済:</strong> 実店舗での高速決済の主役であり続ける。</li>
-                    <li><strong>QRコード決済:</strong> 中小事業者や新興国市場で不可欠なインフラとして定着。</li>
-                    <li><strong>クレジットカード:</strong> デジタルウォレットと連携し、高度なサービスを提供する形で進化。</li>
-                    <li><strong>暗号資産とステーブルコイン:</strong> 国境を越えるB2B決済やDeFiなど、特定のニッチな領域で真価を発揮。</li>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card card-soft h-100">
+              <div class="card-body">
+                <h3 class="h6 text-danger fw-bold">現実：普及の壁</h3>
+                <ul class="mb-0 small">
+                  <li><strong>価格変動:</strong> 支払い手段として不安定</li>
+                  <li><strong>処理能力:</strong> TPSが既存ネットワークに劣後</li>
+                  <li><strong>複雑さ/セキュリティ:</strong> 秘密鍵管理・詐欺リスク</li>
                 </ul>
-                <p>暗号資産ムーブメントの最大の功績は、既存の通貨システムを置き換えることではなく、既存の金融システムが抱える非効率性を白日の下に晒し、システム全体に変革を迫った「触媒」としての役割にあるのかもしれません。</p>
-            </section>
+              </div>
+            </div>
+          </div>
+        </div>
 
-        </article>
-        
-        <aside class="toc" id="table-of-contents">
-             <h3>目次</h3>
-             <ul></ul>
-        </aside>
-    </div>
-</main>
+        <h2 id="conclusion" class="mt-4">結論：ハイブリッドな未来へ</h2>
+        <p>単一技術の覇権ではなく、<strong>得意分野での共存</strong>が現実解。タッチ決済は速度、QRは導入容易性、暗号資産は国際送金・新サービスで価値を発揮し、全体としてより良いユーザー体験と事業者コスト最適化を実現していくでしょう。</p>
+
+        <!-- 例：コードブロック（コピー動作のためのデモ。本文に不要なら削除可） -->
+        <pre><button class="copy-btn" aria-label="コードをコピー">Copy</button><code>// サンプル：擬似ハッシュ生成
+
+function pseudoHash(seed){
+return Math.random().toString(36).slice(2, 10) + ‘-’ + seed.slice(-4);
+}
 
 
-<script src="script.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const tocContainer = document.querySelector('#table-of-contents ul');
-    const headings = document.querySelectorAll('.main-article h2');
-    const tocLinks = [];
 
-    headings.forEach(heading => {
-        const id = 'chapter' + (tocLinks.length + 1);
-        heading.parentElement.id = id;
-        
-        const listItem = document.createElement('li');
-        const link = document.createElement('a');
-        
-        link.textContent = heading.textContent;
-        link.href = `#${id}`;
-        
-        listItem.appendChild(link);
-        tocContainer.appendChild(listItem);
-        tocLinks.push(link);
-    });
-    
-    const highlightTocLink = () => {
-        let current = '';
-        headings.forEach(heading => {
-            const headingTop = heading.getBoundingClientRect().top;
-            if (headingTop < 120) { 
-                current = heading.parentElement.id;
-            }
+
+  <!-- 追従目次（PCのみ） -->
+  <aside class="col-lg-4 toc-col">
+    <nav class="toc" aria-label="目次">
+      <h5 class="mb-2">目次</h5>
+      <ul id="tocList"></ul>
+    </nav>
+  </aside>
+</div>
+
+  </main>
+
+
+  <!-- 共通スクリプト -->
+
+
+  <script src="../script.js"></script>
+
+
+  <!-- 依存ライブラリ -->
+
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+
+
+  <!-- 記事固有スクリプト -->
+
+
+  <script>
+    // ===== 目次生成 & ハイライト =====
+    (function(){
+      const toc = document.getElementById('tocList');
+      const headings = document.querySelectorAll('.article-content h2');
+      const links = [];
+      headings.forEach(h => {
+        const id = h.id || h.textContent.trim().toLowerCase().replace(/\s+/g,'-');
+        h.id = id;
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = '#' + id;
+        a.textContent = h.textContent;
+        a.addEventListener('click', e => {
+          e.preventDefault();
+          document.getElementById(id).scrollIntoView({behavior:'smooth', block:'start'});
         });
+        li.appendChild(a);
+        toc.appendChild(li);
+        links.push(a);
+      });
 
-        tocLinks.forEach(link => {
-            link.classList.remove('active');
-            if (link.getAttribute('href') === `#${current}`) {
-                link.classList.add('active');
-            }
+      const observer = new IntersectionObserver((entries)=>{
+        entries.forEach(entry=>{
+          const i = Array.from(headings).indexOf(entry.target);
+          if(entry.isIntersecting){
+            links.forEach(l=>l.classList.remove('active'));
+            if(links[i]) links[i].classList.add('active');
+          }
         });
-    };
+      },{rootMargin:'-40% 0px -55% 0px', threshold:[0,1]});
+      headings.forEach(h=>observer.observe(h));
+    })();
 
-    window.addEventListener('scroll', highlightTocLink);
-    highlightTocLink(); // Initial highlight
-
-    // Copy button for code blocks
-    const codeBlocks = document.querySelectorAll('.code-block-container');
-    codeBlocks.forEach(container => {
-        const copyButton = container.querySelector('.copy-btn');
-        const code = container.querySelector('code').innerText;
-        
-        copyButton.addEventListener('click', () => {
-            navigator.clipboard.writeText(code).then(() => {
-                copyButton.textContent = 'Copied!';
-                setTimeout(() => {
-                    copyButton.textContent = 'Copy';
-                }, 2000);
-            }).catch(err => {
-                console.error('Failed to copy text: ', err);
-            });
+    // ===== タイムライン詳細 =====
+    (function(){
+      const data = {
+        h1:{t:'リディア王国のエレクトロン貨', d:'世界初の鋳造貨幣。国家刻印で品質保証され、商取引の速度と信頼性を向上。'},
+        h2:{t:'中国・宋の時代の「交子」', d:'重い金属貨幣の不便を解消する紙幣が誕生。価値を「信用」へ抽象化。'},
+        h3:{t:'ダイナースクラブの誕生', d:'1950年、後払いの多目的カードが普及。消費社会と合致し急拡大。'},
+        h4:{t:'JR東日本の「Suica」', d:'2001年、FeliCaによる高速改札処理。後に店舗決済にも展開。'},
+        h5:{t:'NTTドコモの「おサイフケータイ」', d:'2004年、モバイル端末に決済/乗車券を集約する体験を実現。'},
+        h6:{t:'QRコード決済の跳躍', d:'2018年以降の大規模還元で普及。導入コストの低さが後押し。'}
+      };
+      const box = document.getElementById('historyBox');
+      const title = document.getElementById('historyTitle');
+      const text = document.getElementById('historyText');
+      document.querySelectorAll('.tl-item').forEach(btn=>{
+        btn.addEventListener('click',()=>{
+          const k = btn.getAttribute('data-target');
+          if(data[k]){
+            title.textContent = data[k].t;
+            text.textContent = data[k].d;
+            box.classList.remove('fade-in'); void box.offsetWidth; box.classList.add('fade-in');
+          }
         });
-    });
-});
-</script>
+      });
+    })();
+
+    // ===== レーダーチャート =====
+    (function(){
+      const ctx = document.getElementById('paymentChart');
+      const chart = new Chart(ctx, {
+        type: 'radar',
+        data: {
+          labels: ['速度','店舗コスト','汎用性','利用者特典','セキュリティ'],
+          datasets: [
+            {label:'クレジットカード', data:[3,2,5,4,5], fill:true, backgroundColor:'rgba(220,53,69,.18)', borderColor:'rgba(220,53,69,1)', pointBackgroundColor:'rgba(220,53,69,1)'},
+            {label:'非接触IC決済', data:[5,3,3,2,5], fill:true, backgroundColor:'rgba(13,110,253,.18)', borderColor:'rgba(13,110,253,1)', pointBackgroundColor:'rgba(13,110,253,1)'},
+            {label:'QRコード決済', data:[2,5,4,5,4], fill:true, backgroundColor:'rgba(255,193,7,.18)', borderColor:'rgba(255,193,7,1)', pointBackgroundColor:'rgba(255,193,7,1)'},
+          ]
+        },
+        options: {
+          maintainAspectRatio:false,
+          scales:{ r:{ suggestedMin:0, suggestedMax:5, ticks:{ stepSize:1 } } },
+          plugins:{ legend:{ position:'top' } }
+        }
+      });
+
+      // タブに連動して強調（塗りを濃く）
+      const emph = (idx) => {
+        chart.data.datasets.forEach((ds,i)=>{
+          ds.backgroundColor = ds.backgroundColor.replace(/0\.18\)/,'0.18)');
+          if(i===idx) ds.backgroundColor = ds.backgroundColor.replace(/0\.18\)/,'0.38)');
+        });
+        chart.update();
+      };
+      document.getElementById('tab-credit').addEventListener('shown.bs.tab',()=>emph(0));
+      document.getElementById('tab-ic').addEventListener('shown.bs.tab',()=>emph(1));
+      document.getElementById('tab-qr').addEventListener('shown.bs.tab',()=>emph(2));
+      emph(0);
+    })();
+
+    // ===== ブロックチェーン可視化 =====
+    (function(){
+      const wrap = document.getElementById('chainWrap');
+      const addBtn = document.getElementById('addBlock');
+      const resetBtn = document.getElementById('resetChain');
+      let lastHash = '000000';
+      let count = 0;
+
+      function rnd(){ return Math.random().toString(36).slice(2,8); }
+      function addBlock(isNew=true){
+        count++;
+        const hash = rnd();
+        const el = document.createElement('div');
+        el.className = 'block' + (isNew ? ' new-block':'');
+        el.innerHTML = `
+          <div class="fw-bold">Block #${count}</div>
+          <div class="muted">Data... (tx)</div>
+          <div class="muted">Prev: ${lastHash}</div>
+          <div class="muted">Hash: ${hash}</div>
+        `;
+        wrap.appendChild(el);
+        lastHash = hash;
+        wrap.scrollLeft = wrap.scrollWidth;
+      }
+      function reset(){
+        wrap.innerHTML = '';
+        lastHash = '000000';
+        count = 0;
+        for(let i=0;i<3;i++) addBlock(false);
+      }
+      addBtn.addEventListener('click',()=> addBlock(true));
+      resetBtn.addEventListener('click',reset);
+      reset();
+    })();
+
+    // ===== コードコピー =====
+    (function(){
+      document.querySelectorAll('pre').forEach(pre=>{
+        const btn = pre.querySelector('.copy-btn');
+        if(!btn) return;
+        btn.addEventListener('click', async ()=>{
+          const code = pre.querySelector('code')?.innerText ?? '';
+          try{
+            await navigator.clipboard.writeText(code);
+            btn.classList.add('copied'); btn.textContent='Copied!';
+            setTimeout(()=>{btn.classList.remove('copied'); btn.textContent='Copy';},1200);
+          }catch(e){ btn.textContent='Failed'; }
+        });
+      });
+    })();
+  </script>
+
+
 </body>
 </html>
