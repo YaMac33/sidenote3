@@ -107,3 +107,41 @@ a {
 .logo-side {
     color: #666666;
 }
+/* Existing styles remain the same */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f8f9fa;
+    margin: 0;
+    padding: 80px 20px 20px;
+    display: flex; /* Flexbox for footer positioning */
+    flex-direction: column; /* Main axis to vertical */
+    min-height: 100vh; /* Full viewport height */
+}
+
+main {
+    flex-grow: 1; /* Allow main to grow and push footer down */
+}
+
+/* ... other existing styles ... */
+
+.site-footer-container {
+    background-color: #fff;
+    color: #6c757d;
+    padding: 20px 0;
+    text-align: center;
+    font-size: 14px;
+    border-top: 1px solid #e9ecef;
+    margin-top: 40px; /* Space above the footer */
+}
+
+.footer-content {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    box-sizing: border-box;
+}
+
+.footer-content p {
+    margin: 5px 0;
+}
