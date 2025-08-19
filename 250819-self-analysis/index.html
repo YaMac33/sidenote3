@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>25.8.19 自分だけのAI思考ログをPythonで構築する方法</title>
+    <meta name="description" content="OpenAI APIとPythonを使い、自分の思考やプロンプトの履歴をJSONL形式でローカルに保存する基本的なシステムを構築する方法を解説します。コードの雛形から拡張案までを網羅した備忘録です。">
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        /* == Design Pattern A: Technical Blog == */
+        :root {
+            --accent-color: #0d6efd;
+            --text-color: #333;
+            --bg-color: #fff;
+            --code-bg-color: #282c34;
+            --code-text-color: #abb2bf;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.7;
+            font-feature-settings: "palt";
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        main {
+            flex: 1;
+            max-width: 800px;
+        }
+
+        article h1, article h2, article h3, article h4 {
+            font-weight: 600;
+            margin-top: 2.5em;
+            margin-bottom: 1em;
+        }
+        
+        article h1 { font-size: 2.2rem; border-bottom: 2px solid #eee; padding-bottom: .5rem; }
+        article h2 { font-size: 1.8rem; border-bottom: 1px solid #eee; padding-bottom: .4rem; }
+        article h3 { font-size: 1.4rem; }
+        article h4 { font-size: 1.2rem; }
+        
+        .publish-date {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #555;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        article a {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+        article a:hover {
+            text-decoration: underline;
+        }
+        
+        article p {
+            margin-bottom: 1em;
+        }
+
+        article strong {
+            font-weight: bold;
+        }
+
+        article ul, article ol {
+            padding-left: 1.5em;
+            margin-bottom: 1em;
+        }
+
+        blockquote {
+            margin: 1.5em 0;
+            padding: 0.5em 1em;
+            border-left: 4px solid var(--accent-color);
+            background-color: #f8f9fa;
+            color: #555;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5em 0;
+            font-size: 0.9em;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 0.8em;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        tbody tr:nth-child(odd) {
+            background-color: #f9f9f9;
+        }
+
+        /* Code Blocks */
+        pre {
+            background-color: var(--code-bg-color);
+            color: var(--code-text-color);
+            padding: 1.5em;
+            border-radius: 8px;
+            overflow-x: auto;
+            position: relative;
+            margin: 1.5em 0;
+        }
+        code {
+            font-family: 'Menlo', 'Consolas', 'Monaco', monospace;
+            font-size: 0.9em;
+        }
+        .code-block-container {
+            position: relative;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #444;
+            color: #fff;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8em;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+        .copy-btn:hover {
+            opacity: 1;
+        }
+        
+        /* Sidebar Table of Contents */
+        .sidebar {
+            width: 280px;
+            flex-shrink: 0;
+        }
+        
+        #toc {
+            position: sticky;
+            top: 2rem;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+            padding-left: 1rem;
+            border-left: 2px solid #eee;
+        }
+        #toc h3 {
+            font-size: 1.1rem;
+            margin-top: 0;
+            margin-bottom: 1rem;
+        }
+        #toc ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        #toc li a {
+            display: block;
+            padding: 0.3rem 0;
+            color: #555;
+            text-decoration: none;
+            font-size: 0.9em;
+            transition: all 0.2s;
+        }
+        #toc li a:hover {
+            color: var(--text-color);
+        }
+        #toc li a.active {
+            color: var(--accent-color);
+            font-weight: bold;
+            transform: translateX(5px);
+        }
+        #toc ul ul {
+            padding-left: 1rem;
+        }
+        
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .sidebar {
+                display: none;
+            }
+            .container {
+                padding: 0 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="container">
+        <main>
+            <article>
+                <h1><span class="publish-date">25.08.19</span>自分だけのAI思考ログをPythonで構築する方法【備忘録】</h1>
+
+                <section>
+                    <p>最近、AIに色々なことを相談したり、壁打ち相手になってもらったりすることが増えました。その中で「あれ、前にも同じようなこと聞いたな」「あの時のアイデア、どこに保存したっけ？」となることがしばしば。そこで、<strong>自分のプロンプト（入力）とAIの応答を全部記録して、後から分析できる自分専用のシステム</strong>が欲しくなりました。</p>
+                    <p>今回はその第一歩として、Pythonを使ってAIとの対話履歴を簡単にローカルファイルに保存する、基本的なコードの雛形を自分用にまとめておきます。</p>
+                </section>
+                
+                <hr>
+
+                <section id="h2-1">
+                    <h2>✅ まずは前提から</h2>
+                    <p>このコードを動かすには、いくつか準備が必要です。</p>
+                    <ul>
+                        <li><strong>OpenAIのAPIキー</strong>: これがないと始まりません。持っていない場合は<a href="https://platform.openai.com/account/api-keys" target="_blank" rel="noopener noreferrer">公式サイトから取得</a>できます。無料枠もあるので、試すだけなら気軽に作れます。</li>
+                        <li><strong>Pythonの実行環境</strong>: 自分のPCにPythonが入っていればOKです。VS CodeやJupyter Notebook、普通のターミナルなど、好きな環境で大丈夫です。</li>
+                        <li><strong>`openai`パッケージ</strong>: PythonからOpenAIのAPIを叩くためのライブラリです。以下のコマンドでインストールしておきます。</li>
+                    </ul>
+                    <div class="code-block-container">
+                        <pre><code class="language-bash">pip install openai</code></pre>
+                    </div>
+                </section>
+
+                <section id="h2-2">
+                    <h2>💻 Pythonコード：ChatGPTを使ったプロンプト保存システム</h2>
+                    <p>早速ですが、これが基本のコードです。ユーザーがターミナルで入力した内容をOpenAIに送り、その応答と一緒にファイルへ保存します。</p>
+                    <div class="code-block-container">
+                        <pre><code class="language-python">import openai
+import datetime
+import json
+import os
+
+# 🔐 OpenAI APIキーを設定（環境変数を使うのが安全）
+# 事前に環境変数 `OPENAI_API_KEY` を設定しておくのがおすすめです
+openai.api_key = os.getenv("OPENAI_API_KEY")  # または直接代入: "your-api-key"
+
+# 📥 ユーザーから入力を取得
+prompt = input("あなたの考えていることを入力してください: ")
+
+# 🤖 GPTに問い合わせる
+try:
+    response = openai.ChatCompletion.create(
+        model="gpt-4",  # または "gpt-3.5-turbo"
+        messages=[
+            {"role": "system", "content": "あなたは思考の整理を支援するAIです。"},
+            {"role": "user", "content": prompt}
+        ]
+    )
+
+    # 📤 応答を取得
+    ai_response = response["choices"][0]["message"]["content"]
+
+    # 🕒 タイムスタンプ付きで保存する内容を作成
+    entry = {
+        "timestamp": datetime.datetime.now().isoformat(),
+        "prompt": prompt,
+        "response": ai_response
+    }
+
+    # 🗃️ JSONL（1行1記録）形式で保存
+    log_file = "ai_thought_log.jsonl"
+    with open(log_file, "a", encoding="utf-8") as f:
+        f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+
+    # ✅ 出力
+    print("\n--- AIの応答 ---\n")
+    print(ai_response)
+    print(f"\n✅ 保存されました：{log_file}")
+
+except Exception as e:
+    print(f"エラーが発生しました: {e}")
+</code></pre>
+                    </div>
+                </section>
+                
+                <section id="h2-3">
+                    <h2>📦 保存されるファイル形式（JSONL）</h2>
+                    <p>このコードを実行すると、`ai_thought_log.jsonl` というファイルが作られます。中身はこんな感じ。</p>
+                    <div class="code-block-container">
+                        <pre><code class="language-json">{"timestamp": "2025-08-19T15:00:23", "prompt": "将来の働き方について考えている。", "response": "将来の働き方はリモート化や柔軟性が鍵になります..."}
+{"timestamp": "2025-08-19T15:05:10", "prompt": "新しい趣味としてプログラミングはどうだろうか。", "response": "プログラミングは創造的で素晴らしい趣味ですね。何から始めたいですか？"}</code></pre>
+                    </div>
+                    <p><strong>JSONL（JSON Lines）</strong>という形式で、1行が1つの完結したJSONデータになっています。これ、ログを保存するにはすごく便利なんです。後からデータを読み込むときに、1行ずつ処理できるのでメモリに優しく、データの追記も簡単です。将来、このログを分析する際にも非常に扱いやすい形式と言えます。</p>
+                </section>
+                
+                <section id="h2-4">
+                    <h2>🔒 セキュリティ上の注意点</h2>
+                    <p>いくつか気をつけておきたい点もメモしておきます。</p>
+                    <ul>
+                        <li><strong>APIキーの管理</strong>: コードに直接APIキーを書くのは避けましょう。上のコードのように環境変数から読み込むのが安全です。</li>
+                        <li><strong>ログファイルの管理</strong>: このログにはプライベートな思考やアイデアが含まれる可能性があります。ローカルで完結するので安全ですが、PCのセキュリティ対策はしっかりと。もしGitHubなどでコードを管理する場合は、ログファイル（`.jsonl`）がリポジトリに含まれないように <strong>`.gitignore`</strong> にファイル名を追加するのを忘れずに。</li>
+                    </ul>
+                </section>
+                
+                <section id="h2-5">
+                    <h2>🔜 次にできること（拡張案）</h2>
+                    <p>この基本システムから、色々な方向に拡張できそうです。今後の自分への宿題として、いくつかアイデアをリストアップしておきます。</p>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>拡張</th>
+                                <th>説明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>タグ機能</strong></td>
+                                <td>入力ごとに「アイデア」「悩み」「学習」などのタグを付けて、後から分類しやすくする。</td>
+                            </tr>
+                            <tr>
+                                <td><strong>自動要約</strong></td>
+                                <td>長い対話になった場合に、AIに要約させて保存する。</td>
+                            </tr>
+                            <tr>
+                                <td><strong>感情分析</strong></td>
+                                <td>入力したテキストのポジティブ/ネガティブ度を判定して、気分の波を記録する。</td>
+                            </tr>
+                            <tr>
+                                <td><strong>検索機能</strong></td>
+                                <td>保存したログを日付やキーワードで検索できる簡易的なビューアを作る。</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p>特に、検索機能やタグ機能はすぐにでも欲しくなりそうです。その場合は、JSONLファイルではなく <strong>SQLite</strong> などのデータベースに保存する方式に切り替えるのが良さそうですね。</p>
+                </section>
+                
+                <section id="h2-6">
+                    <h2>🤔 なぜクラウドよりローカル？コストは？</h2>
+                    <p>最初はWebアプリ化も考えましたが、まずは手軽に始められるローカル環境からスタートすることにしました。この構成のいいところは、<strong>OpenAIのAPI利用料以外はほとんどコストがかからない</strong>点です。</p>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>機能・ツール</th>
+                                <th>必要性</th>
+                                <th>無料で可能か</th>
+                                <th>備考</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>🧠 OpenAI APIキー</td>
+                                <td>必須</td>
+                                <td>❌ 基本有料（無料枠は限られる）</td>
+                                <td>GPT-3.5は安い、GPT-4は高め</td>
+                            </tr>
+                            <tr>
+                                <td>🐍 Python環境</td>
+                                <td>必須</td>
+                                <td>✅ 完全無料</td>
+                                <td>Pythonは無料で誰でも使える</td>
+                            </tr>
+                            <tr>
+                                <td>💾 ローカルファイル保存</td>
+                                <td>必須</td>
+                                <td>✅ 完全無料</td>
+                                <td>JSONLやCSV形式で保存</td>
+                            </tr>
+                            <tr>
+                                <td>📊 SQLite / PostgreSQL保存</td>
+                                <td>任意</td>
+                                <td>✅ 無料</td>
+                                <td>SQLiteはインストール不要</td>
+                            </tr>
+                            <tr>
+                                <td>🖥️ Webアプリ化（Streamlit等）</td>
+                                <td>任意</td>
+                                <td>✅ 無料</td>
+                                <td>ローカル or 無料クラウドで可</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <blockquote>💡 学習や思考ログならGPT-3.5-turboでも十分な場合が多いです。コストを抑えたいならモデルを切り替えるのがおすすめです。</blockquote>
+                </section>
+
+                <section id="h2-7">
+                    <h2>🚀 まとめと今後の展望</h2>
+                    <p>今回は、自分だけのAI対話ログシステムを作るための、本当に最初の第一歩を形にしてみました。シンプルな仕組みですが、自分の思考がどんどんデータとして蓄積されていくのは面白い体験です。</p>
+                    <p>次のステップとしては、スマホからも手軽に入力できるように、**Google Colab**上でこのシステムを動かしてみたり、本格的なデータ分析を見据えて**SQLite**への保存に切り替えたりすることを考えています。最終的には、**Streamlit**を使って簡単なWeb UI（ユーザーインターフェース）を持つ自分専用アプリに育てていきたいですね。</p>
+                </section>
+
+            </article>
+        </main>
+        <aside class="sidebar">
+            <nav id="toc">
+                <h3>目次</h3>
+                <ul></ul>
+            </nav>
+        </aside>
+    </div>
+    
+    <script src="/script.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // --- 1. Fetch Header and Footer ---
+            const fetchAndInsert = (url, position, target = document.body) => {
+                fetch(url)
+                    .then(response => response.ok ? response.text() : Promise.reject('File not found'))
+                    .then(data => target.insertAdjacentHTML(position, data))
+                    .catch(error => console.error(`Error fetching ${url}:`, error));
+            };
+            fetchAndInsert('/header.html', 'afterbegin');
+            fetchAndInsert('/footer.html', 'beforeend');
+
+            const article = document.querySelector('article');
+            const tocList = document.querySelector('#toc ul');
+            const headings = article.querySelectorAll('h2, h3');
+            
+            if (!article || !tocList || headings.length === 0) return;
+
+            // --- 2. Generate Table of Contents ---
+            headings.forEach(heading => {
+                const id = heading.id || heading.textContent.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
+                if (!heading.id) {
+                    heading.id = id;
+                }
+                
+                const li = document.createElement('li');
+                const a = document.createElement('a');
+                a.href = `#${id}`;
+                a.textContent = heading.textContent;
+                
+                if (heading.tagName === 'H3') {
+                    const subList = tocList.lastElementChild?.querySelector('ul') || document.createElement('ul');
+                    if (subList.children.length === 0) {
+                        tocList.lastElementChild.appendChild(subList);
+                    }
+                    subList.appendChild(li);
+                } else {
+                     tocList.appendChild(li);
+                }
+                li.appendChild(a);
+            });
+
+            // --- 3. Implement ToC Scroll Highlighting ---
+            const tocLinks = tocList.querySelectorAll('a');
+            const observer = new IntersectionObserver(entries => {
+                entries.forEach(entry => {
+                    const id = entry.target.getAttribute('id');
+                    const correspondingLink = tocList.querySelector(`a[href="#${id}"]`);
+                    if (entry.isIntersecting) {
+                        tocLinks.forEach(link => link.classList.remove('active'));
+                        correspondingLink.classList.add('active');
+                    }
+                });
+            }, { rootMargin: "0px 0px -75% 0px" });
+
+            headings.forEach(heading => observer.observe(heading));
+
+            // --- 4. Add Copy Buttons to Code Blocks ---
+            document.querySelectorAll('.code-block-container').forEach(container => {
+                const pre = container.querySelector('pre');
+                const code = pre.querySelector('code');
+                const copyButton = document.createElement('button');
+                copyButton.className = 'copy-btn';
+                copyButton.textContent = 'Copy';
+                container.appendChild(copyButton);
+
+                copyButton.addEventListener('click', () => {
+                    navigator.clipboard.writeText(code.innerText).then(() => {
+                        copyButton.textContent = 'Copied!';
+                        setTimeout(() => {
+                            copyButton.textContent = 'Copy';
+                        }, 2000);
+                    }).catch(err => {
+                        console.error('Failed to copy text: ', err);
+                        copyButton.textContent = 'Error';
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html>
