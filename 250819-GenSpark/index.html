@@ -1,491 +1,237 @@
 <!DOCTYPE html>
-
-
 <html lang="ja">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>25.8.19 GitHub SparkはReact＋TypeScript限定ってどういうこと？ | SideNote</title>
-  <meta name="description" content="GitHub Sparkが生成するアプリがReactとTypeScriptに限定される意味を、背景・具体例・今後の展開までわかりやすく整理した技術メモ。初心者にも読みやすい解説と実例コードつき。" />
-
-
-  <!-- 共通スタイル（ルートにあるものを先に読み込む） -->
-
-
-  <link rel="stylesheet" href="/style.css" />
-
-
-  <!-- 記事固有のスタイル（デザインパターン A: 技術ブログ） -->
-
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GitHub SparkはReact＋TypeScript限定ってどういうこと？ | 技術メモ</title>
+  
   <style>
-    /* レイアウト */
-    :root {
-      --accent: #0d6efd;
-      --body-bg: #fff;
-      --text: #333;
-      --max-width: 800px;
-      --toc-width: 260px;
-      --gap: 32px;
-      --code-bg: #0b1220;
-      --code-text: #e6eef8;
-      --blockquote-accent: var(--accent);
-      --breakpoint-sm: 768px;
-    }
-
+    /* 基本的なスタイル設定 */
     body {
-      background: var(--body-bg);
-      color: var(--text);
-      font-family: "Segoe UI", Roboto, "Hiragino Kaku Gothic ProN", "Yu Gothic", system-ui, -apple-system, "Noto Sans JP", sans-serif;
-      line-height: 1.6;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.7;
+      color: #333;
+      background-color: #fdfdfd;
       margin: 0;
-      padding: 0;
+      padding: 20px;
     }
-
-    /* header/footer placeholders */
-    #header-placeholder, #footer-placeholder {
-      width: 100%;
-    }
-
-    .page-wrap {
-      display: flex;
-      justify-content: center;
-      padding: 32px 16px;
-    }
-
-    main {
-      display: flex;
-      gap: var(--gap);
-      width: 100%;
-      max-width: calc(var(--max-width) + var(--toc-width) + var(--gap));
-    }
-
-    /* 記事領域 */
-    article.post {
-      width: 100%;
-      max-width: var(--max-width);
-      background: #fff;
-    }
-
-    .post-inner {
-      padding: 32px;
-    }
-
-    .post h1 {
-      font-size: 1.6rem;
-      margin: 0 0 18px 0;
-      color: var(--text);
-      line-height: 1.3;
-      display: flex;
-      gap: 12px;
-      align-items: baseline;
-    }
-
-    .post h1 .date {
-      color: #6c757d;
-      font-size: 0.95rem;
-      font-weight: 600;
-    }
-
-    .post h2 {
-      font-size: 1.25rem;
-      margin-top: 28px;
-      margin-bottom: 12px;
-      color: var(--text);
-    }
-
-    .post p {
-      margin: 0 0 14px 0;
-      color: var(--text);
-    }
-
-    .post ul {
-      margin: 0 0 14px 1.1em;
-    }
-
-    /* blockquote accent */
-    blockquote {
-      border-left: 4px solid var(--blockquote-accent);
-      padding: 12px 16px;
-      margin: 12px 0;
-      background: #fbfbfd;
-      color: var(--text);
-      border-radius: 4px;
-    }
-
-    /* code block (dark) */
-    pre.codeblock {
-      background: var(--code-bg);
-      color: var(--code-text);
-      padding: 16px;
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background-color: #fff;
+      border: 1px solid #e0e0e0;
       border-radius: 8px;
-      overflow: auto;
-      position: relative;
-      margin: 14px 0;
-      font-family: ui-monospace, SFMono-Regular, "Roboto Mono", "Noto Sans Mono JP", monospace;
-      font-size: 0.95rem;
-      line-height: 1.45;
+      padding: 24px 40px;
     }
 
-    /* copy button */
+    /* 見出しのデザイン */
+    h1, h2, h3 {
+      font-weight: 700;
+      line-height: 1.3;
+    }
+    h1 {
+      font-size: 2rem;
+      border-bottom: 2px solid #333;
+      padding-bottom: 10px;
+      margin-top: 0;
+    }
+    h2 {
+      font-size: 1.5rem;
+      border-left: 5px solid #0d6efd;
+      padding-left: 12px;
+      margin-top: 40px;
+    }
+    
+    /* メタ情報 */
+    .meta {
+      color: #666;
+      font-size: 0.9em;
+    }
+
+    /* 箇条書きリスト */
+    ul, ol {
+      padding-left: 1.5em;
+    }
+    ul li {
+      margin-bottom: 8px;
+    }
+
+    /* コードブロックのデザイン */
+    pre {
+      background-color: #2d2d2d;
+      color: #e5e7eb;
+      border-radius: 8px;
+      padding: 16px;
+      overflow-x: auto;
+      position: relative;
+    }
+    code {
+      font-family: "SF Mono", "Fira Code", "Cascadia Code", Menlo, Consolas, monospace;
+      font-size: 0.95em;
+    }
     .copy-btn {
       position: absolute;
       top: 10px;
       right: 10px;
-      background: rgba(255,255,255,0.08);
-      color: var(--code-text);
+      background-color: #444;
+      color: #fff;
       border: none;
-      padding: 6px 10px;
-      border-radius: 6px;
+      padding: 6px 12px;
+      border-radius: 5px;
       cursor: pointer;
-      font-size: 0.85rem;
-      backdrop-filter: blur(4px);
+      font-size: 0.8em;
+      opacity: 0.8;
+      transition: opacity 0.2s;
     }
-    .copy-btn:active { transform: translateY(1px); }
-
-    /* TOC（右カラム） */
-    aside.toc {
-      width: var(--toc-width);
-      position: sticky;
-      top: 20px;
-      height: calc(100vh - 40px);
-      overflow: auto;
-      border-left: 1px solid #eee;
-      padding-left: 20px;
-      display: block;
+    pre:hover .copy-btn {
+      opacity: 1;
+    }
+    .copy-btn.copied {
+      background-color: #28a745;
     }
 
-    .toc .toc-title {
-      font-size: 0.95rem;
-      font-weight: 700;
-      color: #444;
-      margin-bottom: 10px;
-    }
-
-    .toc ul {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-      font-size: 0.95rem;
-    }
-
-    .toc li {
-      margin-bottom: 8px;
-    }
-
-    .toc a {
-      color: #6c757d;
+    /* リンク */
+    a {
+      color: #0d6efd;
       text-decoration: none;
     }
-
-    .toc a.active {
-      color: var(--accent);
-      font-weight: 700;
+    a:hover {
+      text-decoration: underline;
     }
-
-    /* responsive: hide TOC on small screens */
-    @media (max-width: 767px) {
-      main {
-        flex-direction: column;
-        max-width: var(--max-width);
+    
+    /* レスポンシブ対応 */
+    @media (max-width: 600px) {
+      .container {
+        padding: 16px 20px;
       }
-      aside.toc {
-        display: none;
+      h1 {
+        font-size: 1.8rem;
       }
-      .post-inner {
-        padding: 20px 12px;
+      h2 {
+        font-size: 1.3rem;
       }
     }
-
-    /* small niceties */
-    .meta {
-      color: #6c757d;
-      font-size: 0.95rem;
-      margin-bottom: 8px;
-    }
-
-    .related {
-      margin-top: 24px;
-      padding-top: 12px;
-      border-top: 1px dashed #e9ecef;
-    }
-
-    .related a {
-      color: var(--accent);
-      text-decoration: none;
-    }
-
-    /* inline code */
-    code.inline {
-      background:#f1f3f5;
-      padding:2px 6px;
-      border-radius:6px;
-      font-family: ui-monospace, SFMono-Regular, "Roboto Mono", monospace;
-      font-size:0.95em;
-    }
-
-    /* figure styling not used here but keep minimal support */
-    figure {
-      margin: 16px 0;
-    }
-
   </style>
-
-
 </head>
 <body>
 
-
-  <!-- header will be loaded asynchronously -->
-
-
-  <div id="header-placeholder" aria-hidden="true"></div>
-
-
-  <div class="page-wrap">
-    <main>
-      <article class="post" itemscope itemtype="http://schema.org/Article">
-        <div class="post-inner">
-          <!-- h1 starts with YY.MM.DD -->
-          <h1 itemprop="headline"><span class="date">25.08.19</span> GitHub SparkはReact＋TypeScript限定ってどういうこと？</h1>
-          <div class="meta">技術メモ — GitHub Spark / React / TypeScript</div>
-
-
-      <!-- Article content (converted from provided plaintext/Markdown) -->
+  <main class="container">
+    <article>
+      <header>
+        <p class="meta">25.08.19</p>
+        <h1>GitHub SparkはReact＋TypeScript限定ってどういうこと？</h1>
+        <p class="meta">技術メモ — GitHub Spark / React / TypeScript</p>
+      </header>
+      
       <section>
-        <p>最近「GitHub Spark」というサービスの説明で、<br>
-        <blockquote>「生成されるアプリはReactとTypeScriptに限定されます。」</blockquote>
-        という一文を目にしました。ちょっと堅い言い回しですが、要するに <strong>Sparkを使うと、アプリのコードは必ずReact＋TypeScript構成になる</strong> という意味です。Vue.jsやAngular、あるいは純粋なJavaScriptだけで作りたい、という選択肢はありません。ここでは、自分用のメモとしてわかりやすく整理しておきます。</p>
+        <p>最近「GitHub Spark」というサービスの説明で、「生成されるアプリはReactとTypeScriptに限定されます。」という一文を目にしました。ちょっと堅い言い回しですが、要するに<strong>Sparkを使うと、アプリのコードは必ずReact＋TypeScript構成になる</strong>という意味です。Vue.jsやAngular、あるいは純粋なJavaScriptだけで作りたい、という選択肢はありません。ここでは、自分用のメモとしてわかりやすく整理しておきます。</p>
       </section>
 
-      <h2 id="what-is-spark">GitHub Sparkってそもそも何？</h2>
       <section>
-        <p><strong>GitHub Spark</strong> は、GitHubが提供している <strong>AIを活用したアプリのひな形生成ツール</strong> です。たとえば、「タスク管理アプリを作って」と指示すると、必要なディレクトリ構成やコードを自動で作ってくれます。</p>
+        <h2>GitHub Sparkってそもそも何？</h2>
+        <p>GitHub Spark は、GitHubが提供している <strong>AIを活用したアプリのひな形生成ツール</strong> です。たとえば、「タスク管理アプリを作って」と指示すると、必要なディレクトリ構成やコードを自動で作ってくれます。</p>
         <ul>
           <li>「ボタン」「フォーム」「ページ」などのUIは自動でReactコンポーネントとして生成される</li>
-          <li>ファイル拡張子は <code class="inline">.tsx</code>（TypeScript対応のReactファイル）</li>
+          <li>ファイル拡張子は <code>.tsx</code>（TypeScript対応のReactファイル）</li>
         </ul>
-        <p>要は、アプリ開発のスタート地点を一気に整えてくれる <em>AIスキャフォルド</em> といえます。</p>
+        <p>要は、アプリ開発のスタート地点を一気に整えてくれる <strong>AIスキャフォルド</strong> といえます。</p>
+      </section>
+      
+      <section>
+        <h2>なぜReactとTypeScript限定なの？</h2>
+        <p>主な理由は次の2つと考えられます。</p>
+        <ol>
+          <li><strong>品質と信頼性を確保しやすい</strong><br>
+            サービスがベータやプレビュー段階のうちは、対応技術を広げすぎると品質が安定しません。React＋TypeScriptに限定することで、コードの動作検証がしやすくなります。
+          </li>
+          <li><strong>React＋TypeScriptは今の王道スタック</strong><br>
+            フロントエンド開発では、React＋TypeScript が非常に一般的です。
+            <ul>
+              <li><strong>React</strong> → ユーザーインターフェース構築のライブラリ</li>
+              <li><strong>TypeScript</strong> → JavaScriptに型を加えて、バグを防ぎやすくする言語</li>
+            </ul>
+            この組み合わせは、学習リソースも豊富で、実務でも使われやすいというメリットがあります。
+          </li>
+        </ol>
       </section>
 
-      <h2 id="why-limited">なぜReactとTypeScript限定なの？</h2>
       <section>
-        <p>主な理由は次の2つ。</p>
-        <h3>1. 品質と信頼性を確保しやすい</h3>
-        <p>サービスがベータやプレビュー段階のうちは、対応技術を広げすぎると品質が安定しません。React＋TypeScriptに限定することで、コードの動作検証がしやすくなります。</p>
-
-        <h3>2. React＋TypeScriptは今の王道スタック</h3>
-        <p>フロントエンド開発では、<strong>React＋TypeScript</strong> が非常に一般的です。</p>
-        <ul>
-          <li><strong>React</strong> → ユーザーインターフェース構築のライブラリ</li>
-          <li><strong>TypeScript</strong> → JavaScriptに型を加えて、バグを防ぎやすくする言語</li>
-        </ul>
-        <p>この組み合わせは、学習リソースも豊富で、実務でも使われやすいというメリットがあります。</p>
-      </section>
-
-      <h2 id="concrete-example">具体的なイメージ</h2>
-      <section>
+        <h2>具体的なイメージ</h2>
         <p>たとえば、Sparkに「タスク管理アプリを作って」と頼んだ場合、出てくるコードは次のような構成です。</p>
         <ul>
-          <li>ReactコンポーネントでページやUIパーツが生成される</li>
-          <li>TypeScriptで記述されており、<code class="inline">.tsx</code>ファイルとして出力される</li>
-          <li>Vue.jsやAngularではなく、React一択</li>
+            <li>ReactコンポーネントでページやUIパーツが生成される</li>
+            <li>TypeScriptで記述されており、<code>.tsx</code>ファイルとして出力される</li>
+            <li>Vue.jsやAngularではなく、React一択</li>
         </ul>
-
         <p>実際のコードは以下のような雰囲気になります：</p>
+        <pre><button class="copy-btn">コピー</button><code class="language-tsx">// 例: React + TypeScript（.tsx）
 
-        <pre class="codeblock" data-lang="tsx"><button class="copy-btn" aria-label="Copy code">コピー</button><code>// 例: React + TypeScript（.tsx）
-
-import React, { useState } from ‘react’;
+import React, { useState } from 'react';
 
 export default function TaskApp() {
-const [tasks, setTasks] = useState<string[]>([]);
+  const [tasks, setTasks] = useState([]);
 
-return (
-<div>
-<h1>タスク管理アプリ</h1>
-{/* ここにタスク入力フォームやタスク一覧が追加される */}
-</div>
-);
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;タスク管理アプリ&lt;/h1&gt;
+      {/* ここにタスク入力フォームやタスク一覧が追加される */}
+    &lt;/div&gt;
+  );
 }
+</code></pre>
+      </section>
 
-
-
-      <h2 id="future">今後の展開は？</h2>
       <section>
+        <h2>今後の展開は？</h2>
         <p>今のところSparkは <strong>React＋TypeScript縛り</strong> ですが、将来的にはVueやAngular、Svelteなどにも対応するかもしれません。ただ、現時点（2025年8月時点）では、他の技術スタックを選ぶことはできません。</p>
       </section>
 
-      <h2 id="summary">まとめ</h2>
       <section>
+        <h2>まとめ</h2>
         <ul>
           <li>GitHub SparkはAIでアプリのひな形を自動生成するツール</li>
           <li>出力されるコードはReact＋TypeScriptに限定</li>
           <li>ベータ版の安定性確保のため対応技術を絞っている</li>
           <li>将来は他のフレームワーク対応の可能性もあり</li>
         </ul>
-
         <p>ReactやTypeScriptを学びたい人にはちょうどいい環境ですが、「Vueで始めたい」「JavaScriptだけで書きたい」という場合はSparkは合いません。</p>
-
-        <div class="related">
-          <h3>関連情報（公式リンク）</h3>
-          <ul>
-            <li><a href="https://github.com" target="_blank" rel="noopener noreferrer">GitHub 公式サイト</a></li>
-            <li><a href="https://react.dev/" target="_blank" rel="noopener noreferrer">React 公式ドキュメント</a></li>
-            <li><a href="https://www.typescriptlang.org/" target="_blank" rel="noopener noreferrer">TypeScript 公式サイト</a></li>
-          </ul>
-        </div>
+        
+        <h3>関連情報（公式リンク）</h3>
+        <ul>
+          <li><a href="https://github.com/" target="_blank" rel="noopener noreferrer">GitHub 公式サイト</a></li>
+          <li><a href="https://react.dev/" target="_blank" rel="noopener noreferrer">React 公式ドキュメント</a></li>
+          <li><a href="https://www.typescriptlang.org/" target="_blank" rel="noopener noreferrer">TypeScript 公式サイト</a></li>
+        </ul>
       </section>
-
-    </div>
-  </article>
-
-  <!-- 右側の目次（PC 用） -->
-  <aside class="toc" aria-label="目次">
-    <div class="toc-title">目次</div>
-    <nav>
-      <ul id="toc-list">
-        <!-- JSで生成 -->
-      </ul>
-    </nav>
-  </aside>
-</main>
-
-  </div>
-
-
-  <!-- footer will be loaded asynchronously -->
-
-
-  <div id="footer-placeholder" aria-hidden="true"></div>
-
-
-  <!-- 共通スクリプト（ルートのものを先に読み込む） -->
-
-
-  <script src="/script.js" defer></script>
-
-
-  <!-- 記事固有のスクリプト（目次追従・コピー機能・ヘッダー/フッター非同期読み込み） -->
-
+    </article>
+  </main>
 
   <script>
-    // --- 非同期で header/footer を読み込む ---
-    (function loadShellParts(){
-      const headerContainer = document.getElementById('header-placeholder');
-      const footerContainer = document.getElementById('footer-placeholder');
-
-      async function fetchAndInsert(url, container) {
-        try {
-          const res = await fetch(url, {cache: "no-store"});
-          if (!res.ok) throw new Error('Network response was not ok');
-          const html = await res.text();
-          container.innerHTML = html;
-        } catch (e) {
-          // フェールセーフ：簡易プレースホルダーを表示
-          container.innerHTML = '<header style="padding:12px 16px;background:#f8f9fa;color:#333">サイト共通ヘッダー（読み込み失敗）</header>';
-          console.warn('Failed to load', url, e);
-        }
-      }
-
-      fetchAndInsert('../header.html', headerContainer);
-      fetchAndInsert('../footer.html', footerContainer);
-    })();
-
-    // --- 目次を自動生成してスクロール追従（ScrollSpy） ---
-    (function generateTOC(){
-      const content = document.querySelector('article.post .post-inner');
-      if (!content) return;
-      const headings = content.querySelectorAll('h2, h3');
-      const tocList = document.getElementById('toc-list');
-      if (!tocList) return;
-
-      // Build list
-      headings.forEach(h => {
-        if (!h.id) {
-          // create id from text
-          h.id = h.textContent.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^\w\-]/g, '');
-        }
-        const li = document.createElement('li');
-        const a = document.createElement('a');
-        a.href = '#' + h.id;
-        a.textContent = h.textContent;
-        a.addEventListener('click', (ev) => {
-          ev.preventDefault();
-          document.querySelector('#' + h.id).scrollIntoView({behavior:'smooth', block:'start'});
-          history.replaceState(null, '', '#' + h.id);
-        });
-        li.appendChild(a);
-        tocList.appendChild(li);
-      });
-
-      // Scroll spy: highlight currently visible heading
-      const tocLinks = tocList.querySelectorAll('a');
-      const headingElems = Array.from(headings);
-
-      function onScroll() {
-        const offset = 120; // header offset if any
-        let currentId = null;
-        for (let i = 0; i < headingElems.length; i++) {
-          const rect = headingElems[i].getBoundingClientRect();
-          if (rect.top - offset <= 0) {
-            currentId = headingElems[i].id;
-          } else {
-            break;
-          }
-        }
-        tocLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + currentId));
-      }
-
-      document.addEventListener('scroll', onScroll, {passive: true});
-      window.addEventListener('resize', onScroll);
-      // initial call
-      setTimeout(onScroll, 100);
-    })();
-
-    // --- コードブロックのコピー機能 ---
-    (function codeCopySetup(){
-      document.querySelectorAll('pre.codeblock').forEach(pre => {
-        const btn = pre.querySelector('.copy-btn');
-        const codeEl = pre.querySelector('code');
-        if (!btn || !codeEl) return;
-
-        btn.addEventListener('click', async () => {
-          const text = codeEl.textContent.replace(/\u00A0/g, ' ');
-          try {
-            await navigator.clipboard.writeText(text);
-            btn.textContent = 'コピーしました';
-            setTimeout(() => { btn.textContent = 'コピー'; }, 1500);
-          } catch (e) {
-            // フォールバック
-            const ta = document.createElement('textarea');
-            ta.value = text;
-            document.body.appendChild(ta);
-            ta.select();
+    // コードブロックのコピー機能
+    document.addEventListener('DOMContentLoaded', () => {
+      const copyButtons = document.querySelectorAll('.copy-btn');
+      copyButtons.forEach(button => {
+        button.addEventListener('click', async () => {
+          const pre = button.parentElement;
+          const code = pre.querySelector('code');
+          if (code) {
             try {
-              document.execCommand('copy');
-              btn.textContent = 'コピーしました';
-              setTimeout(() => { btn.textContent = 'コピー'; }, 1500);
-            } finally {
-              document.body.removeChild(ta);
+              await navigator.clipboard.writeText(code.innerText);
+              button.textContent = 'コピー済み';
+              button.classList.add('copied');
+              setTimeout(() => {
+                button.textContent = 'コピー';
+                button.classList.remove('copied');
+              }, 2000);
+            } catch (err) {
+              console.error('コピーに失敗しました', err);
+              button.textContent = '失敗';
             }
           }
         });
       });
-    })();
-
-    // --- ハッシュで直接リンクした場合のスクロール微調整 ---
-    (function adjustHashScroll(){
-      if (location.hash) {
-        const id = location.hash.slice(1);
-        const target = document.getElementById(id);
-        if (target) {
-          setTimeout(() => target.scrollIntoView({behavior:'smooth', block:'start'}), 100);
-        }
-      }
-    })();
+    });
   </script>
-
 
 </body>
 </html>
