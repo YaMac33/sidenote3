@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>25.8.22 Googleフォームの回答をNotionに自動保存する方法</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f4f7f9;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 10px;
+        }
+        h1 {
+            font-size: 2em;
+            text-align: center;
+            border-bottom: 2px solid #3498db;
+        }
+        h2 {
+            font-size: 1.6em;
+            margin-top: 40px;
+            padding-left: 10px;
+            border-left: 5px solid #3498db;
+        }
+        h3 {
+            font-size: 1.3em;
+            border-bottom: 1px dotted #ccc;
+            margin-top: 30px;
+        }
+        p, ul, li {
+            font-size: 1em;
+        }
+        ul {
+            list-style-type: disc;
+            padding-left: 20px;
+        }
+        li {
+            margin-bottom: 10px;
+        }
+        code {
+            background-color: #ecf0f1;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: "Courier New", Courier, monospace;
+            color: #c0392b;
+        }
+        .note {
+            background-color: #e8f4fd;
+            border-left: 5px solid #3498db;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        tbody tr:nth-child(odd) {
+            background-color: #f9f9f9;
+        }
+        tbody tr:hover {
+            background-color: #f1f1f1;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Googleフォームの回答を<br>Notionデータベースに自動保存する方法</h1>
+        <p class="note">
+            はい、可能です。ただし、GoogleフォームとNotionは別のサービスなので、2つを連携させるための「仲介役」が必要になります。<br>
+            直接的な標準機能はありませんが、以下のいずれかの方法を使えば、フォームに入力されたテキストを自動でNotionのデータベースに保存できます。
+        </p>
+
+        <h2>1. 外部連携ツールを使う方法（簡単・コード不要）</h2>
+        <p>一番簡単でオススメなのが、<strong>Zapier (ザピアー)</strong> や <strong>Make (メイク)</strong> といった自動化ツールを使う方法です。プログラミングの知識は一切不要です。</p>
+
+        <h3>仕組みのイメージ</h3>
+        <p>「Googleフォームに新しい回答が送信されたら（トリガー）、Notionデータベースに新しいアイテムを追加する（アクション）」という命令を、画面上で設定するだけです。</p>
+
+        <h3>🛠️ 代表的なツール</h3>
+        <ul>
+            <li><strong>Zapier:</strong> 非常に有名で、設定画面が分かりやすいのが特徴です。無料プランでも月に100回までの連携が可能です。</li>
+            <li><strong>Make (旧 Integromat):</strong> Zapierよりも複雑な連携ができます。無料プランの範囲も広く、Zapierで足りない場合に便利です。</li>
+        </ul>
+
+        <h3>設定の流れ（Zapierの場合）</h3>
+        <ol>
+            <li>Zapierに登録し、「Create Zap（Zapを作成）」をクリックします。</li>
+            <li>トリガーに「Google Forms」を選び、「New Form Response（新しい回答）」を選択します。</li>
+            <li>アクションに「Notion」を選び、「Create Database Item（データベースアイテムの作成）」を選択します。</li>
+            <li>画面の指示に従い、GoogleアカウントとNotionアカウントを連携させます。</li>
+            <li>最後に、「フォームのどの回答」を「Notionのどの列」に保存するかを指定（マッピング）して完了です。</li>
+        </ol>
+
+        <h2>2. Google Apps Script を使う方法（無料・要コーディング）</h2>
+        <p>Googleフォームに付属しているスクリプト機能を使えば、完全無料で同じことを実現できます。少しだけコードを書く必要がありますが、一度設定すれば非常に強力です。</p>
+
+        <h3>仕組みのイメージ</h3>
+        <p>フォームの回答が送信された瞬間に、裏側でプログラムが自動実行され、そのプログラムがNotion API（Notionを外部から操作するための機能）を叩いてデータを書き込みます。</p>
+
+        <h3>設定の概要</h3>
+        <ul>
+            <li>
+                <strong>Notionで準備:</strong>
+                <ul>
+                    <li>インテグレーションを作成して<code>インテグーショントークン（APIキー）</code>を取得します。</li>
+                    <li>データを保存したいNotionデータベースを、作成したインテグレーションに連携させます。</li>
+                    <li><code>データベースID</code>（URLに含まれる長い文字列）をコピーしておきます。</li>
+                </ul>
+            </li>
+            <li>
+                <strong>Googleフォームで準備:</strong>
+                <ul>
+                    <li>フォームの編集画面から「スクリプトエディタ」を開きます。</li>
+                    <li>用意されたコードを貼り付け、取得した<code>APIキー</code>と<code>データベースID</code>を書き込みます。</li>
+                    <li>「トリガー」を設定し、「フォーム送信時」にこのスクリプトが実行されるようにします。</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h2>✅ まとめ：どちらを選ぶべき？</h2>
+        <p>それぞれの方法のメリット・デメリットを比較して、自分に合った方法を選びましょう。</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>方法</th>
+                    <th>費用</th>
+                    <th>難易度</th>
+                    <th>おすすめな人</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Zapier / Make</td>
+                    <td>無料プランあり</td>
+                    <td>かんたん</td>
+                    <td>コードを書きたくない、すぐに連携したい人</td>
+                </tr>
+                <tr>
+                    <td>Google Apps Script</td>
+                    <td>完全無料</td>
+                    <td>やや難しい</td>
+                    <td>コストをかけたくない、カスタマイズしたい人</td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="note">
+            まずは<strong>Zapier</strong>で試してみて、もし利用頻度が多くなって有料プランが必要になったら、<strong>Google Apps Script</strong>を検討するのがおすすめです。
+        </p>
+    </div>
+
+</body>
+</html>
