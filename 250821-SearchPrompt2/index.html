@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>Notionデータベース検索によるAIの「記憶」機能実装</title>
+  <style>
+    body {
+      font-family: "Helvetica Neue", Arial, sans-serif;
+      line-height: 1.8;
+      margin: 40px;
+      background-color: #f9f9f9;
+      color: #333;
+    }
+    h1, h2, h3 {
+      color: #222;
+    }
+    h1 {
+      border-bottom: 3px solid #444;
+      padding-bottom: 0.3em;
+    }
+    h2 {
+      margin-top: 2em;
+      border-left: 5px solid #444;
+      padding-left: 0.5em;
+    }
+    code {
+      background: #eee;
+      padding: 2px 4px;
+      border-radius: 3px;
+    }
+    .section {
+      margin-bottom: 2em;
+    }
+    ul {
+      padding-left: 1.5em;
+    }
+    li {
+      margin-bottom: 0.5em;
+    }
+  </style>
+</head>
+<body>
+  <h1>Notionデータベース検索によるAIの「記憶」機能実装</h1>
+  <p>
+    この取り組みは、単なるコーディングを超えて<strong>AIの指示設計（プロンプトエンジニアリング）</strong>の領域に踏み込むものでした。
+  </p>
+
+  <div class="section">
+    <h2>目標：単純なチャットボットから記憶を持つAIへ</h2>
+    <p>
+      最初のアプリは「金魚メモリ」のようなチャットボットで、毎回の発言をすぐに忘れてしまいました。  
+      目標は、Notionデータベースを長期記憶として利用し、過去の会話を思い出せる知的アシスタントに進化させることでした。
+    </p>
+    <p>
+      核心となるアイデアは、Pythonスクリプトを「脳」として動かし、Notionから記憶を取得してAIに渡し、その情報を「カンニングペーパー」として活用させることです。
+    </p>
+  </div>
+
+  <div class="section">
+    <h2>フェーズ1：初期実装（最初の試み）</h2>
+    <ol>
+      <li>
+        <strong>Notion検索関数 <code>search_notion_database</code> の作成</strong><br>
+        <ul>
+          <li><strong>目的：</strong> ユーザーの質問に関連する過去の会話を探す。</li>
+          <li><strong>方法：</strong> Notion APIの<code>database query</code>を使用し、タイトル（Promptプロパティ）にユーザー入力の全文が含まれるページを検索。</li>
+          <li><strong>初期の欠点：</strong> 「全文一致」のため、ほとんど結果が見つからなかった。</li>
+        </ul>
+      </li>
+      <li>
+        <strong>AIの指示内容の変更（プロンプト設計）</strong><br>
+        <ul>
+          <li><strong>目的：</strong> 検索で見つけた情報をAIが適切に利用できるようにする。</li>
+          <li><strong>方法：</strong> <code>system_prompt</code>を追加し、「過去会話の『参考資料』が与えられた場合、それを重要な文脈として回答を作成せよ」と指示。</li>
+        </ul>
+      </li>
+    </ol>
+  </div>
+
+  <div class="section">
+    <h2>フェーズ2：デバッグと課題克服</h2>
+    <h3>問題1：AIがまったく記憶を使わない</h3>
+    <ul>
+      <li><strong>症状：</strong> AIは依然として「過去会話を覚えていません」と回答。デバッグ表示も空。</li>
+      <li><strong>原因：</strong> Notion検索が結果を返していなかった。「全文一致」検索が硬直的。</li>
+      <li><strong>解決策：より賢い検索ロジック</strong>
+        <ol>
+          <li>Pythonの<code>re</code>ライブラリでユーザー入力をキーワードに分割。</li>
+          <li>Notion APIクエリを<code>OR</code>条件に変更。文章全体ではなく、単語ごとに一致を探索。</li>
+          <li>結果として過去会話が見つかる確率が大幅に向上し、デバッグ表示に内容が出始めた。</li>
+        </ol>
+      </li>
+    </ul>
+
+    <h3>問題2：AIが混乱し、同じ内容を繰り返す</h3>
+    <ul>
+      <li><strong>症状：</strong> 過去会話が見つかると、AIは新しい回答をせず、単に過去の会話を繰り返す。</li>
+      <li><strong>原因：</strong> プロンプト設計不足。質問と参考資料が似ているとAIが混乱。</li>
+      <li><strong>解決策：AIにペルソナを付与</strong>
+        <ol>
+          <li><code>system_prompt</code>を全面的に書き換え、より強い指示に。</li>
+          <li>AIに役割を与える：「あなたはNotion Memory Botです。知識はすべて与えられた参考資料からのみ取得します。」</li>
+          <li>厳格なルールを追加：「一般知識を使わない」「資料をそのまま繰り返さない」「情報がなければそう伝える」など。</li>
+        </ol>
+      </li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2>まとめ：達成できたこと</h2>
+    <p>
+      コーディング・テスト・AIへの指示改善を繰り返すことで、単なるチャットボットではなく、次のような仕組みを構築できました：
+    </p>
+    <ul>
+      <li>Pythonスクリプトが<strong>オーケストレーター</strong>として動作</li>
+      <li>Notionデータベースが<strong>永続的な長期記憶</strong>として機能</li>
+      <li>AIモデルが<strong>推論エンジン</strong>として記憶を利用して新たな回答を生成</li>
+    </ul>
+    <p>
+      このプロジェクトは、単なる実装課題を超えて、<strong>高度なAIを制御し、適切な振る舞いに導くスキル</strong>を学ぶ実践的な経験となりました。
+    </p>
+  </div>
+</body>
+</html>
