@@ -3,73 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>25.8.22 Googleフォームの回答をNotionに自動保存する方法</title>
+    <title>25.8.22 Googleフォームの回答を自動でNotionに保存するマニュアル</title>
     <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            line-height: 1.6;
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+            line-height: 1.8;
             color: #333;
-            background-color: #f4f7f9;
+            background-color: #f9f9f9;
             margin: 0;
             padding: 20px;
         }
         .container {
             max-width: 800px;
-            margin: 0 auto;
-            background-color: #ffffff;
-            padding: 30px;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 30px 40px;
             border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
         }
         h1, h2, h3 {
-            color: #2c3e50;
-            border-bottom: 2px solid #e0e0e0;
+            border-bottom: 2px solid #eee;
             padding-bottom: 10px;
+            margin-top: 40px;
         }
         h1 {
             font-size: 2em;
             text-align: center;
-            border-bottom: 2px solid #3498db;
+            border-bottom: 2px solid #4a90e2;
         }
         h2 {
             font-size: 1.6em;
-            margin-top: 40px;
-            padding-left: 10px;
-            border-left: 5px solid #3498db;
+            color: #4a90e2;
         }
         h3 {
-            font-size: 1.3em;
-            border-bottom: 1px dotted #ccc;
-            margin-top: 30px;
-        }
-        p, ul, li {
-            font-size: 1em;
-        }
-        ul {
-            list-style-type: disc;
-            padding-left: 20px;
-        }
-        li {
-            margin-bottom: 10px;
+            font-size: 1.2em;
+            border-bottom: 1px solid #eee;
         }
         code {
-            background-color: #ecf0f1;
+            background-color: #eee;
             padding: 2px 6px;
             border-radius: 4px;
-            font-family: "Courier New", Courier, monospace;
-            color: #c0392b;
+            font-family: 'Courier New', Courier, monospace;
+            color: #d63384;
+        }
+        pre {
+            background-color: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        pre code {
+            background-color: transparent;
+            color: inherit;
+            padding: 0;
+            border-radius: 0;
+        }
+        .step {
+            margin-bottom: 25px;
         }
         .note {
-            background-color: #e8f4fd;
-            border-left: 5px solid #3498db;
+            background-color: #e7f3fe;
+            border-left: 5px solid #4a90e2;
             padding: 15px;
             margin: 20px 0;
-            border-radius: 5px;
+            border-radius: 4px;
         }
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
+            margin-top: 15px;
         }
         th, td {
             border: 1px solid #ddd;
@@ -78,101 +83,225 @@
         }
         th {
             background-color: #f2f2f2;
-            font-weight: bold;
         }
-        tbody tr:nth-child(odd) {
-            background-color: #f9f9f9;
+        li {
+            margin-bottom: 10px;
         }
-        tbody tr:hover {
-            background-color: #f1f1f1;
+        a {
+            color: #4a90e2;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>Googleフォームの回答を<br>Notionデータベースに自動保存する方法</h1>
-        <p class="note">
-            はい、可能です。ただし、GoogleフォームとNotionは別のサービスなので、2つを連携させるための「仲介役」が必要になります。<br>
-            直接的な標準機能はありませんが、以下のいずれかの方法を使えば、フォームに入力されたテキストを自動でNotionのデータベースに保存できます。
-        </p>
+        <h1>Googleフォームの回答を自動でNotionに保存する方法<br>（Google Apps Script編）</h1>
+        
+        <p class="note">このマニュアルでは、Googleフォームに投稿された回答を、プログラミング（Google Apps Script）を利用して、自動的にNotionのデータベースへ保存する手順を解説します。</p>
 
-        <h2>1. 外部連携ツールを使う方法（簡単・コード不要）</h2>
-        <p>一番簡単でオススメなのが、<strong>Zapier (ザピアー)</strong> や <strong>Make (メイク)</strong> といった自動化ツールを使う方法です。プログラミングの知識は一切不要です。</p>
+        <h2>1. 準備するもの</h2>
+        <p>スクリプトを設定する前に、以下の4つの項目を準備してください。</p>
 
-        <h3>仕組みのイメージ</h3>
-        <p>「Googleフォームに新しい回答が送信されたら（トリガー）、Notionデータベースに新しいアイテムを追加する（アクション）」という命令を、画面上で設定するだけです。</p>
+        <div class="step">
+            <h3>1-1. Notion APIキーの取得</h3>
+            <p>Notionを外部から操作するための「APIキー（Internal Integration Token）」を取得します。</p>
+            <ol>
+                <li><a href="https://www.notion.so/my-integrations" target="_blank">Notionのインテグレーションページ</a>にアクセスします。</li>
+                <li>「+ New integration」をクリックし、名前（例: Google Form連携）を付けて作成します。</li>
+                <li>作成後、「Secrets」に表示される「Internal Integration Token」をコピーします。<code>secret_...</code>で始まる文字列です。</li>
+            </ol>
+        </div>
 
-        <h3>🛠️ 代表的なツール</h3>
-        <ul>
-            <li><strong>Zapier:</strong> 非常に有名で、設定画面が分かりやすいのが特徴です。無料プランでも月に100回までの連携が可能です。</li>
-            <li><strong>Make (旧 Integromat):</strong> Zapierよりも複雑な連携ができます。無料プランの範囲も広く、Zapierで足りない場合に便利です。</li>
-        </ul>
+        <div class="step">
+            <h3>1-2. Notion データベースIDの取得</h3>
+            <p>データを保存したいNotionデータベースの「ID」をコピーします。</p>
+            <ol>
+                <li>対象のデータベースをフルページで開きます。</li>
+                <li>ブラウザのアドレスバーに表示されるURLを確認します。</li>
+                <li>URLの<code>notion.so/</code>の直後にある、32文字の英数字がデータベースIDです。（例: <code>https://www.notion.so/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx?v=...</code>）</li>
+            </ol>
+        </div>
 
-        <h3>設定の流れ（Zapierの場合）</h3>
-        <ol>
-            <li>Zapierに登録し、「Create Zap（Zapを作成）」をクリックします。</li>
-            <li>トリガーに「Google Forms」を選び、「New Form Response（新しい回答）」を選択します。</li>
-            <li>アクションに「Notion」を選び、「Create Database Item（データベースアイテムの作成）」を選択します。</li>
-            <li>画面の指示に従い、GoogleアカウントとNotionアカウントを連携させます。</li>
-            <li>最後に、「フォームのどの回答」を「Notionのどの列」に保存するかを指定（マッピング）して完了です。</li>
-        </ol>
+        <div class="step">
+            <h3>1-3. データベースとインテグレーションの連携</h3>
+            <p>作成したインテグレーションに、データベースを操作する権限を与えます。</p>
+            <ol>
+                <li>対象のデータベースページの右上にある「・・・」メニューをクリックします。</li>
+                <li>「コネクトの追加 (Add connections)」を選択し、先ほど作成したインテグレーション（例: Google Form連携）を選んで連携させます。</li>
+            </ol>
+        </div>
+        
+        <div class="step">
+            <h3>1-4. フォームとデータベースの構成</h3>
+            <p>このマニュアルのスクリプトは、以下の構成を前提としています。</p>
+            
+            <h4>Notion データベースの構成</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>プロパティ名 (列名)</th>
+                        <th>プロパティの種類</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Prompt</td>
+                        <td><strong>タイトル</strong></td>
+                    </tr>
+                    <tr>
+                        <td>Response</td>
+                        <td><strong>リッチテキスト</strong> (または テキスト)</td>
+                    </tr>
+                    <tr>
+                        <td>Timestamp</td>
+                        <td><strong>作成日時</strong></td>
+                    </tr>
+                </tbody>
+            </table>
 
-        <h2>2. Google Apps Script を使う方法（無料・要コーディング）</h2>
-        <p>Googleフォームに付属しているスクリプト機能を使えば、完全無料で同じことを実現できます。少しだけコードを書く必要がありますが、一度設定すれば非常に強力です。</p>
+            <h4>Google フォームの構成</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>質問の種類</th>
+                        <th>役割</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>記述式（短文）</strong></td>
+                        <td>Notionの「Prompt」列に保存されます。</td>
+                    </tr>
+                    <tr>
+                        <td><strong>段落</strong></td>
+                        <td>Notionの「Response」列に保存されます。</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p class="note">フォーム内の質問の順番は問いません。スクリプトが自動で判別します。</p>
+        </div>
 
-        <h3>仕組みのイメージ</h3>
-        <p>フォームの回答が送信された瞬間に、裏側でプログラムが自動実行され、そのプログラムがNotion API（Notionを外部から操作するための機能）を叩いてデータを書き込みます。</p>
+        <h2>2. 設定手順</h2>
+        <p>準備が整ったら、Googleフォームにスクリプトを設定していきます。</p>
 
-        <h3>設定の概要</h3>
-        <ul>
-            <li>
-                <strong>Notionで準備:</strong>
-                <ul>
-                    <li>インテグレーションを作成して<code>インテグーショントークン（APIキー）</code>を取得します。</li>
-                    <li>データを保存したいNotionデータベースを、作成したインテグレーションに連携させます。</li>
-                    <li><code>データベースID</code>（URLに含まれる長い文字列）をコピーしておきます。</li>
-                </ul>
-            </li>
-            <li>
-                <strong>Googleフォームで準備:</strong>
-                <ul>
-                    <li>フォームの編集画面から「スクリプトエディタ」を開きます。</li>
-                    <li>用意されたコードを貼り付け、取得した<code>APIキー</code>と<code>データベースID</code>を書き込みます。</li>
-                    <li>「トリガー」を設定し、「フォーム送信時」にこのスクリプトが実行されるようにします。</li>
-                </ul>
-            </li>
-        </ul>
+        <div class="step">
+            <h3>2-1. スクリプトエディタを開く</h3>
+            <ol>
+                <li>対象のGoogleフォームの編集画面を開きます。</li>
+                <li>右上の「︙」（その他）メニューをクリックし、「<strong>スクリプトエディタ</strong>」を選択します。</li>
+            </ol>
+        </div>
+        
+        <div class="step">
+            <h3>2-2. スクリプトを貼り付ける</h3>
+            <p>エディタが開いたら、以下のコードを貼り付けます。（元々書かれているコードは全て消してください）</p>
+            <pre><code>// Notion APIにデータを送信する関数
+function sendToNotion(e) {
+  // ▼▼▼ ここにあなたのNotion情報を入力してください ▼▼▼
+  const NOTION_API_KEY = "YOUR_NOTION_API_KEY"; // 1. あなたのNotion APIキー
+  const NOTION_DATABASE_ID = "YOUR_DATABASE_ID"; // 2. あなたのデータベースID
+  // ▲▲▲ ここまで ▲▲▲
 
-        <h2>✅ まとめ：どちらを選ぶべき？</h2>
-        <p>それぞれの方法のメリット・デメリットを比較して、自分に合った方法を選びましょう。</p>
-        <table>
-            <thead>
-                <tr>
-                    <th>方法</th>
-                    <th>費用</th>
-                    <th>難易度</th>
-                    <th>おすすめな人</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>Zapier / Make</td>
-                    <td>無料プランあり</td>
-                    <td>かんたん</td>
-                    <td>コードを書きたくない、すぐに連携したい人</td>
-                </tr>
-                <tr>
-                    <td>Google Apps Script</td>
-                    <td>完全無料</td>
-                    <td>やや難しい</td>
-                    <td>コストをかけたくない、カスタマイズしたい人</td>
-                </tr>
-            </tbody>
-        </table>
-        <p class="note">
-            まずは<strong>Zapier</strong>で試してみて、もし利用頻度が多くなって有料プランが必要になったら、<strong>Google Apps Script</strong>を検討するのがおすすめです。
-        </p>
+  const formResponse = e.response;
+  const itemResponses = formResponse.getItemResponses();
+
+  let promptText = "";
+  let responseText = "";
+
+  // 全ての回答をループで確認し、質問タイプに応じて適切な変数に格納する
+  for (let i = 0; i < itemResponses.length; i++) {
+    const item = itemResponses[i].getItem();
+    const response = itemResponses[i].getResponse();
+    
+    // 質問のタイプを判別
+    switch (item.getType()) {
+      case FormApp.ItemType.TEXT: // "記述式（短文）"の場合
+        promptText = response;
+        break;
+      case FormApp.ItemType.PARAGRAPH_TEXT: // "段落"の場合
+        responseText = response;
+        break;
+    }
+  }
+  
+  // Notion APIのエンドポイントURL
+  const url = "https://api.notion.com/v1/pages";
+
+  // Notion APIに送信するデータ（ペイロード）を作成
+  const payload = {
+    "parent": { "database_id": NOTION_DATABASE_ID },
+    "properties": {
+      "Prompt": {
+        "title": [{
+          "text": { "content": promptText }
+        }]
+      },
+      "Response": {
+        "rich_text": [{
+          "text": { "content": responseText }
+        }]
+      }
+    }
+  };
+
+  // APIリクエストのオプションを設定
+  const options = {
+    "method": "post",
+    "contentType": "application/json",
+    "headers": {
+      "Authorization": "Bearer " + NOTION_API_KEY,
+      "Notion-Version": "2022-06-28"
+    },
+    "payload": JSON.stringify(payload)
+  };
+
+  // Notion APIにリクエストを送信
+  try {
+    const response = UrlFetchApp.fetch(url, options);
+    console.log("Notionへの保存に成功しました: " + response.getContentText());
+  } catch (error) {
+    console.error("Notionへの保存中にエラーが発生しました: " + error.toString());
+  }
+}</code></pre>
+        </div>
+
+        <div class="step">
+            <h3>2-3. APIキーとデータベースIDを書き換える</h3>
+            <p>貼り付けたコードの以下の部分を、準備しておいたあなたの情報に書き換えます。</p>
+            <ul>
+                <li><code>YOUR_NOTION_API_KEY</code>: 準備1-1で取得したAPIキー</li>
+                <li><code>YOUR_DATABASE_ID</code>: 準備1-2で取得したデータベースID</li>
+            </ul>
+            <p>書き換えたら、フロッピーディスクのアイコン（プロジェクトを保存）をクリックして保存します。</p>
+        </div>
+        
+        <div class="step">
+            <h3>2-4. トリガーを設定する（最重要）</h3>
+            <p>このスクリプトが「フォーム送信時」に自動で実行されるように設定します。</p>
+            <ol>
+                <li>スクリプトエディタの左側メニューから、時計のアイコン（<strong>トリガー</strong>）をクリックします。</li>
+                <li>右下の「<strong>トリガーを追加</strong>」ボタンをクリックします。</li>
+                <li>以下の通りに設定し、「保存」をクリックします。
+                    <ul>
+                        <li>実行する関数を選択: <code>sendToNotion</code></li>
+                        <li>イベントのソースを選択: <code>フォームから</code></li>
+                        <li>イベントの種類を選択: <code>フォーム送信時</code></li>
+                    </ul>
+                </li>
+            </ol>
+        </div>
+
+        <div class="step">
+            <h3>2-5. 権限を承認する</h3>
+            <p>初めてトリガーを保存する際に、Googleアカウントによる承認を求められます。画面の指示に従い、スクリプトがフォームを操作することを許可してください。（「安全でないページ」と表示されても、詳細から許可へ進んでください）</p>
+        </div>
+
+        <h2>3. 完了</h2>
+        <p class="note"><strong>以上で全ての設定は完了です。</strong><br>今後、Googleフォームに回答が送信されるたびに、自動で指定したNotionデータベースに新しいページが作成されます。</p>
     </div>
 
 </body>
