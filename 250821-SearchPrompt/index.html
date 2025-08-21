@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notion連携AIチャット改造手順</title>
+    <style>
+        body {
+            font-family: "Segoe UI", "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
+            line-height: 1.6;
+            margin: 2rem;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        h1, h2, h3, h4 {
+            margin-top: 2rem;
+            color: #222;
+        }
+        pre {
+            background: #272822;
+            color: #f8f8f2;
+            padding: 1rem;
+            overflow-x: auto;
+            border-radius: 6px;
+        }
+        code {
+            background: #eee;
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+        }
+        hr {
+            margin: 2rem 0;
+        }
+        .note {
+            background: #fff8c4;
+            border-left: 4px solid #ffd42a;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        ul, ol {
+            margin-left: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <h1>Notion連携AIチャット：アプリ改造手順</h1>
+    <p>はい、承知いたしました。これは非常に面白い機能追加ですね！Renderにデプロイする前に、アプリをさらに賢くしていきましょう。</p>
+    <p>AIに質問する前に、まず<strong>Notionという「第二の脳」で関連情報を検索</strong>し、見つけた情報をAIに<strong>「参考資料」として渡してから回答を生成</strong>させる、という流れになります。</p>
+    <p>これを実現するために、<code>app.py</code>にNotionを検索する機能を追加し、AIへの指示（プロンプト）を工夫します。</p>
+    <hr>
+
+    <h2>改造版 <code>app.py</code> の全コード</h2>
+    <p>現在の<code>app.py</code>を、以下のコードにまるごと差し替えてください。変更点をコメントと、コード下の解説で説明します。</p>
+
+<pre><code class="language-python">
+import os
+import openai
+import requests
+import json
+import streamlit as st
+from openai import OpenAI
+
+# --- 設定とSecrets ---
+st.set_page_config(page_title="My AIチャット")
+st.title("🧠 Notion連携AIチャット")
+
+# --- クライアントの初期化 ---
+try:
+    client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+    notion_api_key = st.secrets["NOTION_API_KEY"]
+    notion_database_id = st.secrets["NOTION_DATABASE_ID"]
+except FileNotFoundError:
+    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+    notion_api_key = os.getenv("NOTION_API_KEY Tabase_id"))
+
+# --- Notion連携関数 ---
+
+# 【新機能】Notionデータベースを検索する関数
+def search_notion_database(query_text):
+    """
+    指定されたテキストでNotionデータベースの"Prompt"列を検索し、
+    関連する過去のやり取りを文字列として返す。
+    """
+    url = f"https://api.notion.com/v1/databases/{notion_database_id}/query"
+    headers = {
+        "Authorization": f"Bearer {notion_api_key}",
+        "Content-Type": "application/json",
+        "Notion-Version": "2022-06-28",
+    }
+    query_data = {
+        "filter": {
+            "property": "Prompt",
+            "title": {
+                "contains": query_text
+            }
+        },
+        "sorts": [
+            {
+                "property": "Timestamp",
+                "direction": "descending"
+            }
+        ]
+    }
+
+    past_conversations = ""
+    try:
+        res = requests.post(url, headers=headers, data=json.dumps(query_data))
+        res.raise_for_status()
+        results = res.json()["results"]
+        
+        for page in results[:3]:
+            prompt = page["properties"]["Prompt"]["title"][0]["text"]["content"]
+            response = page["properties"]["Response"]["rich_text"][0]["text"]["content"]
+            past_conversations += f"過去の質問: {prompt}\\n過去の回答: {response}\\n---\\n"
+        
+        return past_conversations
+    except requests.exceptions.RequestException as e:
+        print(f"Notion検索エラー: {e}")
+        return ""
+
+# Notionに保存する関数 (変更なし)
+def save_to_notion(prompt, response):
+    url = "https://api.notion.com/v1/pages"
+    headers = {
+        "Authorization": f"Bearer {notion_api_key}",
+        "Content-Type": "application/json",
+        "Notion-Version": "2022-06-28",
+    }
+    new_page_data = {
+        "parent": {"database_id": notion_database_id},
+        "properties": {
+            "Prompt": {"title": [{"text": {"content": prompt}}]},
+            "Response": {"rich_text": [{"text": {"content": response}}]},
+        },
+    }
+    try:
+        res = requests.post(url, headers=headers, data=json.dumps(new_page_data))
+        res.raise_for_status()
+        return True, "✅ Notionへの保存に成功しました！"
+    except requests.exceptions.RequestException as e:
+        return False, f"❌ Notionへの保存中にエラーが発生しました: {e}\\n詳細: {res.text}"
+
+# --- Streamlitチャットロジック ---
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+
+if prompt := st.chat_input("メッセージを入力してください"):
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    with st.chat_message("user"):
+        st.markdown(prompt)
+
+    with st.chat_message("assistant"):
+        message_placeholder = st.empty()
+        
+        context_from_notion = search_notion_database(prompt)
+
+        system_prompt = "あなたは優秀なアシスタントです。ユーザーの質問に答えてください。"
+        if context_from_notion:
+            system_prompt += (
+                "\\n\\nただし、以下の過去のやり取りを最重要の参考情報として活用し、"
+                "文脈を踏まえた上で回答を生成してください。\\n"
+                f"--- 参考情報 ---\\n{context_from_notion}"
+            )
+
+        completion = client.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": prompt}
+            ],
+        )
+        ai_response = completion.choices[0].message.content
+        
+        message_placeholder.markdown(ai_response)
+
+    st.session_state.messages.append({"role": "assistant", "content": ai_response})
+    
+    success, message = save_to_notion(prompt, ai_response)
+    if success:
+        st.success(message)
+    else:
+        st.error(message)
+</code></pre>
+
+    <hr>
+    <h2>データベースの更新</h2>
+    <div class="note">
+        <strong>【重要】</strong> 新しい検索機能は、Notionデータベースの<code>Timestamp</code>列を使って結果を並び替えます。もし<code>Timestamp</code>列がなければ、以下の手順で追加してください。
+    </div>
+    <ol>
+        <li>Notionデータベースを開きます。</li>
+        <li>テーブルの右端にある「+」ボタンを押します。</li>
+        <li>プロパティの種類で「<strong>作成日時</strong>」を選択し、名前を<code>Timestamp</code>にします。</li>
+    </ol>
+
+    <hr>
+    <h2>主な変更点の解説</h2>
+
+    <h3>1. <code>search_notion_database</code>関数を追加しました</h3>
+    <ul>
+        <li>これが今回の機能の心臓部です。</li>
+        <li>ユーザーの入力文字を使ってNotion APIに「<code>Prompt</code>列にこの文字が含まれるページを探してください」というリクエストを送ります。</li>
+        <li>見つかった過去のやり取りを整形してAIに返します。</li>
+    </ul>
+
+    <h3>2. AIへの指示（プロンプト）を変更しました</h3>
+    <ul>
+        <li>以前は単純にユーザーの質問をAIに投げるだけでした。</li>
+        <li>今回は「あなたはアシスタントです」という基本指示に加えて、Notion検索結果を<strong>参考情報として活用してください</strong>という指示を追加しています。</li>
+        <li>AIは過去の文脈を踏まえて回答を生成します。</li>
+    </ul>
+
+    <hr>
+    <h2>使い方と実行例</h2>
+    <ol>
+        <li>
+            まず、何か情報を記憶させます。
+            <ul>
+                <li><strong>あなた:</strong> 「僕の好きなフルーツはリンゴです」</li>
+                <li><strong>AI:</strong> 「承知いたしました。好きなフルーツがリンゴであることを覚えておきます。」</li>
+                <li>(このやり取りがNotionに保存される)</li>
+            </ul>
+        </li>
+        <li>
+            次に、記憶した情報を尋ねます。
+            <ul>
+                <li><strong>あなた:</strong> 「僕が好きなフルーツは何だっけ？」</li>
+                <li><strong>AI:</strong> 「以前の会話によりますと、あなたの好きなフルーツは<strong>リンゴ</strong>です。」</li>
+            </ul>
+        </li>
+    </ol>
+
+    <p>このように、アプリがあなたの過去の発言を覚えて、それに基づいて回答してくれるようになります。</p>
+</body>
+</html>
