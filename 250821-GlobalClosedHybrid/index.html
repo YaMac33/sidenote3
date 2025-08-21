@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatGPT活用アーキテクチャ分析</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutral Harmony -->
+    <!-- Application Structure Plan: A tab-based SPA dashboard design was chosen to facilitate direct comparison between the three models and the strategic framework. This structure avoids a long, linear scroll, allowing users to focus on one concept at a time while easily navigating between them. The core interaction is the main navigation, which dynamically displays content sections. This task-oriented approach (understanding Model 1, comparing all, etc.) is more user-friendly and effective for synthesizing complex technical information than a simple text document. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Model Comparison Table -> Goal: Compare models across multiple dimensions -> Viz: Interactive Radar Chart -> Interaction: Checkboxes to toggle models on/off, providing a clear visual comparison of their profiles -> Justification: Radar charts excel at multi-variate comparison. Interactivity empowers user-driven analysis -> Library: Chart.js (Canvas).
+        - Report Info: Model Architectures -> Goal: Explain process flows -> Viz: Simplified diagrams built with HTML/CSS -> Interaction: Hover effects on steps to provide context -> Justification: Visual flows are more intuitive than text. HTML/CSS implementation avoids SVG and is lightweight -> Library/Method: HTML/CSS/JS.
+        - Report Info: Pros, Cons, Use Cases -> Goal: Organize key attributes -> Viz: Card-based layouts -> Interaction: Clean, static presentation within the tabbed navigation -> Justification: Cards are an effective UI pattern for presenting discrete information chunks clearly -> Library/Method: HTML/CSS.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: #FDFBF8;
+            color: #3D352E;
+        }
+        .nav-button {
+            transition: all 0.3s ease;
+        }
+        .nav-button.active {
+            background-color: #A59A8E;
+            color: #FFFFFF;
+            font-weight: 700;
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .card {
+            background-color: #FFFFFF;
+            border: 1px solid #EAE5E0;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .flow-step {
+            border: 2px solid #D1C7BC;
+            background-color: #F7F4F1;
+            border-radius: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            text-align: center;
+            position: relative;
+        }
+        .flow-arrow {
+            color: #A59A8E;
+            font-size: 2rem;
+            line-height: 1;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 60vh;
+            max-height: 500px;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <header class="text-center mb-10">
+            <h1 class="text-3xl md:text-4xl font-bold text-[#4A4036]">企業向けChatGPT統合アーキテクチャ</h1>
+            <p class="mt-2 text-lg text-[#6B5F55]">グローバル、クローズド、ハイブリッドモデルのインタラクティブ分析</p>
+        </header>
+
+        <nav class="flex flex-wrap justify-center gap-2 md:gap-4 mb-10 sticky top-4 z-10 bg-[#FDFBF8]/80 backdrop-blur-sm p-2 rounded-xl border border-[#EAE5E0]">
+            <button class="nav-button active text-sm md:text-base px-4 py-2 rounded-lg" data-target="model1">1. 基盤モデル</button>
+            <button class="nav-button text-sm md:text-base px-4 py-2 rounded-lg" data-target="model2">2. グラウンデッドモデル</button>
+            <button class="nav-button text-sm md:text-base px-4 py-2 rounded-lg" data-target="model3">3. ハイブリッドエージェント</button>
+            <button class="nav-button text-sm md:text-base px-4 py-2 rounded-lg" data-target="framework">4. 戦略フレームワーク</button>
+        </nav>
+
+        <main id="content-container">
+            <!-- Model 1: Foundational Model -->
+            <section id="model1" class="content-section active">
+                <div class="text-center mb-8">
+                    <h2 class="text-2xl font-bold text-[#4A4036]">モデル1：基盤モデル (グローバルソース)</h2>
+                    <p class="mt-2 text-[#6B5F55]">インターネットの広範な知識を活用する標準的なアプローチ</p>
+                </div>
+                
+                <div class="card mb-8">
+                    <h3 class="font-bold text-xl mb-4 text-[#A59A8E]">動作メカニズム</h3>
+                    <div class="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-6">
+                        <div class="flow-step">👤 ユーザー</div>
+                        <div class="flow-arrow self-center transform md:rotate-0 rotate-90">→</div>
+                        <div class="flow-step">🧠 LLM<br><span class="text-xs font-medium text-[#6B5F55]">(事前学習済み知識)</span></div>
+                        <div class="flow-arrow self-center transform md:rotate-0 rotate-90">→</div>
+                        <div class="flow-step">📄 応答生成</div>
+                    </div>
+                    <p class="mt-6 text-center text-[#6B5F55]">ユーザーのプロンプトに対し、モデルが内部に保持する膨大な事前学習済み知識のみを基に、統計的に最も確からしいテキストを生成します。シンプルで応答が速いのが特徴です。</p>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="card">
+                        <h3 class="font-bold text-xl mb-4 text-green-700">利点</h3>
+                        <ul class="space-y-3 list-disc list-inside text-[#3D352E]">
+                            <li><strong>広範な知識</strong>: 多様なトピックに関する一般的な質問に回答可能。</li>
+                            <li><strong>創造性</strong>: アイデア出しやブレインストーミングの優れたパートナーとなる。</li>
+                            <li><strong>高速な応答</strong>: 外部検索を伴わないため、迅速にテキストを生成。</li>
+                            <li><strong>実装が容易</strong>: APIを呼び出すだけで利用でき、導入のハードルが低い。</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <h3 class="font-bold text-xl mb-4 text-red-700">課題とリスク</h3>
+                        <ul class="space-y-3 list-disc list-inside text-[#3D352E]">
+                            <li><strong>ハルシネーション</strong>: 事実に基づかない、もっともらしい嘘を生成する危険性。</li>
+                            <li><strong>知識のカットオフ</strong>: 学習時点までの情報しか持たず、最新情報に非対応。</li>
+                            <li><strong>データプライバシー</strong>: 機密情報を入力すると、情報漏洩のリスクがある。</li>
+                            <li><strong>文脈理解の欠如</strong>: 企業独自の専門用語や内部事情を理解できない。</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Model 2: Grounded Model -->
+            <section id="model2" class="content-section">
+                <div class="text-center mb-8">
+                    <h2 class="text-2xl font-bold text-[#4A4036]">モデル2：グラウンデッドモデル (クローズドソース)</h2>
+                    <p class="mt-2 text-[#6B5F55]">検索拡張生成(RAG)により、信頼できる社内情報源に接地させるアプローチ</p>
+                </div>
+
+                <div class="card mb-8">
+                    <h3 class="font-bold text-xl mb-4 text-[#A59A8E]">動作メカニズム (RAG)</h3>
+                    <div class="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-6 flex-wrap">
+                        <div class="flow-step">👤 ユーザー</div>
+                        <div class="flow-arrow self-center transform md:rotate-0 rotate-90">→</div>
+                        <div class="flow-step">🔍 検索<br><span class="text-xs font-medium text-[#6B5F55]">(社内DB/文書)</span></div>
+                        <div class="flow-arrow self-center transform md:rotate-0 rotate-90">→</div>
+                        <div class="flow-step">➕ 拡張<br><span class="text-xs font-medium text-[#6B5F55]">(プロンプト + 検索結果)</span></div>
+                        <div class="flow-arrow self-center transform md:rotate-0 rotate-90">→</div>
+                        <div class="flow-step">🧠 LLM</div>
+                        <div class="flow-arrow self-center transform md:rotate-0 rotate-90">→</div>
+                        <div class="flow-step">📄 証拠に基づく応答</div>
+                    </div>
+                    <p class="mt-6 text-center text-[#6B5F55]">ユーザーの質問に対し、まず社内知識ベースを検索して関連情報を取得。その情報をコンテキストとしてLLMに与え、検索結果に基づいた回答を生成させます。</p>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="card">
+                        <h3 class="font-bold text-xl mb-4 text-green-700">利点</h3>
+                        <ul class="space-y-3 list-disc list-inside text-[#3D352E]">
+                            <li><strong>事実の正確性向上</strong>: ハルシネーションを大幅に抑制し、信頼性が高い。</li>
+                            <li><strong>トレーサビリティ</strong>: 応答の根拠となった情報源を提示できる。</li>
+                            <li><strong>データプライバシー保護</strong>: 機密データを外部に出さずに活用可能。</li>
+                            <li><strong>最新情報への対応</strong>: 知識ベースを更新すれば、常に最新の情報に基づき応答。</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <h3 class="font-bold text-xl mb-4 text-red-700">課題とリスク</h3>
+                        <ul class="space-y-3 list-disc list-inside text-[#3D352E]">
+                            <li><strong>知識ベースの品質依存</strong>: 元となる文書の質が低いと、応答の質も低くなる。</li>
+                            <li><strong>検索精度の問題</strong>: 関連文書を正しく検索できないと、的外れな回答になる。</li>
+                            <li><strong>実装の複雑性</strong>: データパイプラインやベクトルDBの構築が必要。</li>
+                            <li><strong>コスト増</strong>: インフラ構築・維持に、API利用料以外のコストがかかる。</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Model 3: Hybrid Agent Model -->
+            <section id="model3" class="content-section">
+                 <div class="text-center mb-8">
+                    <h2 class="text-2xl font-bold text-[#4A4036]">モデル3：ハイブリッドエージェント (ハイブリッドソース)</h2>
+                    <p class="mt-2 text-[#6B5F55]">RAGに加え、外部API連携(ツール利用)により自律的なタスク実行を可能にするアプローチ</p>
+                </div>
+
+                <div class="card mb-8">
+                    <h3 class="font-bold text-xl mb-4 text-[#A59A8E]">動作メカニズム (RAG + ツール利用)</h3>
+                     <div class="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-6 flex-wrap">
+                        <div class="flow-step">👤 ユーザー</div>
+                        <div class="flow-arrow self-center transform md:rotate-0 rotate-90">→</div>
+                        <div class="flow-step">🤖 エージェント(LLM)<br><span class="text-xs font-medium text-[#6B5F55]">(計画・判断)</span></div>
+                        <div class="flow-arrow self-center transform md:rotate-0 rotate-90">→</div>
+                        <div class="flex flex-col gap-2">
+                            <div class="flow-step text-sm">🔍 RAG検索</div>
+                            <div class="flow-step text-sm">🛠️ API実行 (ツール利用)</div>
+                        </div>
+                        <div class="flow-arrow self-center transform md:rotate-0 rotate-90">→</div>
+                        <div class="flow-step">🔄 統合</div>
+                        <div class="flow-arrow self-center transform md:rotate-0 rotate-90">→</div>
+                        <div class="flow-step">📄 複合的な応答/実行</div>
+                    </div>
+                    <p class="mt-6 text-center text-[#6B5F55]">LLMがオーケストレーターとして機能。ユーザーの要求を解釈し、社内情報を検索(RAG)すべきか、外部API(ツール)を使ってリアルタイムデータを取得・操作すべきかを判断し、タスクを自律的に実行します。</p>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="card">
+                        <h3 class="font-bold text-xl mb-4 text-green-700">利点</h3>
+                        <ul class="space-y-3 list-disc list-inside text-[#3D352E]">
+                            <li><strong>リアルタイム性</strong>: ライブAPIを通じて、常に最新のデータにアクセス可能。</li>
+                            <li><strong>タスク自動化</strong>: 複数のシステムを横断する複雑な業務を自動化できる。</li>
+                            <li><strong>行動能力</strong>: 情報を取得するだけでなく、システムの操作や更新といった「行動」が可能。</li>
+                            <li><strong>高度な洞察</strong>: 社内外のデータを動的に組み合わせて分析し、新たな知見を創出。</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <h3 class="font-bold text-xl mb-4 text-red-700">課題とリスク</h3>
+                        <ul class="space-y-3 list-disc list-inside text-[#3D352E]">
+                            <li><strong>重大なセキュリティ脆弱性</strong>: プロンプトインジェクション等により、不正操作の危険性。</li>
+                            <li><strong>実装の最高難易度</strong>: 高度なオーケストレーションとAPI管理が必須。</li>
+                            <li><strong>高コスト</strong>: 開発・運用コストが大幅に増大する。</li>
+                            <li><strong>ガバナンスの必要性</strong>: 「AI従業員」として扱うための厳格な権限管理と監視体制が不可欠。</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Framework -->
+            <section id="framework" class="content-section">
+                <div class="text-center mb-8">
+                    <h2 class="text-2xl font-bold text-[#4A4036]">戦略フレームワーク</h2>
+                    <p class="mt-2 text-[#6B5F55]">自社のニーズに最適なアーキテクチャを選択するための意思決定支援</p>
+                </div>
+                
+                <div class="card mb-12">
+                    <h3 class="font-bold text-xl mb-2 text-center text-[#A59A8E]">アーキテクチャ特性比較</h3>
+                    <p class="text-center text-sm text-[#6B5F55] mb-4">チェックボックスで表示するモデルを切り替えられます。</p>
+                    <div class="chart-container">
+                        <canvas id="modelComparisonChart"></canvas>
+                    </div>
+                    <div id="chart-legend" class="flex justify-center items-center gap-4 mt-4 flex-wrap"></div>
+                </div>
+
+                <div class="card">
+                    <h3 class="font-bold text-xl mb-4 text-center text-[#A59A8E]">意思決定のポイント</h3>
+                    <div class="space-y-6">
+                        <div>
+                            <h4 class="font-bold text-lg">1. コア要件の評価</h4>
+                            <p class="text-[#3D352E] mt-1">解決したい課題は何か？<br>
+                            <span class="font-semibold">創造性支援</span> → モデル1<br>
+                            <span class="font-semibold">正確な社内情報アクセス</span> → モデル2<br>
+                            <span class="font-semibold">リアルタイムデータの活用と業務自動化</span> → モデル3</p>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-lg">2. データとガバナンスの成熟度</h4>
+                            <p class="text-[#3D352E] mt-1">機密データを扱うか？ナレッジマネジメント体制は整っているか？成熟したセキュリティフレームワークを持つ組織のみがモデル3を検討すべきです。</p>
+                        </div>
+                         <div>
+                            <h4 class="font-bold text-lg">3. 技術力と予算</h4>
+                            <p class="text-[#3D352E] mt-1">モデル1から3にかけて、要求される技術スキルとコストは急激に増加します。現実的な評価がプロジェクト成功の鍵です。</p>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-lg">推奨アプローチ</h4>
+                            <p class="text-[#3D352E] mt-1">多くの場合、まずモデル2(RAG)を導入し、社内知識アクセスの課題を解決することから始めるのが効果的です。これにより、基盤を固めながら、より高度なモデル3への挑戦に備えることができます。</p>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const navButtons = document.querySelectorAll('.nav-button');
+            const contentSections = document.querySelectorAll('.content-section');
+            let chart = null;
+
+            const chartData = {
+                labels: ['事実の正確性', '実装の容易さ', 'コスト効率', 'データセキュリティ', 'リアルタイム性', 'タスク自動化能力'],
+                datasets: [
+                    {
+                        label: 'モデル1: 基盤',
+                        data: [2, 9, 8, 2, 1, 1],
+                        backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                        borderColor: 'rgba(239, 68, 68, 1)',
+                        pointBackgroundColor: 'rgba(239, 68, 68, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(239, 68, 68, 1)',
+                        hidden: false
+                    },
+                    {
+                        label: 'モデル2: グラウンデッド',
+                        data: [8, 6, 6, 8, 5, 3],
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        pointBackgroundColor: 'rgba(59, 130, 246, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(59, 130, 246, 1)',
+                        hidden: false
+                    },
+                    {
+                        label: 'モデル3: ハイブリッド',
+                        data: [9, 2, 2, 5, 9, 9],
+                        backgroundColor: 'rgba(22, 163, 74, 0.2)',
+                        borderColor: 'rgba(22, 163, 74, 1)',
+                        pointBackgroundColor: 'rgba(22, 163, 74, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(22, 163, 74, 1)',
+                        hidden: false
+                    }
+                ]
+            };
+            
+            const chartOptions = {
+                maintainAspectRatio: false,
+                responsive: true,
+                scales: {
+                    r: {
+                        angleLines: {
+                            display: true,
+                            color: '#EAE5E0'
+                        },
+                        grid: {
+                            color: '#EAE5E0'
+                        },
+                        pointLabels: {
+                            font: {
+                                size: 12,
+                                family: "'Noto Sans JP', sans-serif"
+                            },
+                            color: '#3D352E'
+                        },
+                        suggestedMin: 0,
+                        suggestedMax: 10,
+                        ticks: {
+                            stepSize: 2,
+                            backdropColor: 'rgba(253, 251, 248, 0.75)'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.r !== null) {
+                                    label += context.parsed.r;
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                }
+            };
+
+            function createChart() {
+                const ctx = document.getElementById('modelComparisonChart').getContext('2d');
+                chart = new Chart(ctx, {
+                    type: 'radar',
+                    data: chartData,
+                    options: chartOptions
+                });
+                createCustomLegend();
+            }
+            
+            function createCustomLegend() {
+                const legendContainer = document.getElementById('chart-legend');
+                legendContainer.innerHTML = '';
+                chart.data.datasets.forEach((dataset, index) => {
+                    const legendItem = document.createElement('div');
+                    legendItem.classList.add('flex', 'items-center', 'cursor-pointer');
+                    legendItem.onclick = () => {
+                        chart.getDatasetMeta(index).hidden = !chart.getDatasetMeta(index).hidden;
+                        chart.update();
+                        updateLegendAppearance();
+                    };
+                    
+                    const colorBox = document.createElement('div');
+                    colorBox.classList.add('w-4', 'h-4', 'rounded-sm', 'mr-2');
+                    colorBox.style.backgroundColor = dataset.borderColor;
+                    
+                    const label = document.createElement('span');
+                    label.classList.add('text-sm');
+                    label.innerText = dataset.label;
+                    
+                    legendItem.appendChild(colorBox);
+                    legendItem.appendChild(label);
+                    legendContainer.appendChild(legendItem);
+                });
+                updateLegendAppearance();
+            }
+
+            function updateLegendAppearance() {
+                const legendItems = document.getElementById('chart-legend').children;
+                chart.data.datasets.forEach((dataset, index) => {
+                    const meta = chart.getDatasetMeta(index);
+                    const legendItem = legendItems[index];
+                    legendItem.style.opacity = meta.hidden ? 0.5 : 1;
+                });
+            }
+
+            function switchTab(targetId) {
+                navButtons.forEach(button => {
+                    if (button.dataset.target === targetId) {
+                        button.classList.add('active');
+                    } else {
+                        button.classList.remove('active');
+                    }
+                });
+
+                contentSections.forEach(section => {
+                    if (section.id === targetId) {
+                        section.classList.add('active');
+                    } else {
+                        section.classList.remove('active');
+                    }
+                });
+
+                if (targetId === 'framework' && !chart) {
+                    createChart();
+                }
+            }
+
+            navButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    switchTab(button.dataset.target);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
