@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>Renderでのデプロイ手順</title>
+</head>
+<body>
+  <h1>はい、承知いたしました。</h1>
+  <p>ReplitでStreamlitアプリのコードが完成した状態から、Renderでデプロイを完了させるまでの全手順を、もう一度順番に解説します。</p>
+
+  <h2>⚙️ 準備編：Replitでの作業</h2>
+  <p>まず、完成したアプリを外部サービス（Render）にデプロイできるように準備します。</p>
+
+  <h3>ステップ1：requirements.txt を作成する</h3>
+  <p>このアプリが必要とするPythonライブラリの一覧を記述したファイルです。</p>
+  <ol>
+    <li>Replitのファイル一覧の横にある「+」ボタンから <code>requirements.txt</code> という名前のファイルを作成します。</li>
+    <li>ファイルに以下の3行を記述します。</li>
+  </ol>
+  <pre><code>streamlit
+openai
+requests</code></pre>
+
+  <h3>ステップ2：コードをGitHubにアップロードする</h3>
+  <p>Replitのプロジェクトを、RenderがアクセスできるGitHubリポジトリに置きます。</p>
+  <ol>
+    <li>Replitの左側メニューから「Version control」（Gitのアイコン）を開きます。</li>
+    <li>「GitHub」のセクションで、Repository nameに好きな名前（例: <code>my-chat-app</code>）を入力します。</li>
+    <li>青色の「Create Repository on GitHub」ボタンを押します。
+      <ul>
+        <li>これでReplitが自動でGitHubにリポジトリを作成し、連携してくれます。</li>
+      </ul>
+    </li>
+    <li>最後に、画面の指示に従って変更をコミット＆プッシュし、<code>app.py</code>と<code>requirements.txt</code>をGitHubにアップロードします。</li>
+  </ol>
+
+  <h2>📝 設定編：NotionとAPIキーの最終確認</h2>
+  <p>デプロイで使う正しい「部品」を再確認します。</p>
+
+  <h3>ステップ3：3つの重要情報を準備する</h3>
+  <p>Renderに設定するために、以下の3つの値を手元に用意しておきます。</p>
+  <ol>
+    <li>OpenAI APIキー:
+      <ul><li>OpenAIのサイトで確認できます。(sk-...で始まる文字列)</li></ul>
+    </li>
+    <li>Notion APIキー（インテグレーション・トークン）:
+      <ul><li>Notionインテグレーション管理ページで、このアプリ用に作成したインテグレーションを選び、「Internal Integration Token」をコピーします。(secret_...で始まる文字列)</li></ul>
+    </li>
+    <li>Notion データベースID:
+      <ul><li>保存先のNotionデータベースを開き、ブラウザのアドレスバーに表示されるURLの notion.so/ の直後にある32文字の英数字をコピーします。</li></ul>
+    </li>
+  </ol>
+  <p><strong>【最重要ポイント】</strong></p>
+  <ul>
+    <li>このデータベースには、必ずAPIキーに対応するインテグレーションが「コネクト」されている必要があります。</li>
+    <li>確認方法: データベース右上の「・・・」→「コネクトの追加」で、使用するインテグレーションが表示・連携されているか確認します。</li>
+  </ul>
+
+  <h2>🚀 本番：Renderでのデプロイ作業</h2>
+  <p>いよいよアプリをインターネット上に公開します。</p>
+
+  <h3>ステップ4：RenderでWebサービスを作成する</h3>
+  <ol>
+    <li>Render.com にGitHubアカウントでログインします。</li>
+    <li>ダッシュボードで「New +」→「Web Service」を選択します。</li>
+    <li>GitHubリポジトリの一覧が表示されるので、ステップ2で作成したリポジトリの横にある「Connect」ボタンを押します。</li>
+  </ol>
+
+  <h3>ステップ5：デプロイ設定を入力する</h3>
+  <p>設定画面で、各項目を以下のように正確に入力します。</p>
+  <ul>
+    <li>Name: 好きなURL名（例: my-notion-chat）</li>
+    <li>Region: Singapore など</li>
+    <li>Branch: main</li>
+    <li>Runtime: Python 3</li>
+    <li>Build Command: <code>pip install -r requirements.txt</code></li>
+    <li>Start Command: <code>streamlit run app.py --server.port $PORT --server.address 0.0.0.0</code></li>
+    <li>Instance Type: Free</li>
+  </ul>
+  <p>すべて入力したら、「Create Web Service」ボタンを押します。</p>
+
+  <h3>ステップ6：環境変数を設定する</h3>
+  <p>デプロイが自動で始まりますが、APIキーを教える必要があります。</p>
+  <ol>
+    <li>作成されたサービスの左側メニューから「Environment」を選択します。</li>
+    <li>「Environment Variables」の項目で、「Add Environment Variable」を3回押し、ステップ3で用意した3つの重要情報を入力します。
+      <ul>
+        <li>Key: OPENAI_API_KEY, Value: sk-...</li>
+        <li>Key: NOTION_API_KEY, Value: secret-...</li>
+        <li>Key: NOTION_DATABASE_ID, Value: (32文字のID)</li>
+      </ul>
+    </li>
+    <li>入力すると、設定を反映させるために新しいデプロイが自動で始まります。</li>
+  </ol>
+
+  <h2>✅ 完了：動作確認</h2>
+  <p>デプロイログに「Your service is live 🎉」と表示されたら完了です。画面上部に表示されている <code>https://(設定した名前).onrender.com</code> というURLにアクセスし、アプリが正しく動作するか、そして会話がNotionに保存されるかを確認してください。</p>
+</body>
+</html>
