@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ReplitでAIチャットアプリを作成する手順（HTML版）</title>
+  <style>
+    :root { --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans JP", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif; }
+    body { font-family: var(--font); line-height: 1.7; margin: 0; color: #111; background: #fff; }
+    header { padding: 2.2rem 1rem 0.5rem; text-align: center; }
+    h1 { font-size: 1.6rem; margin: 0.2rem 0 0.8rem; }
+    main { max-width: 960px; margin: 0 auto; padding: 1rem 1.2rem 3rem; }
+    h2 { font-size: 1.25rem; margin-top: 2rem; border-left: 0.4rem solid #444; padding-left: 0.6rem; }
+    h3 { font-size: 1.05rem; margin-top: 1.2rem; }
+    ol, ul { padding-left: 1.4rem; }
+    li { margin: 0.3rem 0; }
+    .callout { background: #f5f7fb; border: 1px solid #dbe3f8; padding: 0.75rem 1rem; border-radius: 8px; }
+    code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; font-size: 0.95rem; }
+    pre { background: #0e1116; color: #e6edf3; padding: 1rem; border-radius: 10px; overflow: auto; }
+    pre code { background: none; color: inherit; }
+    kbd { background: #eee; border: 1px solid #ccc; border-bottom-width: 2px; border-radius: 5px; padding: 0 0.35rem; font-size: 0.9em; }
+    .steps { counter-reset: step; }
+    .step { margin: 1.2rem 0 2rem; padding: 1rem; border: 1px solid #eee; border-radius: 12px; background: #fafafa; }
+    .step > h2::before { counter-increment: step; content: "ステップ" counter(step) "："; color: #666; margin-right: 0.25rem; }
+    footer { text-align: center; color: #666; font-size: 0.9rem; padding: 2rem 1rem; border-top: 1px solid #eee; }
+    .emoji { margin-right: .3rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Replitで何もない状態からAIチャットアプリを作成し、完成させるまでの流れ</h1>
+    <p class="callout">以下は、ユーザーの文章をベースにHTML化した手順書です。</p>
+  </header>
+
+  <main class="steps">
+    <section class="step" id="step-1">
+      <h2><span class="emoji">🛠️</span>プロジェクトの準備</h2>
+      <p>まず、アプリを開発するための「作業場」を用意します。</p>
+      <ol>
+        <li>
+          <h3>新しいプロジェクトを作成する</h3>
+          <ul>
+            <li>Replitにログインし、「<strong>+ Create Repl</strong>」ボタンを押します。</li>
+            <li>テンプレートの検索窓で「<strong>Python</strong>」と入力し、表示されたPythonテンプレートを選択します。</li>
+            <li><strong>Title</strong>に好きなプロジェクト名（例: <code>Notion-AI-Chat</code>）を入力し、「<strong>Create Repl</strong>」ボタンを押します。</li>
+          </ul>
+        </li>
+        <li>
+          <h3>必要なライブラリをインストールする</h3>
+          <ul>
+            <li>プロジェクトが作成されたら、画面右側の「<strong>Shell</strong>」タブを開きます。</li>
+            <li>以下のコマンドでライブラリをインストールします。</li>
+          </ul>
+          <pre><code class="language-bash">pip install streamlit openai requests</code></pre>
+        </li>
+      </ol>
+    </section>
+
+    <section class="step" id="step-2">
+      <h2><span class="emoji">🔑</span>APIキーの設定</h2>
+      <p>アプリが外部サービス（OpenAIとNotion）と通信するための「鍵」を設定します。</p>
+      <ol>
+        <li>
+          <h3>Secretsを開く</h3>
+          <p>Replitの左側メニューにある鍵のアイコン「<strong>Secrets</strong>」を開きます。</p>
+        </li>
+        <li>
+          <h3>3つの秘密情報を登録する</h3>
+          <ul>
+            <li><strong>Key:</strong> <code>OPENAI_API_KEY</code>, <strong>Value:</strong> <code>sk-xxxx...</code></li>
+            <li><strong>Key:</strong> <code>NOTION_API_KEY</code>, <strong>Value:</strong> <code>secret_xxxx...</code></li>
+            <li><strong>Key:</strong> <code>NOTION_DATABASE_ID</code>, <strong>Value:</strong> <code>xxxxxxxx...</code></li>
+          </ul>
+        </li>
+      </ol>
+    </section>
+
+    <section class="step" id="step-3">
+      <h2><span class="emoji">💻</span>コーディング</h2>
+      <p>次に、アプリケーションの本体となるプログラムを書きます。</p>
+      <ol>
+        <li>
+          <h3><code>app.py</code>ファイルを作成する</h3>
+          <p>Replitのファイル一覧で「<strong>+</strong>」ボタンを押し、<code>app.py</code>という名前のファイルを作成します。（既に<code>main.py</code>があれば、<code>app.py</code>にリネームしてもOK）</p>
+        </li>
+        <li>
+          <h3>コードを貼り付ける</h3>
+          <p>以下のコードを<code>app.py</code>にコピー＆ペーストします。</p>
+          <pre><code class="language-python">import os
+import openai
+import requests
+import json
+import streamlit as st
+from openai import OpenAI
+
+# --- 設定とSecrets ---
+st.set_page_config(page_title="My AIチャット")
+st.title("🤖 My AIチャット")
+
+# --- クライアントの初期化 (ReplitとRenderの両方で動く仕組み) ---
+try:
+    # まずReplitの方法(st.secrets)で読み込みを試みる
+    client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+    notion_api_key = st.secrets["NOTION_API_KEY"]
+    notion_database_id = st.secrets["NOTION_DATABASE_ID"]
+except FileNotFoundError:
+    # もし失敗したら(Renderではこちらが使われる)、標準的な方法(os.getenv)で環境変数を読み込む
+    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+    notion_api_key = os.getenv("NOTION_API_KEY")
+    notion_database_id = os.getenv("NOTION_DATABASE_ID")
+
+# --- Notion連携 ---
+def save_to_notion(prompt, response):
+    url = "https://api.notion.com/v1/pages"
+    headers = {
+        "Authorization": f"Bearer {notion_api_key}",
+        "Content-Type": "application/json",
+        "Notion-Version": "2022-06-28",
+    }
+    new_page_data = {
+        "parent": {"database_id": notion_database_id},
+        "properties": {
+            "Prompt": {"title": [{"text": {"content": prompt}}]},
+            "Response": {"rich_text": [{"text": {"content": response}}]},
+        },
+    }
+    try:
+        res = requests.post(url, headers=headers, data=json.dumps(new_page_data))
+        res.raise_for_status()
+        return True, "✅ Notionへの保存に成功しました！"
+    except requests.exceptions.RequestException as e:
+        return False, f"❌ Notionへの保存中にエラーが発生しました: {e}\n詳細: {res.text}"
+
+# --- Streamlitチャットロジック ---
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+
+if prompt := st.chat_input("メッセージを入力してください"):
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    with st.chat_message("user"):
+        st.markdown(prompt)
+
+    with st.chat_message("assistant"):
+        message_placeholder = st.empty()
+        completion = client.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {"role": m["role"], "content": m["content"]}
+                for m in st.session_state.messages
+            ],
+        )
+        ai_response = completion.choices[0].message.content
+        message_placeholder.markdown(ai_response)
+
+    st.session_state.messages.append({"role": "assistant", "content": ai_response})
+
+    success, message = save_to_notion(prompt, ai_response)
+    if success:
+        st.success(message)
+    else:
+        st.error(message)</code></pre>
+        </li>
+      </ol>
+    </section>
+
+    <section class="step" id="step-4">
+      <h2><span class="emoji">🚀</span>実行とデバッグ</h2>
+      <ol>
+        <li>
+          <h3>アプリを実行する</h3>
+          <p>画面右側の「<strong>Shell</strong>」タブで、以下のコマンドを実行します。</p>
+          <pre><code class="language-bash">streamlit run app.py</code></pre>
+        </li>
+        <li>
+          <h3>動作を確認する</h3>
+          <ul>
+            <li>Replitに「<strong>Webview</strong>」が開き、作成したアプリが表示されます。</li>
+            <li>実際にチャットを入力し、AIから返信が来ること、会話後に緑色の成功メッセージが表示されることを確認します。</li>
+          </ul>
+        </li>
+        <li>
+          <h3>デバッグする</h3>
+          <ul>
+            <li>問題が起きた場合は、右側の「<strong>Console</strong>」タブにエラーの詳細が出力されます。</li>
+            <li>Consoleのメッセージをヒントに<code>app.py</code>やSecrets設定を見直し、修正します。</li>
+            <li>修正後はShellで <kbd>Ctrl</kbd> + <kbd>C</kbd> で停止し、再度 <code>streamlit run app.py</code> を実行して確認します。問題がなくなるまで繰り返します。</li>
+          </ul>
+        </li>
+      </ol>
+    </section>
+
+    <section class="step" id="step-5">
+      <h2><span class="emoji">✅</span>完成</h2>
+      <p>Webviewでアプリが意図通りに動作し、会話がNotionデータベースに正しく保存されるようになったら、Replitでのアプリ作成は<strong>「完成」</strong>です。<br />
+      この状態になって初めて、先ほど解説した「Renderでのデプロイ作業」に進むことができます。</p>
+    </section>
+  </main>
+
+  <footer>
+    <p>© Your Project – Replit × Streamlit × OpenAI × Notion</p>
+  </footer>
+</body>
+</html>
