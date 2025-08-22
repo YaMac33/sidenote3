@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Gemini/ChatGPTの会話をデータベース化する実践マニュアル</title>
+  <meta name="description" content="GeminiやChatGPTとのやり取りを、拡張機能・ノーコード・API自作の3方式でデータベース化する手順をまとめた実践マニュアル。Make×Googleスプレッドシートの自動保存シナリオも図解で解説。" />
+  <style>
+    :root{
+      --bg:#0b0c10;--panel:#111217;--ink:#e9ecf1;--muted:#b6beca;--brand:#7dd3fc;--accent:#a78bfa;
+      --ok:#22c55e;--warn:#f59e0b;--bad:#ef4444;--border:#1f2430;--chip:#151822;--code:#0f141b;--code-ink:#e6edf3;
+      --shadow:0 10px 30px rgba(0,0,0,.35)
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Helvetica,Arial,sans-serif;line-height:1.75}
+    a{color:var(--brand);text-decoration:none}
+    a:hover{text-decoration:underline}
+    .container{max-width:1040px;margin:auto;padding:20px}
+    header.hero{background:linear-gradient(120deg,rgba(125,211,252,.08),rgba(167,139,250,.06));border-bottom:1px solid var(--border)}
+    header .container{padding:56px 20px}
+    h1{font-size:clamp(28px,4.2vw,44px);margin:0 0 10px}
+    .lead{color:var(--muted);max-width:78ch}
+    .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+    .chip{background:var(--chip);color:var(--muted);border:1px solid var(--border);padding:4px 10px;border-radius:999px;font-size:12px}
+    .panel{background:var(--panel);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);padding:22px;margin-top:18px}
+    h2{margin-top:6px}
+    h3{margin-top:22px}
+    .toc{display:grid;gap:10px}
+    .toc a{display:block;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:var(--chip)}
+    .grid{display:grid;gap:16px}
+    @media(min-width:860px){.grid.cols-2{grid-template-columns:1fr 1fr}.grid.cols-3{grid-template-columns:repeat(3,1fr)}}
+    .card{border:1px solid var(--border);border-radius:14px;background:var(--panel);padding:18px}
+    .badge{font-size:12px;padding:2px 8px;border-radius:999px;border:1px solid var(--border);background:var(--chip);color:var(--muted)}
+    .list{padding-left:20px;margin:0}
+    .callout{border-left:4px solid var(--accent);padding:12px 14px;background:rgba(167,139,250,.08);border-radius:8px;margin-top:10px}
+    .note{border-left:4px solid var(--brand);padding:12px 14px;background:rgba(125,211,252,.08);border-radius:8px;margin-top:10px}
+    pre{background:var(--code);color:var(--code-ink);padding:14px;border-radius:12px;overflow:auto;border:1px solid #1b2533}
+    code,kbd{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+    table{width:100%;border-collapse:collapse;border:1px solid var(--border);background:var(--panel);border-radius:12px;overflow:hidden}
+    th,td{border-bottom:1px solid var(--border);padding:10px 12px;text-align:left;vertical-align:top}
+    th{color:var(--muted);font-weight:600}
+    tr:last-child td{border-bottom:none}
+    .top-link{position:fixed;right:16px;bottom:16px;background:var(--chip);border:1px solid var(--border);padding:10px 12px;border-radius:10px}
+    footer{border-top:1px solid var(--border);color:var(--muted);margin-top:24px}
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="container">
+      <h1>Gemini/ChatGPTの会話をデータベース化する実践マニュアル</h1>
+      <p class="lead">ブラウザ拡張機能・ノーコード（Zapier/Make）・API直利用の3方式で、AIとの対話をNotionやGoogleスプレッドシートへ体系的に保存する方法をまとめました。あなたの運用方針に合わせて選択・拡張できます。</p>
+      <div class="meta">
+        <span class="chip">対象: 個人・チームの情報整理</span>
+        <span class="chip">保存先: Google Sheets / Notion ほか</span>
+        <span class="chip">技術: ノーコード〜API自作</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="panel">
+      <h2 id="toc">目次</h2>
+      <div class="toc grid cols-2">
+        <a href="#overview">1. 目的と全体像</a>
+        <a href="#methods">2. 3つの保存アプローチ</a>
+        <a href="#extensions">3. おすすめ拡張機能</a>
+        <a href="#nocode">4. ノーコード自動化（Zapier/Make）</a>
+        <a href="#make-scenario">5. Make×ChatGPT→Sheets 実践手順</a>
+        <a href="#gemini">6. Gemini（Google AI）での応用</a>
+        <a href="#compare">7. 比較表と選び方</a>
+        <a href="#tips">8. 運用のコツと注意点</a>
+        <a href="#checklist">9. クイックチェックリスト</a>
+        <a href="#faq">10. FAQ</a>
+      </div>
+    </section>
+
+    <section class="panel" id="overview">
+      <h2>1. 目的と全体像</h2>
+      <p>GeminiやChatGPTとの日々のやり取りを保存・構造化し、検索・再利用・分析できる「会話データベース」をつくることが目的です。最小労力での手動保存から、完全自動の記録・集計まで段階的に発展できます。</p>
+      <div class="callout"><strong>結論（おすすめ）:</strong> 日々の手間を最小化したい場合は、<strong>APIを利用して自作アプリに自動保存</strong>を組み込むのが最終的に快適。まず試すなら<strong>拡張機能</strong>で体験→良ければ<strong>Make</strong>等で自動化に移行。</div>
+    </section>
+
+    <section class="panel" id="methods">
+      <h2>2. 3つの保存アプローチ（長所・短所）</h2>
+      <div class="grid cols-3">
+        <div class="card">
+          <h3>①【一番手軽】拡張機能</h3>
+          <ul class="list">
+            <li>導入はクリックだけ。コード不要。</li>
+            <li>PDF/Word/Notion等にすぐ出力。</li>
+            <li class="badge">留意:</li>
+            <li>主に手動保存。仕様変更の影響を受けやすい。</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>②【自動化の王道】ノーコード</h3>
+          <ul class="list">
+            <li>Zapier/Makeで柔軟な「トリガー→保存」。</li>
+            <li>一度設定すれば自動で蓄積。</li>
+            <li class="badge">留意:</li>
+            <li>無料枠に制限あり。Geminiの公式連携は限定的な場合も。</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>③【最も高機能】API自作</h3>
+          <ul class="list">
+            <li>保存先/形式/タイミングを完全カスタム。</li>
+            <li>理想の自動保存・検索・再利用が可能。</li>
+            <li class="badge">留意:</li>
+            <li>プログラミング知識とAPI費用が必要。</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="extensions">
+      <h2>3. おすすめ拡張機能</h2>
+      <ul class="list">
+        <li><strong>AI Chat Exporter:</strong> Gemini/ChatGPT/Claudeに対応。PDFやWordでエクスポート。</li>
+        <li><strong>Gemini to Notion Export:</strong> Geminiの会話をワンクリックでNotion DBへ。コードブロックも綺麗に保存。</li>
+        <li><strong>SaveGPT:</strong> ChatGPTの会話を自動保存・管理。</li>
+      </ul>
+      <div class="note">拡張機能は便利ですが、<strong>長期運用</strong>ではアップデートや仕様変更の影響を受ける点に注意。</div>
+    </section>
+
+    <section class="panel" id="nocode">
+      <h2>4. ノーコード自動化の考え方（Zapier/Make）</h2>
+      <p>ノーコード連携は「<strong>トリガー</strong>（きっかけ）→<strong>アクション</strong>（実行）」の連鎖で構成します。例：「ChatGPTで新規回答が生成されたら→Googleスプレッドシートに追記」。</p>
+      <ul class="list">
+        <li><strong>メリット:</strong> 設定後は自動記録、対応サービスが豊富、運用をGUIで管理。</li>
+        <li><strong>デメリット:</strong> 無料枠の実行回数/頻度制限、Geminiの公式連携が環境により限定的。</li>
+      </ul>
+      <div class="callout"><strong>重要な前提:</strong> これは「公式サイトの画面から会話を抜き出す」のではなく、<strong>API経由で指示と回答を自分で取得し保存</strong>する仕組みです。</div>
+    </section>
+
+    <section class="panel" id="make-scenario">
+      <h2>5. 【実践】MakeでChatGPT→Googleスプレッドシート自動保存</h2>
+      <p>例：<strong>特定アドレスにメール送信</strong> → Makeが検知 → ChatGPTに件名を指示として送信 → <strong>回答とセットでSheetsに記録</strong>。</p>
+
+      <h3>Step 1: 準備するもの</h3>
+      <ul class="list">
+        <li>Makeアカウント（無料枠あり）</li>
+        <li>OpenAIアカウントとAPIキー（API利用登録・クレジット設定）</li>
+        <li>Googleアカウント（保存先のGoogleスプレッドシート）</li>
+      </ul>
+
+      <h3>Step 2: Makeで新規シナリオ作成</h3>
+      <ul class="list">
+        <li><kbd>Create a new scenario</kbd> → 中央の「＋」→ <kbd>Email</kbd> 選択。</li>
+        <li>トリガーに <kbd>Watch Emails</kbd> を設定し、Gmail接続・監視フォルダ・条件（件名キーワード等）を指定。</li>
+      </ul>
+
+      <h3>Step 3: OpenAI（ChatGPT）モジュール追加</h3>
+      <ul class="list">
+        <li>「＋」→ <kbd>OpenAI</kbd> → <kbd>Create a Completion</kbd>。</li>
+        <li>ConnectionにAPIキーを設定。</li>
+        <li>Method: <kbd>Create a Chat Completion</kbd> / Model: <kbd>gpt-4o</kbd> など。</li>
+        <li>Messagesで <strong>Role=User / Content=EmailのSubject</strong> をマッピング。</li>
+      </ul>
+
+      <h3>Step 4: Google Sheetsモジュール追加</h3>
+      <ul class="list">
+        <li>事前に <strong>A:タイムスタンプ / B:プロンプト / C:回答</strong> のヘッダーを用意。</li>
+        <li><kbd>Google Sheets → Add a Row</kbd> を選び、Spreadsheet/Sheetを指定。</li>
+        <li>Valuesのマッピング:
+          <ul class="list">
+            <li>A列: <kbd>now</kbd></li>
+            <li>B列: <kbd>Email → Subject</kbd></li>
+            <li>C列: <kbd>OpenAI → Choices[] → Message.Content</kbd></li>
+          </ul>
+        </li>
+      </ul>
+
+      <h3>Step 5: テストと有効化</h3>
+      <ul class="list">
+        <li><kbd>Run once</kbd> → 条件に合うメールを送信 → 緑チェックで成功。</li>
+        <li>Sheetsで追記確認 → <kbd>SCHEDULING</kbd> をONで定期実行。</li>
+      </ul>
+
+      <div class="note"><strong>応用:</strong> 件名だけでなく本文・添付の要約、タグ付け、スレッドID保存、重複排除、プロンプトテンプレートなどに拡張可能。</div>
+    </section>
+
+    <section class="panel" id="gemini">
+      <h2>6. Gemini（Google AI）での応用</h2>
+      <p>Makeには <strong>Google AI（Gemini）連携</strong> もあります。上記Step 3の「OpenAI」を「Google AI / Vertex AI / Gemini」に置き換え、APIキー（または接続設定）を行えば、ほぼ同様の自動化が可能です。</p>
+      <div class="callout">環境によっては利用プランや接続方式が異なるため、Make側の最新モジュール仕様を確認して設定してください。</div>
+    </section>
+
+    <section class="panel" id="compare">
+      <h2>7. 方式比較と選び方</h2>
+      <table>
+        <thead>
+          <tr><th>方式</th><th>導入難易度</th><th>運用コスト</th><th>自動化度</th><th>拡張性</th><th>向いている人</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>拡張機能</td><td>非常に低い</td><td>低（無料多い）</td><td>低（手動中心）</td><td>低〜中</td><td>今すぐ簡単に始めたい</td>
+          </tr>
+          <tr>
+            <td>ノーコード（Zapier/Make）</td><td>低〜中</td><td>中（無料枠に制限）</td><td>中〜高</td><td>中</td><td>GUIで柔軟に自動化したい</td>
+          </tr>
+          <tr>
+            <td>API自作</td><td>中〜高</td><td>中（API費用）</td><td>最高</td><td>最高</td><td>完全カスタム・長期運用</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="panel" id="tips">
+      <h2>8. 運用のコツと注意点</h2>
+      <ul class="list">
+        <li><strong>フィールド設計:</strong> タイムスタンプ/発話者（自分,AI）/入力/出力/モデル/タグ/スレッドID等を定義。</li>
+        <li><strong>可観測性:</strong> ログに失敗理由やレスポンスタイムも記録→保守が楽。</li>
+        <li><strong>プライバシー:</strong> 個人情報はマスキング。公開範囲・共有権限を最小化。</li>
+        <li><strong>バックアップ:</strong> 原本保全（別シート/別DB）、定期エクスポート。</li>
+        <li><strong>ベンダー変更耐性:</strong> 抽象化した保存レイヤーでAPI変更に備える。</li>
+      </ul>
+    </section>
+
+    <section class="panel" id="checklist">
+      <h2>9. クイックチェックリスト</h2>
+      <ul class="list">
+        <li>保存先（Sheets/Notion）のスキーマを決めた</li>
+        <li>「手軽に試す」場合は拡張機能を導入した</li>
+        <li>「自動化」する場合はMake/Zapierでトリガー→保存を設定した</li>
+        <li>API自作時は認証情報/例外処理/重複排除を実装した</li>
+        <li>権限・バックアップ・個人情報のマスキングを整備した</li>
+      </ul>
+      <div class="callout"><strong>まずは小さく:</strong> 拡張機能で体験 → Makeで部分自動化 → 必要に応じてAPI自作へスケール。</div>
+    </section>
+
+    <section class="panel" id="faq">
+      <h2>10. FAQ</h2>
+      <h3>Q1. 公式サイトの画面から会話を直接抜き出せる？</h3>
+      <p>A. ノーコード/Makeの一般的手法は<strong>API経由で取得→保存</strong>です。画面スクレイピングではありません。</p>
+
+      <h3>Q2. 無料でどこまでできる？</h3>
+      <p>A. 拡張機能は無料が多く、Make/Zapierは無料枠あり。APIは低額利用が多いですが、使用量により課金されます。</p>
+
+      <h3>Q3. どれを選ぶべき？</h3>
+      <p>A. 今すぐ・簡単重視→拡張機能。運用自動化→Make/Zapier。完全自由度・長期最適化→API自作。</p>
+    </section>
+  </main>
+
+  <a href="#toc" class="top-link" title="トップへ戻る">▲ トップ</a>
+
+  <footer class="container" style="padding:28px 20px 48px">
+    <p>© 2025 Conversation DB Manual. 本ページは学習・研究用途を想定しています。各サービスの利用規約・プライバシーポリシーを必ずご確認ください。</p>
+  </footer>
+
+  <script>
+    // スムーズスクロール（アクセシビリティ配慮）
+    document.querySelectorAll('a[href^="#"]').forEach(a=>{
+      a.addEventListener('click',e=>{
+        const id=a.getAttribute('href').slice(1);
+        const el=document.getElementById(id);
+        if(el){ e.preventDefault(); el.scrollIntoView({behavior:'smooth',block:'start'}); history.replaceState(null,'','#'+id); }
+      });
+    });
+  </script>
+</body>
+</html>
