@@ -1,0 +1,221 @@
+はい、承知いたしました。
+ご提示いただいたテキストを基に、Webページとして表示できるHTML形式のマニュアルを作成します。
+以下のHTMLコードをコピーして、メモ帳などのテキストエディタに貼り付け、「manual.html」といった名前で保存してください。そのファイルをWebブラウザで開くと、マニュアルとして閲覧できます。
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini APIとスプレッドシート連携マニュアル</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.8;
+            margin: 0 auto;
+            max-width: 800px;
+            padding: 20px;
+            color: #333;
+        }
+        h1, h2, h3 {
+            border-bottom: 2px solid #7e57c2;
+            padding-bottom: 10px;
+            color: #4527a0;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+        }
+        h2 {
+            font-size: 2em;
+            margin-top: 40px;
+        }
+        h3 {
+            font-size: 1.5em;
+            margin-top: 30px;
+            border-bottom: 1px solid #d1c4e9;
+        }
+        ul, ol {
+            padding-left: 25px;
+        }
+        li {
+            margin-bottom: 10px;
+        }
+        pre {
+            background-color: #f4f4f4;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-size: 0.95em;
+        }
+        code {
+            font-family: 'Courier New', Courier, monospace;
+        }
+        strong {
+            color: #c2185b;
+        }
+        .note {
+            background-color: #fffde7;
+            border-left: 5px solid #fbc02d;
+            padding: 15px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Gemini APIとGoogleスプレッドシート連携マニュアル</h1>
+
+    <h2>はじめに</h2>
+    <p>このマニュアルは、Gemini APIとGoogleフォーム、スプレッドシートを連携させ、フォームへの回答とGeminiの応答を自動で一つのシートに記録する方法を解説します。</p>
+    <p><strong>やりたいこと:</strong> 無料の範囲内で、GeminiのAPIを活用して、“タイムスタンプ”、“短文書き込みフォーム”、“長文書き込みフォーム”列が用意されたスプレッドシートに全やりとりを反映させたい。このスプレッドシートはGoogleフォームからの回答も取りまとめる。</p>
+    <p><strong>解決策:</strong> Google Apps Script (GAS) を利用して、Googleフォームの送信をトリガーにGemini APIを呼び出し、結果をスプレッドシートに自動書き込みすることで実現します。</p>
+    
+    <h2>📚 実現の全体像</h2>
+    <p>仕組みは以下のようになります。</p>
+    <ul>
+        <li>ユーザーがGoogleフォームに回答を送信します。</li>
+        <li>回答がGoogleスプレッドシートに自動で記録されます。</li>
+        <li>スプレッドシートに設定されたGoogle Apps Scriptが、新しい回答を検知して自動で起動します（onFormSubmitトリガー）。</li>
+        <li>スクリプトがフォームの回答内容（例：「長文書き込みフォーム」のテキスト）をGemini APIに送信します。</li>
+        <li>Gemini APIが回答を生成し、スクリプトに返します。</li>
+        <li>スクリプトが、受け取った回答をスプレッドシートの対応する行の<strong>「Geminiの回答」列</strong>に書き込みます。</li>
+    </ul>
+
+    <h2>🛠️ 設定のステップ</h2>
+
+    <h3>Step 1: Gemini APIキーの取得</h3>
+    <p>まず、Gemini APIを利用するための「鍵」となるAPIキーを取得します。</p>
+    <ol>
+        <li><a href="https://ai.google.dev/" target="_blank">Google AI Studio</a> にアクセスします。</li>
+        <li>Googleアカウントでログインします。</li>
+        <li>「Get API key」ボタンをクリックして、新しいAPIキーを作成します。</li>
+        <li>表示されたAPIキーを必ずメモ帳などにコピーして保存してください。このキーは後で使います。</li>
+    </ol>
+
+    <h3>Step 2: スプレッドシートとフォームの準備</h3>
+    <p>次に、データを保存する場所を整えます。</p>
+    <ol>
+        <li>Googleフォームを作成し、<strong>「短文書き込みフォーム」と「長文書き込みフォーム」</strong>の質問項目を用意します。</li>
+        <li>フォームの「回答」タブで、スプレッドシートのアイコンをクリックし、回答を記録する新しいスプレッドシートを作成します。</li>
+        <li>作成されたスプレッドシートには、自動的に「タイムスタンプ」「短文書き込みフォーム」「長文書き込みフォーム」の列ができています。ここに、Geminiの回答を書き込むための新しい列、例えば<strong>「Geminiの回答」</strong>という名前の列をD列に追加しておきます。</li>
+    </ol>
+
+    <h3>Step 3: Google Apps Scriptの設定</h3>
+    <p>ここが中心的な作業です。スプレッドシートに自動化のスクリプトを組み込みます。</p>
+    <ol>
+        <li>スプレッドシートのメニューから<strong>「拡張機能」</strong> > <strong>「Apps Script」</strong> を選択します。</li>
+        <li>スクリプトエディタが開きます。既存のコード（<code>function myFunction() { ... }</code>）をすべて削除し、以下のコードを貼り付けます。</li>
+    </ol>
+    <pre><code>// ここに自分のGemini APIキーを貼り付ける
+const GEMINI_API_KEY = 'ここに取得したAPIキーを入力してください';
+
+// Gemini APIのエンドポイントURL
+const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`;
+
+/**
+ * Googleフォームが送信されたときに自動的に実行される関数
+ * @param {Object} e イベントオブジェクト
+ */
+function onFormSubmit(e) {
+  // イベント情報から、アクティブなシートと回答が書き込まれた行を取得
+  const sheet = SpreadsheetApp.getActiveSheet();
+  const row = e.range.getRow();
+
+  // フォームの回答内容を取得（C列（3番目）の長文書き込み内容を対象とする）
+  const longText = e.values[2]; 
+
+  // もし長文が空なら何もしない
+  if (!longText) {
+    Logger.log('長文フォームが空のため処理をスキップしました。');
+    return;
+  }
+  
+  // Geminiに送信するプロンプトを作成（この部分を自由にカスタマイズしてください）
+  const prompt = `以下の文章を要約してください：\n\n${longText}`;
+  
+  try {
+    // Gemini APIにリクエストを送信
+    const response = callGeminiAPI(prompt);
+    
+    // Geminiからの回答をD列（4番目）に書き込む
+    sheet.getRange(row, 4).setValue(response);
+    Logger.log('Geminiからの回答をセルに書き込みました。');
+
+  } catch (error) {
+    // エラーが発生した場合、D列にエラーメッセージを書き込む
+    sheet.getRange(row, 4).setValue(`エラー: ${error.message}`);
+    Logger.log(`エラーが発生しました: ${error.message}`);
+  }
+}
+
+/**
+ * Gemini APIを呼び出す関数
+ * @param {string} textToSend 送信するテキスト
+ * @return {string} Geminiからの回答テキスト
+ */
+function callGeminiAPI(textToSend) {
+  const payload = {
+    "contents": [{
+      "parts": [{
+        "text": textToSend
+      }]
+    }]
+  };
+
+  const options = {
+    'method': 'post',
+    'contentType': 'application/json',
+    'payload': JSON.stringify(payload),
+    'muteHttpExceptions': true // エラー時にもレスポンスを取得するため
+  };
+
+  const response = UrlFetchApp.fetch(API_URL, options);
+  const responseCode = response.getResponseCode();
+  const responseBody = response.getContentText();
+
+  if (responseCode === 200) {
+    const json = JSON.parse(responseBody);
+    // 回答のテキスト部分を抽出して返す
+    return json.candidates[0].content.parts[0].text.trim();
+  } else {
+    // APIからのエラーメッセージを投げる
+    throw new Error(`APIリクエストに失敗しました。ステータスコード: ${responseCode}, メッセージ: ${responseBody}`);
+  }
+}</code></pre>
+    <ol start="3">
+        <li>コードの中の<code>'ここに取得したAPIキーを入力してください'</code>の部分を、Step 1で取得した自分のAPIキーに書き換えます。</li>
+        <li>メニューの<strong>フロッピーディスクアイコン（💾）</strong>をクリックして、プロジェクトを保存します。</li>
+    </ol>
+
+    <h3>Step 4: トリガーの設定</h3>
+    <p>最後に、フォームが送信されたらこのスクリプトが自動で動くように「トリガー」を設定します。</p>
+    <ol>
+        <li>スクリプトエディタの左側にあるメニューから<strong>「トリガー」（目覚まし時計のアイコン ⏰）</strong>をクリックします。</li>
+        <li>右下の<strong>「トリガーを追加」</strong>ボタンをクリックします。</li>
+        <li>以下の通りに設定します。
+            <ul>
+                <li><strong>実行する関数を選択:</strong> onFormSubmit</li>
+                <li><strong>イベントのソースを選択:</strong> スプレッドシートから</li>
+                <li><strong>イベントの種類を選択:</strong> フォーム送信時</li>
+            </ul>
+        </li>
+        <li><strong>「保存」</strong>をクリックします。</li>
+        <li>承認を求めるポップアップが表示されたら、自分のGoogleアカウントを選択し、「詳細」→「（安全でないページ）に移動」をクリックして、スクリプトの実行を許可してください。</li>
+    </ol>
+    <p><strong>🎉 これで全ての設定は完了です！</strong> Googleフォームからテスト回答を送信すると、数秒後にスプレッドシートの「Geminiの回答」列に、Geminiが生成した要約（またはプロンプトに応じた回答）が自動で書き込まれます。</p>
+    
+    <h2>⚠️ 無料利用枠の注意点</h2>
+    <div class="note">
+        <p>Gemini APIには無料利用枠があり、個人で利用する範囲であれば十分に収まることが多いです。</p>
+        <ul>
+            <li><strong>リクエスト数:</strong> 1分あたり60リクエストまで（gemini-1.5-flashモデルの場合）</li>
+            <li><strong>トークン数:</strong> 処理するテキストの量にも上限がありますが、フォームの回答程度であれば問題になることは稀です。</li>
+        </ul>
+        <p>短時間に大量の回答が送信されるような使い方でなければ、無料で運用し続けることが可能です。</p>
+    </div>
+
+</body>
+</html>
+
