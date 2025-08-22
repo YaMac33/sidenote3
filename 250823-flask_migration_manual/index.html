@@ -3,122 +3,79 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>StreamlitアプリをFlaskに移行するマニュアル</title>
+<title>25.8.23 Streamlit → Flask 移行マニュアル（Googleスプレッドシート連携版）</title>
 <style>
-body {
-  font-family: "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
-  line-height: 1.7;
-  background: #f9f9f9;
-  color: #333;
-  margin: 0;
-  padding: 0;
+body { font-family: sans-serif; line-height: 1.7; margin: 0; padding: 20px; background: #f9f9f9; }
+h1, h2, h3 { color: #333; }
+section { margin-bottom: 40px; }
+pre { background: #272822; color: #f8f8f2; padding: 15px; overflow-x: auto; border-radius: 6px; position: relative; }
+code { font-family: monospace; }
+.copy-btn {
+  position: absolute; top: 8px; right: 8px; 
+  background: #0b93f6; color: #fff; border: none;
+  padding: 6px 10px; font-size: 12px; border-radius: 4px; cursor: pointer;
 }
-header {
-  background: #005bac;
-  color: white;
-  text-align: center;
-  padding: 1.5em 1em;
-}
-main {
-  max-width: 1000px;
-  margin: auto;
-  background: white;
-  padding: 2em;
-}
-h1, h2, h3 {
-  color: #005bac;
-}
-pre {
-  background: #f0f0f0;
-  padding: 1em;
-  overflow-x: auto;
-  border-radius: 6px;
-  font-size: 0.9em;
-}
-code {
-  font-family: monospace;
-}
-ul, ol {
-  margin: 0 0 1.2em 1.5em;
-}
-table {
-  border-collapse: collapse;
-  width: 100%;
-  margin: 1em 0;
-}
-th, td {
-  border: 1px solid #ccc;
-  padding: 0.6em;
-  text-align: center;
-}
-th {
-  background: #f0f0f0;
-}
-.highlight {
-  background: #fff8dc;
-  padding: 0.8em;
-  border-left: 5px solid #ff9800;
-  margin: 1.5em 0;
-}
+table { border-collapse: collapse; margin: 20px 0; }
+th, td { border: 1px solid #ccc; padding: 8px 12px; text-align: left; }
+th { background: #eee; }
 </style>
+<script>
+function copyCode(btn){
+  const codeBlock = btn.nextElementSibling.innerText;
+  navigator.clipboard.writeText(codeBlock).then(()=>{
+    btn.innerText = "コピーしました!";
+    setTimeout(()=>btn.innerText = "コピー", 1500);
+  });
+}
+</script>
 </head>
 <body>
-<header>
-  <h1>StreamlitアプリをFlaskに移行するマニュアル</h1>
-</header>
-<main>
-  <h2>1. Flaskに移行する理由</h2>
-  <p>
-    StreamlitでAIチャットアプリを作成すると、ユーザー操作ごとにスクリプト全体が再実行されます。
-    Flaskに移行すると<strong>不要な再実行がなくなり、レスポンス速度が大幅に改善</strong>します。
-  </p>
 
-  <h3>実行モデルの違い</h3>
-  <ul>
-    <li><strong>Streamlit 🏃‍♂️（真面目な万能選手）</strong><br>
-      毎回スクリプト全体を再実行。モデル再読み込みなど無駄が多い。</li>
-    <li><strong>Flask 👩‍💼（専門の受付係）</strong><br>
-      必要な処理だけ実行。UI再描画や余計な処理をせず高速応答。</li>
-  </ul>
+<h1>Streamlit → Flask 移行マニュアル（Googleスプレッドシート保存版）</h1>
 
-  <h3>メリット・デメリット</h3>
-  <h4>メリット</h4>
-  <ul>
-    <li>高いパフォーマンス（不要な処理を省略）</li>
-    <li>UIをHTML/CSS/JSで完全自由に設計可能</li>
-    <li>高い拡張性・スケーラビリティ</li>
-    <li>サーバー側での明確な状態管理</li>
-  </ul>
-  <h4>デメリット</h4>
-  <ul>
-    <li>開発速度が低下（コード量増加）</li>
-    <li>Webフレームワークの学習コスト</li>
-  </ul>
+<section>
+<h2>なぜFlaskに作り替えるのか？</h2>
+<p><strong>Flaskに移行するとレスポンス速度が大幅に向上する可能性があります。</strong></p>
+<p>Streamlitは簡単にUIを作れる反面、ユーザー操作ごとに全スクリプトを再実行するため、AIチャットのような頻繁な処理で速度低下しがちです。</p>
+<p>一方、Flaskは必要な処理だけを呼び出す「ルートベース」の仕組みなので無駄が少なく、高速です。</p>
 
-  <table>
-    <thead>
-      <tr>
-        <th>項目</th><th>Flask</th><th>Streamlit</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr><td>レスポンス速度</td><td>速い</td><td>遅くなる傾向</td></tr>
-      <tr><td>開発スピード</td><td>時間がかかる</td><td>非常に速い</td></tr>
-      <tr><td>UI自由度</td><td>非常に高い</td><td>制限あり</td></tr>
-      <tr><td>拡張性</td><td>高い（本番向け）</td><td>低い（試作向け）</td></tr>
-      <tr><td>学習コスト</td><td>やや高い</td><td>非常に低い</td></tr>
-    </tbody>
-  </table>
+<ul>
+<li><strong>Streamlit（🏃‍♂️万能選手）</strong>：毎回全体を再実行 → 無駄が多い</li>
+<li><strong>Flask（👩‍💼受付係）</strong>：必要な関数だけ実行 → 高速で効率的</li>
+</ul>
+</section>
 
-  <div class="highlight">
-    <strong>結論：</strong>
-    プロトタイプはStreamlit、本番運用や高速化・独自UIはFlaskが適切な選択です。
-  </div>
+<section>
+<h2>メリット・デメリット</h2>
+<h3>メリット</h3>
+<ul>
+<li>高いパフォーマンス（必要な処理のみ実行）</li>
+<li>UIをHTML/CSS/JSで完全自由設計</li>
+<li>拡張性・スケーラビリティが高い</li>
+<li>状態管理が明確で効率的</li>
+</ul>
 
-  <h2>2. Flaskアプリの作り方</h2>
+<h3>デメリット</h3>
+<ul>
+<li>開発スピードが落ちる（コード量増加）</li>
+<li>Webフレームワークの学習が必要</li>
+</ul>
 
-  <h3>2.1 プロジェクト構成</h3>
-  <pre><code>/flask_chat_app
+<h3>比較表</h3>
+<table>
+<tr><th>項目</th><th>Flask</th><th>Streamlit</th></tr>
+<tr><td>レスポンス速度</td><td>速い</td><td>遅い傾向</td></tr>
+<tr><td>開発スピード</td><td>やや遅い</td><td>非常に速い</td></tr>
+<tr><td>UI自由度</td><td>非常に高い</td><td>制限あり</td></tr>
+<tr><td>拡張性</td><td>高い</td><td>低い</td></tr>
+<tr><td>学習コスト</td><td>やや高い</td><td>非常に低い</td></tr>
+</table>
+</section>
+
+<section>
+<h2>Flaskプロジェクト構成</h2>
+<pre><button class="copy-btn" onclick="copyCode(this)">コピー</button><code>
+/flask_chat_app
 ├── .env
 ├── app.py
 ├── requirements.txt
@@ -127,37 +84,40 @@ th {
 └── /templates
     └── index.html
 </code></pre>
+</section>
 
-  <h3>2.2 必要なライブラリ</h3>
-  <pre><code>flask
+<section>
+<h2>1. 必要なライブラリ</h2>
+<pre><button class="copy-btn" onclick="copyCode(this)">コピー</button><code>
+flask
 openai
 requests
 python-dotenv
+gspread
+google-auth-oauthlib
 </code></pre>
-  <p>ターミナルで以下を実行:</p>
-  <pre><code>pip install -r requirements.txt</code></pre>
+</section>
 
-  <h3>2.3 環境変数設定</h3>
-  <pre><code>.env
+<section>
+<h2>2. .envファイル</h2>
+<pre><button class="copy-btn" onclick="copyCode(this)">コピー</button><code>
 OPENAI_API_KEY="sk-..."
-NOTION_API_KEY="secret_..."
-NOTION_DATABASE_ID="..."
+GOOGLE_SHEET_ID="YOUR_SPREADSHEET_ID_HERE"
 </code></pre>
+</section>
 
-  <h3>2.4 CSS (static/style.css)</h3>
-  <pre><code>body {
+<section>
+<h2>3. CSS（static/style.css）</h2>
+<pre><button class="copy-btn" onclick="copyCode(this)">コピー</button><code>
+body {
   background-color: #f0f0f0;
   font-family: sans-serif;
   margin: 0;
 }
 .chat-container {
-  max-width: 750px;
-  margin: auto;
-  background-color: white;
+  max-width: 750px; margin: auto; background-color: white;
   box-shadow: 0 0 10px rgba(0,0,0,0.1);
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
+  display: flex; flex-direction: column; height: 100vh;
 }
 header { text-align: center; padding: 20px; border-bottom: 1px solid #ddd; }
 .chat-box { flex-grow: 1; padding: 20px; overflow-y: auto; }
@@ -177,110 +137,104 @@ header { text-align: center; padding: 20px; border-bottom: 1px solid #ddd; }
   color: white; padding: 10px 20px; cursor: pointer;
 }
 </code></pre>
+</section>
 
-  <h3>2.5 HTML (templates/index.html)</h3>
-  <pre><code>&lt;!DOCTYPE html&gt;
-&lt;html lang="ja"&gt;
-&lt;head&gt;
-  &lt;meta charset="UTF-8"&gt;
-  &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
-  &lt;title&gt;ChatGPT with Flask&lt;/title&gt;
-  &lt;link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"&gt;
-&lt;/head&gt;
-&lt;body&gt;
-  &lt;div class="chat-container"&gt;
-    &lt;header&gt;&lt;h2&gt;ChatGPT&lt;/h2&gt;&lt;/header&gt;
-    &lt;div class="chat-box" id="chat-box"&gt;
-      {% for message in messages %}
-        {% if message.role == 'user' %}
-          &lt;div class="user-bubble"&gt;{{ message.content }}&lt;/div&gt;
-        {% else %}
-          &lt;div class="assistant-bubble"&gt;{{ message.content }}&lt;/div&gt;
-        {% endif %}
-      {% endfor %}
-    &lt;/div&gt;
-    &lt;div class="input-area"&gt;
-      &lt;form method="POST" style="display:flex;width:100%;"&gt;
-        &lt;input type="text" name="prompt" placeholder="メッセージを入力してください" required autocomplete="off"&gt;
-        &lt;button type="submit"&gt;送信&lt;/button&gt;
-      &lt;/form&gt;
-    &lt;/div&gt;
-  &lt;/div&gt;
-  &lt;script&gt;
-    const chatBox = document.getElementById('chat-box');
-    chatBox.scrollTop = chatBox.scrollHeight;
-  &lt;/script&gt;
-&lt;/body&gt;
-&lt;/html&gt;
+<section>
+<h2>4. HTML（templates/index.html）</h2>
+<pre><button class="copy-btn" onclick="copyCode(this)">コピー</button><code>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChatGPT with Flask</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="chat-container">
+<header><h2>ChatGPT</h2></header>
+<div class="chat-box" id="chat-box">
+{% for message in messages %}
+  {% if message.role == 'user' %}
+    <div class="user-bubble">{{ message.content }}</div>
+  {% else %}
+    <div class="assistant-bubble">{{ message.content }}</div>
+  {% endif %}
+{% endfor %}
+</div>
+<div class="input-area">
+<form method="POST" style="display: flex; width: 100%;">
+<input type="text" name="prompt" placeholder="メッセージを入力" required autocomplete="off">
+<button type="submit">送信</button>
+</form>
+</div>
+</div>
+<script>
+const chatBox = document.getElementById('chat-box');
+chatBox.scrollTop = chatBox.scrollHeight;
+</script>
+</body>
+</html>
 </code></pre>
+</section>
 
-  <h3>2.6 Flaskメインコード (app.py)</h3>
-  <pre><code>import os, json, requests
+<section>
+<h2>5. Flaskロジック（app.py）</h2>
+<pre><button class="copy-btn" onclick="copyCode(this)">コピー</button><code>
+import os, openai
 from flask import Flask, render_template, request, session
 from openai import OpenAI
 from dotenv import load_dotenv
+import gspread
 
 load_dotenv()
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-very-secret-key'
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-notion_api_key = os.getenv("NOTION_API_KEY")
-notion_database_id = os.getenv("NOTION_DATABASE_ID")
+google_sheet_id = os.getenv("GOOGLE_SHEET_ID")
 
-def save_to_notion(prompt, response):
-    url = "https://api.notion.com/v1/pages"
-    headers = {
-        "Authorization": f"Bearer {notion_api_key}",
-        "Content-Type": "application/json",
-        "Notion-Version": "2022-06-28",
-    }
-    data = {
-        "parent": {"database_id": notion_database_id},
-        "properties": {
-            "Prompt": {"title": [{"text": {"content": prompt}}]},
-            "Response": {"rich_text": [{"text": {"content": response}}]},
-        },
-    }
+def save_to_google_sheet(prompt, response):
     try:
-        res = requests.post(url, headers=headers, data=json.dumps(data))
-        res.raise_for_status()
-        print("Notionに保存しました。")
-    except requests.exceptions.RequestException as e:
-        print(f"Notion保存エラー: {e}")
+        gc = gspread.service_account(filename='service_account.json')
+        sh = gc.open_by_key(google_sheet_id)
+        ws = sh.sheet1
+        ws.append_row([prompt, response])
+        print("Googleスプレッドシートに保存しました。")
+    except Exception as e:
+        print("保存エラー:", e)
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/', methods=['GET','POST'])
 def chat():
     if 'messages' not in session:
         session['messages'] = []
     if request.method == 'POST':
         prompt = request.form['prompt']
-        session['messages'].append({"role": "user", "content": prompt})
+        session['messages'].append({"role":"user","content":prompt})
         completion = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=session['messages']
         )
         ai_response = completion.choices[0].message.content
-        session['messages'].append({"role": "assistant", "content": ai_response})
-        save_to_notion(prompt, ai_response)
+        session['messages'].append({"role":"assistant","content":ai_response})
+        save_to_google_sheet(prompt, ai_response)
         session.modified = True
     return render_template('index.html', messages=session['messages'])
 
 if __name__ == '__main__':
     app.run(debug=True)
 </code></pre>
+</section>
 
-  <h3>2.7 アプリの実行</h3>
-  <ol>
-    <li>ターミナルでプロジェクトフォルダに移動</li>
-    <li><code>pip install -r requirements.txt</code> を実行（初回のみ）</li>
-    <li><code>flask run</code> を実行</li>
-    <li>ブラウザで <code>http://127.0.0.1:5000</code> にアクセス</li>
-  </ol>
+<section>
+<h2>6. 実行方法</h2>
+<ol>
+<li>ターミナルで <code>pip install -r requirements.txt</code></li>
+<li><code>flask run</code> を実行</li>
+<li>ブラウザで <code>http://127.0.0.1:5000</code> を開く</li>
+<li>チャット送信 → Googleスプレッドシートに保存されます</li>
+</ol>
+</section>
 
-  <div class="highlight">
-    これでStreamlitアプリと同等機能を持つFlaskチャットアプリが完成です！
-  </div>
-</main>
 </body>
 </html>
