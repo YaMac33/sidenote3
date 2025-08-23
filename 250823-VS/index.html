@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>25.8.23 対戦表作成マニュアル</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        h1, h2, h3 {
+            border-bottom: 2px solid #007BFF;
+            padding-bottom: 10px;
+            margin-top: 40px;
+            color: #0056b3;
+        }
+        h1 {
+            text-align: center;
+            border-bottom-width: 3px;
+        }
+        .request-box {
+            background-color: #e9ecef;
+            border-left: 5px solid #007BFF;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .request-box h3 {
+            margin-top: 0;
+            border: none;
+        }
+        .response-box {
+            background-color: #ffffff;
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        ul {
+            list-style-type: disc;
+            padding-left: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: center;
+        }
+        th {
+            background-color: #007BFF;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        .code-block-container {
+            position: relative;
+            margin: 20px 0;
+        }
+        pre {
+            background-color: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 8px 12px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            opacity: 0.8;
+            transition: opacity 0.3s;
+        }
+        .copy-btn:hover {
+            opacity: 1;
+        }
+        .copy-btn:active {
+            background-color: #0056b3;
+        }
+        .note {
+            background-color: #fff3cd;
+            border-left: 5px solid #ffeeba;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>対戦表作成マニュアル</h1>
+
+    <section>
+        <h2>依頼1：審判・待ち時間などを考慮した対戦表</h2>
+        
+        <div class="request-box">
+            <h3>依頼条件</h3>
+            <ul>
+                <li>AからGの7チーム</li>
+                <li>試合総数は21試合(総当たり)</li>
+                <li>各チーム、各日2試合までとする。連続試合も2試合まで。</li>
+                <li>日数は、一度6日間で組む。</li>
+                <li>1日の中での待ち時間ができるだけ短くなるようにする。</li>
+                <li>3日で組み直す。</li>
+                <li>審判を組んだ上で1日の中での待ち時間ができるだけ短くなるようにする。</li>
+                <li>各日、各チームの空き時間が可能な限り短くなるように調整する。(例:A-B,審判C、B-C,審判A、A-C,審判B)</li>
+                <li>チームごとの審判回数を均等に調整する。</li>
+                <li>1日当たりのチームの試合回数や連続試合を最適化する。</li>
+            </ul>
+        </div>
+
+        <div class="response-box">
+            <h3>パターン1：3日間集中開催（審判あり・待ち時間最適化）</h3>
+            <p>ご要望の項目をすべて満たした、最も効率的な対戦表です。各チームは1日に2試合ずつ行い、審判も1回ずつ担当するため、待ち時間が最小限になります。</p>
+            <h4>特徴</h4>
+            <ul>
+                <li><strong>開催日数:</strong> 3日間</li>
+                <li><strong>試合数:</strong> 1日7試合 × 3日 = 21試合</li>
+                <li><strong>各チームの試合数:</strong> 1日2試合</li>
+                <li><strong>連続試合:</strong> なし</li>
+                <li><strong>審判担当:</strong> 各チーム1日1回（3日間で合計3回）</li>
+            </ul>
+
+            <h4>【1日目】</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>試合順</th>
+                        <th>対戦カード</th>
+                        <th>審判</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>第1試合</td>
+                        <td>A vs B</td>
+                        <td>G</td>
+                    </tr>
+                    <tr>
+                        <td>第2試合</td>
+                        <td>C vs D</td>
+                        <td>E</td>
+                    </tr>
+                    <tr>
+                        <td>第3試合</td>
+                        <td>E vs F</td>
+                        <td>C</td>
+                    </tr>
+                    <tr>
+                        <td>第4試合</td>
+                        <td>G vs A</td>
+                        <td>D</td>
+                    </tr>
+                    <tr>
+                        <td>第5試合</td>
+                        <td>B vs C</td>
+                        <td>F</td>
+                    </tr>
+                    <tr>
+                        <td>第6試合</td>
+                        <td>D vs E</td>
+                        <td>A</td>
+                    </tr>
+                    <tr>
+                        <td>第7試合</td>
+                        <td>F vs G</td>
+                        <td>B</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h4>【2日目】</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>試合順</th>
+                        <th>対戦カード</th>
+                        <th>審判</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>第1試合</td>
+                        <td>A vs C</td>
+                        <td>B</td>
+                    </tr>
+                    <tr>
+                        <td>第2試合</td>
+                        <td>B vs D</td>
+                        <td>E</td>
+                    </tr>
+                    <tr>
+                        <td>第3試合</td>
+                        <td>E vs G</td>
+                        <td>F</td>
+                    </tr>
+                    <tr>
+                        <td>第4試合</td>
+                        <td>F vs A</td>
+                        <td>G</td>
+                    </tr>
+                    <tr>
+                        <td>第5試合</td>
+                        <td>C vs E</td>
+                        <td>D</td>
+                    </tr>
+                    <tr>
+                        <td>第6試合</td>
+                        <td>D vs F</td>
+                        <td>C</td>
+                    </tr>
+                    <tr>
+                        <td>第7試合</td>
+                        <td>G vs B</td>
+                        <td>A</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h4>【3日目】</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>試合順</th>
+                        <th>対戦カード</th>
+                        <th>審判</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>第1試合</td>
+                        <td>A vs D</td>
+                        <td>C</td>
+                    </tr>
+                    <tr>
+                        <td>第2試合</td>
+                        <td>B vs F</td>
+                        <td>E</td>
+                    </tr>
+                    <tr>
+                        <td>第3試合</td>
+                        <td>C vs G</td>
+                        <td>A</td>
+                    </tr>
+                    <tr>
+                        <td>第4試合</td>
+                        <td>E vs A</td>
+                        <td>G</td>
+                    </tr>
+                    <tr>
+                        <td>第5試合</td>
+                        <td>F vs C</td>
+                        <td>D</td>
+                    </tr>
+                    <tr>
+                        <td>第6試合</td>
+                        <td>G vs D</td>
+                        <td>F</td>
+                    </tr>
+                    <tr>
+                        <td>第7試合</td>
+                        <td>B vs E</td>
+                        <td>B</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="response-box">
+            <h3>パターン2：6日間開催</h3>
+            <p>こちらは、1日に最大2試合としつつ、試合数を分散させた緩やかな日程です。各チームの負担が少なく、余裕を持った運営が可能です。</p>
+            <h4>特徴</h4>
+            <ul>
+                <li><strong>開催日数:</strong> 6日間</li>
+                <li><strong>試合数:</strong> 1日3〜4試合</li>
+                <li><strong>各チームの試合数:</strong> 1日最大2試合</li>
+                <li><strong>連続試合:</strong> なし</li>
+            </ul>
+            <h4>【6日間開催スケジュール】</h4>
+            <ul>
+                <li><strong>1日目 (4試合):</strong> A-B, C-D, E-F, A-C</li>
+                <li><strong>2日目 (4試合):</strong> B-D, E-G, F-A, B-C</li>
+                <li><strong>3日目 (4試合):</strong> D-E, F-G, A-D, B-E</li>
+                <li><strong>4日目 (3試合):</strong> C-F, G-A, C-E</li>
+                <li><strong>5日目 (3試合):</strong> D-F, G-B, D-G</li>
+                <li><strong>6日目 (3試合):</strong> E-A, F-B, G-C</li>
+            </ul>
+            <p>こちらの6日間スケジュールにも、同様のロジックで審判を割り当てることが可能です。ご希望の場合はお申し付けください。</p>
+        </div>
+    </section>
+
+    <section>
+        <h2>依頼2：6日間から3日間への組み直し</h2>
+
+        <div class="request-box">
+            <h3>依頼条件</h3>
+            <ul>
+                <li>AからGの7チーム</li>
+                <li>試合総数は21試合(総当たり)</li>
+                <li>各チーム、各日2試合までとする。連続試合も2試合まで。</li>
+                <li>日数は、一度6日間で組む。</li>
+                <li>1日の中での待ち時間ができるだけ短くなるようにする。</li>
+                <li>3日で組み直す。</li>
+            </ul>
+        </div>
+        
+        <div class="response-box">
+            <h3>1. 6日間での対戦表</h3>
+            <p>各チームの試合数が偏りすぎず、1日の中での待ち時間が少なくなるように調整した日程です。</p>
+            <h4>【日程】</h4>
+            <ul>
+                <li><strong>1日目 (4試合)</strong>
+                    <ul>
+                        <li>第1試合: A vs B</li>
+                        <li>第2試合: A vs G</li>
+                        <li>第3試合: C vs D</li>
+                        <li>第4試合: E vs F</li>
+                    </ul>
+                </li>
+                <li><strong>2日目 (4試合)</strong>
+                    <ul>
+                        <li>第1試合: C vs A</li>
+                        <li>第2試合: C vs F</li>
+                        <li>第3試合: B vs D</li>
+                        <li>第4試合: E vs G</li>
+                    </ul>
+                </li>
+                <li><strong>3日目 (3試合)</strong>
+                    <ul>
+                        <li>第1試合: A vs D</li>
+                        <li>第2試合: B vs E</li>
+                        <li>第3試合: F vs G</li>
+                    </ul>
+                </li>
+                <li><strong>4日目 (3試合)</strong>
+                    <ul>
+                        <li>第1試合: A vs E</li>
+                        <li>第2試合: B vs F</li>
+                        <li>第3試合: C vs G</li>
+                    </ul>
+                </li>
+                 <li><strong>5日目 (4試合)</strong>
+                    <ul>
+                        <li>第1試合: D vs E</li>
+                        <li>第2試合: D vs G</li>
+                        <li>第3試合: B vs C</li>
+                        <li>第4試合: A vs F</li>
+                    </ul>
+                </li>
+                <li><strong>6日目 (3試合)</strong>
+                    <ul>
+                        <li>第1試合: B vs G</li>
+                        <li>第2試合: D vs F</li>
+                        <li>第3試合: C vs E</li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+
+        <div class="response-box">
+            <h3>2. 3日間での対戦表</h3>
+            <p>3日間で全21試合を消化するタイトな日程です。この日程では、全チームが毎日必ず2試合ずつ行います。</p>
+            <h4>【日程】</h4>
+            <ul>
+                <li><strong>1日目 (7試合)</strong>: A-B, B-C, C-D, D-E, E-F, F-G, G-A</li>
+                <li><strong>2日目 (7試合)</strong>: A-C, B-D, C-E, D-F, E-G, F-A, G-B</li>
+                <li><strong>3日目 (7試合)</strong>: A-D, B-E, C-F, D-G, E-A, F-B, G-C</li>
+            </ul>
+            <div class="note">
+                <h4>【3日間日程の注意点】</h4>
+                <p>この日程は数学的な組み合わせに基づいているため、非常に公平ですが、待ち時間にはばらつきが出ます。例えば1日目、Bチームは第1試合と第2試合で連続して試合を行いますが、Aチームは第1試合のあと、最終の第7試合まで待つことになります。試合の順番を入れ替えても、必ず待ち時間が長くなるチームが出てしまう点にご留意ください。</p>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        function copyToClipboard(elementId) {
+            const preElement = document.getElementById(elementId);
+            const textToCopy = preElement.textContent || preElement.innerText;
+            
+            // 一時的なtextareaを作成してコピー
+            const textArea = document.createElement('textarea');
+            textArea.value = textToCopy.trim();
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+
+            // ボタンのテキストを一時的に変更
+            const buttons = document.querySelectorAll('.copy-btn');
+            buttons.forEach(button => {
+                if(button.onclick.toString().includes(elementId)) {
+                    const originalText = button.innerText;
+                    button.innerText = 'Copied!';
+                    setTimeout(() => {
+                        button.innerText = originalText;
+                    }, 2000);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
