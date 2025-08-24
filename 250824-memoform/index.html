@@ -1,189 +1,391 @@
-\<\!DOCTYPE html\>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>25.8.24 テキスト入力→自動タイムスタンプ→データベース保存：実践マニュアル</title>
+<style>
+  :root{
+    --bg:#0f1220;
+    --panel:#141830;
+    --ink:#eaf0ff;
+    --muted:#a7b0c8;
+    --accent:#7aa2ff;
+    --accent-2:#8be9fd;
+    --ok:#48d597;
+    --warn:#ffb86c;
+    --danger:#ff6b6b;
+    --code:#0b0f1f;
+    --code-border:#222a4a;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    color:var(--ink);
+    background:radial-gradient(1000px 800px at 20% -10%, #1a2050 0%, var(--bg) 60%),
+               radial-gradient(800px 600px at 120% 20%, #172045 0%, transparent 60%),
+               var(--bg);
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
+    line-height:1.75;
+  }
+  header{
+    position:sticky; top:0; z-index:10;
+    backdrop-filter:saturate(1.2) blur(6px);
+    background:linear-gradient(180deg, rgba(10,12,24,.9), rgba(10,12,24,.6));
+    border-bottom:1px solid #202748;
+  }
+  .wrap{max-width:1000px; margin:0 auto; padding:20px}
+  .title{
+    display:flex; align-items:center; gap:14px;
+    font-weight:800; letter-spacing:.02em;
+  }
+  .title .tag{font-size:.85rem; color:var(--muted); padding:.25rem .6rem; border:1px solid #2a3364; border-radius:999px}
+  nav.toc{
+    display:flex; flex-wrap:wrap; gap:8px; margin-top:12px
+  }
+  nav.toc a{
+    text-decoration:none; color:var(--ink); background:#131735; border:1px solid #242c59;
+    padding:.45rem .7rem; border-radius:10px; font-size:.92rem
+  }
+  main{padding:32px 20px}
+  section{
+    background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.00));
+    padding:26px; border:1px solid #1f2750; border-radius:16px; margin:18px auto; max-width:1000px;
+  }
+  h2{margin:0 0 10px; font-size:1.35rem}
+  h3{margin:22px 0 8px; font-size:1.1rem; color:var(--accent)}
+  p,li{color:#d6dcf5}
+  kbd{
+    background:#1e254a; border:1px solid #2a3270; color:#dfe6ff;
+    padding:.15rem .38rem; border-radius:6px; font-size:.9rem
+  }
+  .tip, .warn, .note{
+    border-left:4px solid var(--ok);
+    background:#12222a; border:1px solid #1e3340; padding:12px 14px; border-radius:10px; margin:12px 0
+  }
+  .warn{ border-left-color: var(--warn); background:#2a210f; border-color:#4a3a16 }
+  .note{ border-left-color: var(--accent-2); background:#0f1c2a; border-color:#1d3344 }
+  .checklist{
+    display:grid; gap:8px; margin:12px 0
+  }
+  .checklist div{
+    display:flex; gap:10px; align-items:flex-start;
+    padding:10px 12px; background:#121733; border:1px solid #202956; border-radius:10px
+  }
+  .checklist div .box{
+    width:18px; height:18px; border:2px solid #2f3b79; border-radius:4px; flex:0 0 auto; margin-top:2px
+  }
+  /* Code block with copy */
+  .code{
+    position:relative; margin:14px 0; background:var(--code); border:1px solid var(--code-border);
+    border-radius:12px; overflow:hidden
+  }
+  .code .bar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:8px 10px; font-size:.85rem; color:var(--muted);
+    background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,0));
+    border-bottom:1px solid var(--code-border)
+  }
+  .code pre{
+    margin:0; padding:14px; overflow:auto; font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    font-size:.92rem; line-height:1.55; color:#e8eeff
+  }
+  .copy{
+    border:1px solid #2a3572; background:#161c3f; color:#dfe6ff; border-radius:8px;
+    padding:.35rem .6rem; font-size:.85rem; cursor:pointer
+  }
+  .grid-2{display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+  table{
+    width:100%; border-collapse:collapse; margin:12px 0; font-size:.95rem
+  }
+  th,td{border:1px solid #263066; padding:8px 10px}
+  th{background:#141a3a; color:#cfe0ff; text-align:left}
+  footer{color:var(--muted); border-top:1px solid #202748; padding:24px 20px; text-align:center}
+  .muted{color:var(--muted)}
+  .pill{display:inline-block; padding:.2rem .55rem; border:1px solid #2f3c7a; border-radius:999px; color:#bfd1ff; font-size:.8rem}
+</style>
+</head>
+<body>
 
-\<html lang="ja"\>
-\<head\>
-\<meta charset="UTF-8"\>
-\<meta name="viewport" content="width=device-width, initial-scale=1.0"\>
-\<title\>Notionと連携するデータベース自動化マニュアル\</title\>
-\<style\>
-body {
-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-line-height: 1.6;
-margin: 0;
-padding: 20px;
-background-color: \#f7f9fc;
-color: \#333;
-}
-.container {
-max-width: 800px;
-margin: 0 auto;
-background-color: \#fff;
-padding: 40px;
-border-radius: 12px;
-box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-}
-h1, h2 {
-color: \#2c3e50;
-border-bottom: 2px solid \#e0e6ed;
-padding-bottom: 10px;
-margin-top: 30px;
-}
-h1 {
-border-bottom: none;
-text-align: center;
-font-size: 2.5em;
-margin-bottom: 20px;
-}
-h2 {
-font-size: 1.8em;
-}
-.step {
-margin-bottom: 30px;
-}
-.step-number {
-font-size: 1.2em;
-font-weight: bold;
-color: \#555;
-display: block;
-margin-bottom: 5px;
-}
-.code-block {
-position: relative;
-background-color: \#ecf0f1;
-padding: 15px;
-border-radius: 8px;
-overflow-x: auto;
-font-family: 'Courier New', Courier, monospace;
-font-size: 0.9em;
-white-space: pre-wrap;
-word-wrap: break-word;
-}
-.copy-button {
-position: absolute;
-top: 10px;
-right: 10px;
-background-color: \#3498db;
-color: \#fff;
-border: none;
-padding: 8px 12px;
-border-radius: 5px;
-cursor: pointer;
-font-size: 12px;
-opacity: 0.8;
-transition: opacity 0.2s;
-}
-.copy-button:hover {
-opacity: 1;
-}
-ul {
-padding-left: 25px;
-}
-li {
-margin-bottom: 10px;
-}
-.note {
-background-color: \#f0f8ff;
-border-left: 4px solid \#3498db;
-padding: 15px;
-border-radius: 5px;
-margin-top: 20px;
-}
-hr {
-border: 0;
-height: 1px;
-background: \#e0e6ed;
-margin: 40px 0;
-}
-\</style\>
-\</head\>
-\<body\>
-
-\<div class="container"\>
-\<h1\>Notion連携データベース自動化マニュアル\</h1\>
-\<p\>このマニュアルでは、Notionでメモを自動的にデータベースに保存する方法と、入力フォームを作成する方法を解説します。プログラミングの知識は不要です。\</p\>
-
-```
-<h2>Notionデータベースへの自動保存</h2>
-<p>テキストを入力すると自動でタイムスタンプを付けてデータベースに保存される仕組みを作成します。これには、Notionの**「作成日時」**プロパティを利用します。</p>
-
-<div class="step">
-    <span class="step-number">ステップ 1: データベースの作成</span>
-    <p>新しいNotionページで、スラッシュコマンド（`/`）から「データベース」を選択し、インラインまたはフルページで作成します。</p>
-    <p>データベースに以下のプロパティを追加します。</p>
-    <ul>
-        <li>**名前（Title）**: メモのタイトル</li>
-        <li>**本文（Text）**: メモの内容</li>
-        <li>**作成日時（Created Date）**: タイムスタンプ用</li>
-    </ul>
-    <div class="note">
-        <strong>💡 プロパティの注意点：</strong>
-        <br>
-        「作成日時」プロパティは、ページが作られた最初の時点を自動で記録します。
-        似たプロパティの「最終更新日時（Last Edited Time）」は、編集するたびに日時が更新されるので、タイムスタンプを記録したい場合は「作成日時」を選んでください。
+<header>
+  <div class="wrap">
+    <div class="title">
+      <span>テキスト入力 → 自動タイムスタンプ → DB保存</span>
+      <span class="tag">実践マニュアル</span>
     </div>
-</div>
+    <nav class="toc">
+      <a href="#overview">概要</a>
+      <a href="#tools">主なツールの種類</a>
+      <a href="#sheets">Googleスプレッドシートで実装</a>
+      <a href="#programming">プログラミングで実装</a>
+      <a href="#notion-auto">Notionで自動化</a>
+      <a href="#notion-form">Notionフォーム</a>
+      <a href="#notion-props">Created Dateの設定</a>
+      <a href="#easyform">NotionEasyFormクイックスタート</a>
+      <a href="#faq">補足/FAQ</a>
+    </nav>
+  </div>
+</header>
 
-<hr>
+<main class="wrap">
 
-<h2>Notionに「書き込みフォーム」を作成</h2>
-<p>Notionアカウントを持たない人でも簡単にデータを入力できるように、フォームを作成します。</p>
+  <section id="overview">
+    <h2>概要</h2>
+    <p>「テキストを書き込むだけで、<strong>自動でタイムスタンプを付与してデータベースに保存</strong>したい」というニーズに対し、手軽な方法から本格運用までの選択肢をまとめました。まずは使い慣れたツールから始め、必要に応じてスケールアップするのがおすすめです。</p>
+    <div class="note">
+      <strong>ポイント：</strong> すぐ始めたいなら <em>Notion/スプレッドシート</em>、柔軟に作り込みたいなら <em>Python + DB</em>。
+    </div>
+  </section>
 
-<div class="step">
-    <span class="step-number">方法 1: Notionのネイティブフォーム機能を利用する</span>
-    <p>追加ツールは不要です。Notionのデータベースをフォームとして公開できます。</p>
+  <section id="tools">
+    <h2>主なツールの種類</h2>
+
+    <h3>1) ノートアプリ・タスク管理ツール</h3>
+    <ul>
+      <li><strong>Google Keep</strong>：作成日時が自動記録</li>
+      <li><strong>Evernote</strong>：作成/更新日時を自動記録</li>
+      <li><strong>Notion</strong>：データベースに「作成日時（Created Date）」プロパティを用意すると自動記録</li>
+    </ul>
+
+    <h3>2) スプレッドシート</h3>
+    <p>Google スプレッドシートに入力 → <strong>Google Apps Script (GAS)</strong>でタイムスタンプを自動追記、またはフォーム送信で自動記録。</p>
+
+    <h3>3) プログラミング＋データベース</h3>
+    <p>たとえば<strong>Python + SQLite / PostgreSQL</strong>で、入力値と現在時刻を同時保存。要件に合わせて最も自由度が高い選択肢です。</p>
+  </section>
+
+  <section id="sheets">
+    <h2>Googleスプレッドシートでの実装</h2>
+
+    <h3>方法A：セル編集時に自動タイムスタンプ（GAS）</h3>
     <ol>
-        <li>**データベースの作成**: 上記のステップ1で作成したデータベースを使用します。</li>
-        <li>**フォームビューの作成**: データベースの上部にある「`+`」ボタンをクリックし、ビューの選択肢から「**フォーム**」を選びます。</li>
-        <li>**フォームの設定**: フォームビューに切り替わったら、プロパティを「必須」にしたり、説明を追加したりとカスタマイズします。</li>
-        <li>**フォームの共有**: 作成したフォームはURLをコピーして、外部に共有するだけで利用可能です。</li>
+      <li>スプレッドシートで <kbd>拡張機能</kbd> &rarr; <kbd>Apps Script</kbd> を開く</li>
+      <li>以下のスクリプトを貼り付けて保存</li>
+      <li>列Aにテキストを入れると、列Bに自動で時刻が入ります</li>
     </ol>
-</div>
 
-<hr>
+    <div class="code" data-lang="Google Apps Script">
+      <div class="bar"><span>onEdit で列A→列Bにタイムスタンプ</span><button class="copy">コピー</button></div>
+      <pre><code>function onEdit(e) {
+  const sheet = e.range.getSheet();
+  const row = e.range.getRow();
+  const col = e.range.getColumn();
 
-<div class="step">
-    <span class="step-number">方法 2: 外部のフォームツールと連携する</span>
-    <p>より高度なフォームを作成したい場合に適しています。Notion専用のフォームツール**「NotionEasyForm」**を使用する方法を例に解説します。</p>
+  // 入力列(A列)のみ監視
+  if (sheet.getName() !== 'シート1') return; // シート名を合わせてください
+  if (col !== 1 || row === 1) return;        // 1行目はヘッダ想定
 
-    <ol>
-        <li>**NotionEasyFormの連携設定**:
-            <p>NotionEasyFormにアカウント登録し、Notionとの連携を行います。この際、Notionの**APIキー（シークレットトークン）**が必要になります。</p>
-            <div class="code-block" id="api-block">
-                <button class="copy-button" onclick="copyCode('api-block')">コピー</button>
-                Notionの設定 > インテグレーション > 新しいインテグレーションを開発する
-            </div>
-        </li>
-        <li>**フォームの作成**:
-            <p>NotionEasyFormの画面で、フォームの元となるNotionデータベースを選択します。フォームの項目は、データベースのプロパティから自動で生成されます。</p>
-        </li>
-        <li>**フォームの共有**:
-            <p>フォームが完成したら、URLを取得して共有します。回答は自動でNotionのデータベースに追加されます。</p>
-        </li>
-    </ol>
-</div>
-```
+  const val = e.range.getValue();
+  const timeCell = sheet.getRange(row, 2);   // B列にタイムスタンプ
 
-\</div\>
-
-\<script\>
-function copyCode(elementId) {
-const codeBlock = document.getElementById(elementId);
-const textToCopy = codeBlock.textContent.trim().replace(/コピー$/, '').trim();
-
-```
-// Fallback for older browsers
-const tempTextarea = document.createElement(&#39;textarea&#39;);
-tempTextarea.value = textToCopy;
-document.body.appendChild(tempTextarea);
-tempTextarea.select();
-document.execCommand(&#39;copy&#39;);
-document.body.removeChild(tempTextarea);
-
-alert(&#39;コードがコピーされました！&#39;);
-```
-
+  if (val !== '') {
+    timeCell.setValue(new Date());           // 入力があれば日付を入れる
+  } else {
+    timeCell.clearContent();                 // 消したらタイムスタンプも消す
+  }
 }
-\</script\>
+</code></pre>
+    </div>
 
-\</body\>
-\</html\>
+    <div class="tip"><strong>ヒント：</strong> 表示形式はB列のセル書式で「日時」を選ぶと見やすくなります。</div>
+
+    <h3>方法B：フォーム送信で自動記録</h3>
+    <p>Googleフォームと紐付いたシートでは、標準で「タイムスタンプ」列が付きます。より柔軟に扱いたい場合は、以下のようにフォーム回答受信トリガーで別シートへ整形保存することも可能です。</p>
+
+    <div class="code" data-lang="Google Apps Script">
+      <div class="bar"><span>フォーム回答 → 別シートに整形保存</span><button class="copy">コピー</button></div>
+      <pre><code>function onFormSubmit(e) {
+  // 回答の構造はフォーム設定に依存します
+  // e.namedValues で「質問: 回答」へアクセスできます
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const out = ss.getSheetByName('保存先') || ss.insertSheet('保存先');
+
+  const timestamp = new Date();
+  const text = e.namedValues['メモ'][0] || '';
+
+  out.appendRow([timestamp, text]);
+}
+
+// 初回は、編集画面の「トリガー」から onFormSubmit を
+// イベント種別: フォーム送信時 に紐づけてください。
+</code></pre>
+    </div>
+
+  </section>
+
+  <section id="programming">
+    <h2>プログラミングでの実装（例：Python + SQLite）</h2>
+
+    <div class="grid-2">
+      <div>
+        <h3>1) 初期化：DBとテーブル作成</h3>
+        <div class="code" data-lang="Python">
+          <div class="bar"><span>create_table.py</span><button class="copy">コピー</button></div>
+          <pre><code>import sqlite3
+
+conn = sqlite3.connect("notes.db")
+cur = conn.cursor()
+cur.execute("""
+CREATE TABLE IF NOT EXISTS notes (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  text TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+""")
+conn.commit()
+conn.close()
+print("initialized.")
+</code></pre>
+        </div>
+      </div>
+      <div>
+        <h3>2) 追記：テキスト + 自動タイムスタンプ</h3>
+        <div class="code" data-lang="Python">
+          <div class="bar"><span>append_note.py</span><button class="copy">コピー</button></div>
+          <pre><code>import sqlite3
+import sys
+
+text = " ".join(sys.argv[1:]) or "サンプルメモ"
+
+conn = sqlite3.connect("notes.db")
+cur = conn.cursor()
+cur.execute("INSERT INTO notes (text) VALUES (?)", (text,))
+conn.commit()
+conn.close()
+print("saved:", text)
+</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="note"><strong>ポイント：</strong> RDBMSをPostgreSQL等に変えても、<code>DEFAULT CURRENT_TIMESTAMP</code>で概ね同様の構成にできます。</div>
+  </section>
+
+  <section id="notion-auto">
+    <h2>Notionで「メモ → データベース」を自動化する</h2>
+
+    <h3>方法1：Notionのデータベース・オートメーション</h3>
+    <div class="checklist">
+      <div><span class="box"></span><div>保存先のデータベースを作成（プロパティに <em>本文</em>・<em>作成日時</em> など）</div></div>
+      <div><span class="box"></span><div>データベース右上の「雷アイコン」→「オートメーションを追加」</div></div>
+      <div><span class="box"></span><div>トリガー例：「ページが追加されたとき／更新されたとき」</div></div>
+      <div><span class="box"></span><div>アクション例：「ページを作成」「ページを移動／複製」など</div></div>
+    </div>
+    <p class="muted">※ ワークスペース内のDB間での移動・複製に便利。外部連携は次の方法2を活用。</p>
+
+    <h3>方法2：外部連携（Zapier / Make）</h3>
+    <ol>
+      <li>Notionでインテグレーションを作成し、シークレットトークンを取得</li>
+      <li>Zapier/Makeで新規フローを作成</li>
+      <li>トリガー：Notionの変更（または他アプリのイベント）</li>
+      <li>アクション：Notion「データベースにページを作成」</li>
+      <li>マッピング：本文やタイトル、ステータス等のプロパティを対応付け</li>
+    </ol>
+    <div class="warn"><strong>注意：</strong> 外部サービス利用時は権限範囲（スコープ）とデータの機密性に配慮してください。</div>
+  </section>
+
+  <section id="notion-form">
+    <h2>Notionに「書き込みフォーム」を作る</h2>
+
+    <h3>方法A：ネイティブのフォームビュー</h3>
+    <ol>
+      <li>保存先のデータベースを開く</li>
+      <li>上部の表示切替で <kbd>＋</kbd> → <kbd>フォーム</kbd> を選択</li>
+      <li>必要なプロパティを入力項目として配置・必須化</li>
+      <li>共有リンクを取得して配布（外部回答も可）</li>
+    </ol>
+
+    <h3>方法B：外部フォームツール</h3>
+    <ul>
+      <li><strong>Google Forms</strong>：GASやZapierでNotionに転送</li>
+      <li><strong>Tally / NotionEasyForm 等</strong>：NotionDBと直接連携でき、設計が楽</li>
+    </ul>
+  </section>
+
+  <section id="notion-props">
+    <h2>Notionのプロパティ：<code>Created Date</code> は合っている？</h2>
+    <table>
+      <thead><tr><th>プロパティ</th><th>内容</th><th>更新タイミング</th></tr></thead>
+      <tbody>
+        <tr><td><strong>作成日時（Created Date）</strong></td><td>ページが最初に作られた日時</td><td>固定（以後変わらない）</td></tr>
+        <tr><td><strong>最終更新日時（Last Edited Time）</strong></td><td>最後に編集された日時</td><td>編集のたびに更新</td></tr>
+      </tbody>
+    </table>
+    <p>「書き込んだ瞬間の時刻」を残したいなら <strong>Created Date</strong> が最適です。</p>
+  </section>
+
+  <section id="easyform">
+    <h2>NotionEasyForm：クイックスタート</h2>
+    <ol>
+      <li>NotionEasyFormでアカウント作成</li>
+      <li>Notionと連携（インテグレーション許可）</li>
+      <li>保存したいNotionデータベースを選択 → フォーム項目が自動生成</li>
+      <li>フォームを公開し、URLを共有 or Notionページに埋め込み</li>
+      <li>回答がNotionDBに自動追加（Created Dateで作成時刻も残る）</li>
+    </ol>
+    <div class="tip"><strong>小ワザ：</strong> データベース側に「タグ/カテゴリ」「担当者」「ステータス」などを用意しておくと、収集と同時に整理も進みます。</div>
+  </section>
+
+  <section id="faq">
+    <h2>補足 / FAQ</h2>
+    <h3>プライバシーとセキュリティ</h3>
+    <ul>
+      <li>フォームや外部連携は<strong>最小権限</strong>で運用</li>
+      <li>機微情報は公開フォームで収集しない</li>
+      <li>スクリプト/キーは共有ドライブに置かない</li>
+    </ul>
+    <h3>どれを選べばいい？</h3>
+    <ul>
+      <li><span class="pill">最短で開始</span>：Notion フォームビュー or Googleフォーム</li>
+      <li><span class="pill">軽い集計</span>：Googleスプレッドシート + GAS</li>
+      <li><span class="pill">高度な要件</span>：Python + RDB（API連携や社内SaaS統合も視野）</li>
+    </ul>
+  </section>
+
+</main>
+
+<footer>
+  &copy; 2025 Timestamp Logger Manual — シンプルに始めて、必要に応じて拡張しましょう。
+</footer>
+
+<script>
+  // ワンタッチコピー
+  document.querySelectorAll('.code').forEach(block => {
+    const btn = block.querySelector('.copy');
+    const pre = block.querySelector('pre');
+    btn.addEventListener('click', async () => {
+      try{
+        await navigator.clipboard.writeText(pre.innerText);
+        const original = btn.textContent;
+        btn.textContent = 'コピーしました！';
+        btn.style.borderColor = '#48d597';
+        setTimeout(()=>{ btn.textContent = 'コピー'; btn.style.borderColor=''; }, 1400);
+      }catch(e){
+        // フォールバック
+        const range = document.createRange();
+        range.selectNodeContents(pre);
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+        document.execCommand('copy');
+        sel.removeAllRanges();
+        btn.textContent = 'コピーしました！';
+        setTimeout(()=>{ btn.textContent = 'コピー'; }, 1400);
+      }
+    });
+  });
+
+  // アンカー遷移をスムーズに
+  document.querySelectorAll('a[href^="#"]').forEach(a=>{
+    a.addEventListener('click', e=>{
+      const id = a.getAttribute('href').slice(1);
+      const el = document.getElementById(id);
+      if(el){
+        e.preventDefault();
+        window.scrollTo({top: el.getBoundingClientRect().top + window.pageYOffset - 78, behavior:'smooth'});
+      }
+    });
+  });
+</script>
+</body>
+</html>
