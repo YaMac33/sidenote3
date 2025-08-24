@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>25.8.24 AIロジックツリー自動生成ツール作成マニュアル</title>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f7f9fc;
+      color: #333;
+      line-height: 1.7;
+    }
+    header {
+      background: #283593;
+      color: #fff;
+      padding: 20px 30px;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.6em;
+    }
+    main {
+      max-width: 1000px;
+      margin: 30px auto;
+      padding: 20px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    h2 {
+      border-left: 6px solid #283593;
+      padding-left: 10px;
+      margin-top: 40px;
+      font-size: 1.4em;
+    }
+    h3 {
+      margin-top: 25px;
+      font-size: 1.2em;
+      color: #283593;
+    }
+    p {
+      margin: 12px 0;
+    }
+    ul, ol {
+      margin: 10px 0 10px 25px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 15px 0;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px 10px;
+    }
+    th {
+      background: #e8eaf6;
+      font-weight: bold;
+    }
+    .code-block {
+      position: relative;
+      background: #272822;
+      color: #f8f8f2;
+      padding: 12px 15px;
+      border-radius: 6px;
+      margin: 15px 0;
+      font-family: "Consolas", monospace;
+      white-space: pre-wrap;
+      overflow-x: auto;
+    }
+    .copy-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: #607d8b;
+      color: #fff;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.8em;
+    }
+    .highlight {
+      background: #fff3cd;
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+    footer {
+      text-align: center;
+      font-size: 0.9em;
+      color: #777;
+      margin: 30px 0;
+    }
+  </style>
+  <script>
+    function copyCode(btn) {
+      const code = btn.nextElementSibling.innerText;
+      navigator.clipboard.writeText(code).then(() => {
+        btn.innerText = "コピー済み！";
+        setTimeout(() => { btn.innerText = "コピー"; }, 1500);
+      });
+    }
+  </script>
+</head>
+<body>
+  <header>
+    <h1>AIロジックツリー（マインドマップ）自動生成ツール 作成マニュアル</h1>
+  </header>
+  <main>
+    <p>本ページでは、AIを活用したロジックツリー自動生成Webアプリの開発手順と技術選定の理由、公開環境の選び方を解説します。</p>
+
+    <h2>1. どんな仕組みで実現するのか？</h2>
+    <p>アプリは主に以下の3つで構成されます。</p>
+    <ul>
+      <li><strong>フロントエンド：</strong>ユーザー操作と結果表示（React + D3.js）</li>
+      <li><strong>バックエンド：</strong>APIとAI連携（Python + FastAPI）</li>
+      <li><strong>AI部分：</strong>関連語生成と関連度計算（Gemini APIやOpenAI API）</li>
+    </ul>
+
+    <h2>2. 開発ロードマップ</h2>
+    <h3>ステップ1：企画・設計</h3>
+    <ul>
+      <li>コア機能：入力→AIによる関連語生成→サイズ変化付き描画</li>
+      <li>追加機能：保存、エクスポート、共有、デザイン変更など</li>
+    </ul>
+
+    <table>
+      <tr><th>要素</th><th>目的</th><th>技術選択肢</th><th>推奨</th></tr>
+      <tr><td>フロント</td><td>画面描画</td><td>React / Vue.js / Svelte</td><td>React</td></tr>
+      <tr><td>描画</td><td>ツリー表示</td><td>D3.js / React Flow / GoJS</td><td>D3.js</td></tr>
+      <tr><td>バック</td><td>APIサーバー</td><td>Python(FastAPI/Flask), Node.js</td><td>Python+FastAPI</td></tr>
+      <tr><td>AI</td><td>関連語生成</td><td>Gemini API, OpenAI</td><td>Gemini API</td></tr>
+      <tr><td>公開</td><td>デプロイ</td><td>Vercel, Render, Netlify</td><td>Vercel+Render</td></tr>
+    </table>
+
+    <h3>ステップ2：開発</h3>
+    <p><strong>バックエンド（FastAPI）例：</strong></p>
+    <div class="code-block">
+      <button class="copy-btn" onclick="copyCode(this)">コピー</button>
+<code>
+from fastapi import FastAPI
+import requests
+
+app = FastAPI()
+
+@app.post("/generate-nodes")
+def generate_nodes(keyword: str):
+    prompt = f"{keyword} に関連する語を5つと関連度を0-1でJSON形式で出力してください。"
+    # Gemini APIに問い合わせ（擬似例）
+    res = requests.post("https://gemini.api/...", json={"prompt": prompt})
+    return res.json()
+</code>
+    </div>
+
+    <p><strong>フロントエンド（React + D3.js）例：</strong></p>
+    <div class="code-block">
+      <button class="copy-btn" onclick="copyCode(this)">コピー</button>
+<code>
+import * as d3 from "d3";
+
+// ノード描画の基本
+function drawNodes(data) {
+  const svg = d3.select("svg");
+  svg.selectAll("circle")
+    .data(data)
+    .join("circle")
+    .attr("r", d => 10 + d.relevance * 50)
+    .attr("cx", (d,i)=>100+i*100)
+    .attr("cy", 200);
+}
+</code>
+    </div>
+
+    <h3>ステップ3：テストと公開</h3>
+    <ul>
+      <li>入力→ノード生成→サイズ変化が正しく動作するか確認</li>
+      <li>RenderにFastAPIを、VercelにReactをデプロイ</li>
+    </ul>
+
+    <h2>3. 技術選定の理由</h2>
+    <h3>Python + FastAPI の強み</h3>
+    <ul>
+      <li>AI APIのライブラリが充実</li>
+      <li>少ないコードで高速に開発可能</li>
+      <li>自動ドキュメント生成機能付き</li>
+    </ul>
+
+    <h3>React + D3.js の強み</h3>
+    <ul>
+      <li>動的な状態管理が得意</li>
+      <li>D3.jsで関連度に応じた柔軟な図形描画が可能</li>
+    </ul>
+
+    <h2>4. 他の選択肢</h2>
+    <ul>
+      <li>フロントエンド：React Flow（ノード図特化）、Vue.js</li>
+      <li>バックエンド：Node.js（言語統一）</li>
+    </ul>
+
+    <h2>5. 費用を抑えられるサーバー</h2>
+    <ul>
+      <li><span class="highlight">Vercel</span>：Reactのフロント公開に最適（無料枠充実）</li>
+      <li><span class="highlight">Render</span>：FastAPIのバック公開に最適（無料DB付き）</li>
+      <li>Netlify：フロント向け。Vercelと同等</li>
+      <li>GitHub Pages：静的サイトのみ対応</li>
+    </ul>
+
+    <p><strong>おすすめ構成：</strong>フロントはVercel、バックはRenderで完全無料運用</p>
+  </main>
+  <footer>
+    &copy; 2025 AI Logic Tree Guide
+  </footer>
+</body>
+</html>
