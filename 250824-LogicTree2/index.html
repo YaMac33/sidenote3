@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>25.8.24 AIロジックツリー（マインドマップ）自動生成ツール 作成マニュアル2</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      line-height: 1.6;
+      background: #f7f9fc;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: #2c3e50;
+      color: white;
+      padding: 1rem 2rem;
+      font-size: 1.4rem;
+    }
+    main {
+      max-width: 900px;
+      margin: 2rem auto;
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    h1, h2, h3 {
+      color: #2c3e50;
+    }
+    pre {
+      background: #282c34;
+      color: #f8f8f2;
+      padding: 1rem;
+      border-radius: 6px;
+      overflow-x: auto;
+      position: relative;
+    }
+    code {
+      font-family: "Courier New", monospace;
+    }
+    .copy-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: #3498db;
+      color: white;
+      border: none;
+      padding: 0.3rem 0.6rem;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+    ul, ol {
+      padding-left: 1.2rem;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1rem 0;
+    }
+    table th, table td {
+      border: 1px solid #ddd;
+      padding: 0.6rem;
+      text-align: center;
+    }
+    table th {
+      background: #f1f1f1;
+    }
+  </style>
+</head>
+<body>
+
+<header>ロジックツリー自動生成Webアプリ - ファイル構成マニュアル</header>
+
+<main>
+  <h1>1. プロジェクト全体のフォルダ構成</h1>
+  <p>
+    「Python + FastAPI」のバックエンドと「React」のフロントエンドを分けて管理します。
+  </p>
+  <pre><button class="copy-btn" onclick="copyCode(this)">コピー</button><code>my-awesome-app/
+├── .gitignore          # Gitで管理しないファイルを指定
+├── backend/            # FastAPIのコード置き場
+└── frontend/           # Reactのコード置き場</code></pre>
+  <ul>
+    <li><strong>.gitignore</strong>：node_modulesや.venvなどを除外</li>
+    <li><strong>backend/</strong>：サーバーサイド（FastAPI）のコード</li>
+    <li><strong>frontend/</strong>：フロントエンド（React）のコード</li>
+  </ul>
+
+  <h1>2. バックエンド（Python + FastAPI）構成</h1>
+  <pre><button class="copy-btn" onclick="copyCode(this)">コピー</button><code>backend/
+├── .venv/               # 仮想環境（Git管理外）
+├── .env                 # APIキーなど秘密情報（Git管理外）
+├── main.py              # FastAPIアプリのメイン
+└── requirements.txt     # 必要ライブラリ一覧</code></pre>
+
+  <h3>.env ファイル例</h3>
+  <pre><button class="copy-btn" onclick="copyCode(this)">コピー</button><code>GEMINI_API_KEY="ここにあなたのAPIキーを貼り付け"</code></pre>
+
+  <h3>main.py の簡単な例</h3>
+  <pre><button class="copy-btn" onclick="copyCode(this)">コピー</button><code>from fastapi import FastAPI
+from dotenv import load_dotenv
+import os
+
+load_dotenv()  # .envを読み込む
+
+app = FastAPI()
+API_KEY = os.getenv("GEMINI_API_KEY")
+
+@app.get("/")
+def read_root():
+    return {"Hello": "World"}
+
+# ここにロジックツリー生成APIを追加</code></pre>
+
+  <h3>requirements.txt の例</h3>
+  <pre><button class="copy-btn" onclick="copyCode(this)">コピー</button><code>fastapi
+uvicorn
+python-dotenv
+google-generativeai</code></pre>
+
+  <h1>3. フロントエンド（React）構成</h1>
+  <p>Viteを使ってReactプロジェクトを作成します：</p>
+  <pre><button class="copy-btn" onclick="copyCode(this)">コピー</button><code>npm create vite@latest frontend -- --template react</code></pre>
+  
+  <pre><button class="copy-btn" onclick="copyCode(this)">コピー</button><code>frontend/
+├── node_modules/       # Git管理外
+├── public/
+├── src/
+│   ├── components/
+│   │   └── MindMap.jsx # D3.jsを使った描画処理
+│   ├── App.jsx
+│   └── main.jsx
+├── .gitignore
+├── index.html
+├── package.json
+└── vite.config.js</code></pre>
+  <p>
+    <strong>src/components/MindMap.jsx：</strong>D3.jsでロジックツリーを描画する主要コンポーネント。<br>
+    <strong>src/App.jsx：</strong>全体レイアウトを制御。
+  </p>
+
+  <h1>4. iPadで開発するならReplitが最適</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>比較項目</th>
+        <th>Replit（推奨）</th>
+        <th>ブラウザVS Code</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>コード編集</td><td>◎</td><td>◎</td></tr>
+      <tr><td>サーバー実行</td><td>◎（FastAPI, React対応）</td><td>×（不可）</td></tr>
+      <tr><td>ターミナル</td><td>◎</td><td>×</td></tr>
+      <tr><td>手軽さ</td><td>◎</td><td>△</td></tr>
+      <tr><td>公開機能</td><td>◎（ボタン一つ）</td><td>なし</td></tr>
+    </tbody>
+  </table>
+  <p>
+    <strong>結論：</strong>開発～実行～テストまで完結できる<strong>Replit</strong>が最適。<br>
+    VS Code（ブラウザ版）はコード閲覧・軽微修正向き。
+  </p>
+</main>
+
+<script>
+function copyCode(button) {
+  const codeBlock = button.nextElementSibling.innerText;
+  navigator.clipboard.writeText(codeBlock).then(() => {
+    button.innerText = "コピー済み";
+    setTimeout(() => button.innerText = "コピー", 2000);
+  });
+}
+</script>
+
+</body>
+</html>
