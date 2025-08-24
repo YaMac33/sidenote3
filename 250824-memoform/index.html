@@ -1,0 +1,189 @@
+\<\!DOCTYPE html\>
+
+\<html lang="ja"\>
+\<head\>
+\<meta charset="UTF-8"\>
+\<meta name="viewport" content="width=device-width, initial-scale=1.0"\>
+\<title\>Notionと連携するデータベース自動化マニュアル\</title\>
+\<style\>
+body {
+font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+line-height: 1.6;
+margin: 0;
+padding: 20px;
+background-color: \#f7f9fc;
+color: \#333;
+}
+.container {
+max-width: 800px;
+margin: 0 auto;
+background-color: \#fff;
+padding: 40px;
+border-radius: 12px;
+box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+h1, h2 {
+color: \#2c3e50;
+border-bottom: 2px solid \#e0e6ed;
+padding-bottom: 10px;
+margin-top: 30px;
+}
+h1 {
+border-bottom: none;
+text-align: center;
+font-size: 2.5em;
+margin-bottom: 20px;
+}
+h2 {
+font-size: 1.8em;
+}
+.step {
+margin-bottom: 30px;
+}
+.step-number {
+font-size: 1.2em;
+font-weight: bold;
+color: \#555;
+display: block;
+margin-bottom: 5px;
+}
+.code-block {
+position: relative;
+background-color: \#ecf0f1;
+padding: 15px;
+border-radius: 8px;
+overflow-x: auto;
+font-family: 'Courier New', Courier, monospace;
+font-size: 0.9em;
+white-space: pre-wrap;
+word-wrap: break-word;
+}
+.copy-button {
+position: absolute;
+top: 10px;
+right: 10px;
+background-color: \#3498db;
+color: \#fff;
+border: none;
+padding: 8px 12px;
+border-radius: 5px;
+cursor: pointer;
+font-size: 12px;
+opacity: 0.8;
+transition: opacity 0.2s;
+}
+.copy-button:hover {
+opacity: 1;
+}
+ul {
+padding-left: 25px;
+}
+li {
+margin-bottom: 10px;
+}
+.note {
+background-color: \#f0f8ff;
+border-left: 4px solid \#3498db;
+padding: 15px;
+border-radius: 5px;
+margin-top: 20px;
+}
+hr {
+border: 0;
+height: 1px;
+background: \#e0e6ed;
+margin: 40px 0;
+}
+\</style\>
+\</head\>
+\<body\>
+
+\<div class="container"\>
+\<h1\>Notion連携データベース自動化マニュアル\</h1\>
+\<p\>このマニュアルでは、Notionでメモを自動的にデータベースに保存する方法と、入力フォームを作成する方法を解説します。プログラミングの知識は不要です。\</p\>
+
+```
+<h2>Notionデータベースへの自動保存</h2>
+<p>テキストを入力すると自動でタイムスタンプを付けてデータベースに保存される仕組みを作成します。これには、Notionの**「作成日時」**プロパティを利用します。</p>
+
+<div class="step">
+    <span class="step-number">ステップ 1: データベースの作成</span>
+    <p>新しいNotionページで、スラッシュコマンド（`/`）から「データベース」を選択し、インラインまたはフルページで作成します。</p>
+    <p>データベースに以下のプロパティを追加します。</p>
+    <ul>
+        <li>**名前（Title）**: メモのタイトル</li>
+        <li>**本文（Text）**: メモの内容</li>
+        <li>**作成日時（Created Date）**: タイムスタンプ用</li>
+    </ul>
+    <div class="note">
+        <strong>💡 プロパティの注意点：</strong>
+        <br>
+        「作成日時」プロパティは、ページが作られた最初の時点を自動で記録します。
+        似たプロパティの「最終更新日時（Last Edited Time）」は、編集するたびに日時が更新されるので、タイムスタンプを記録したい場合は「作成日時」を選んでください。
+    </div>
+</div>
+
+<hr>
+
+<h2>Notionに「書き込みフォーム」を作成</h2>
+<p>Notionアカウントを持たない人でも簡単にデータを入力できるように、フォームを作成します。</p>
+
+<div class="step">
+    <span class="step-number">方法 1: Notionのネイティブフォーム機能を利用する</span>
+    <p>追加ツールは不要です。Notionのデータベースをフォームとして公開できます。</p>
+    <ol>
+        <li>**データベースの作成**: 上記のステップ1で作成したデータベースを使用します。</li>
+        <li>**フォームビューの作成**: データベースの上部にある「`+`」ボタンをクリックし、ビューの選択肢から「**フォーム**」を選びます。</li>
+        <li>**フォームの設定**: フォームビューに切り替わったら、プロパティを「必須」にしたり、説明を追加したりとカスタマイズします。</li>
+        <li>**フォームの共有**: 作成したフォームはURLをコピーして、外部に共有するだけで利用可能です。</li>
+    </ol>
+</div>
+
+<hr>
+
+<div class="step">
+    <span class="step-number">方法 2: 外部のフォームツールと連携する</span>
+    <p>より高度なフォームを作成したい場合に適しています。Notion専用のフォームツール**「NotionEasyForm」**を使用する方法を例に解説します。</p>
+
+    <ol>
+        <li>**NotionEasyFormの連携設定**:
+            <p>NotionEasyFormにアカウント登録し、Notionとの連携を行います。この際、Notionの**APIキー（シークレットトークン）**が必要になります。</p>
+            <div class="code-block" id="api-block">
+                <button class="copy-button" onclick="copyCode('api-block')">コピー</button>
+                Notionの設定 > インテグレーション > 新しいインテグレーションを開発する
+            </div>
+        </li>
+        <li>**フォームの作成**:
+            <p>NotionEasyFormの画面で、フォームの元となるNotionデータベースを選択します。フォームの項目は、データベースのプロパティから自動で生成されます。</p>
+        </li>
+        <li>**フォームの共有**:
+            <p>フォームが完成したら、URLを取得して共有します。回答は自動でNotionのデータベースに追加されます。</p>
+        </li>
+    </ol>
+</div>
+```
+
+\</div\>
+
+\<script\>
+function copyCode(elementId) {
+const codeBlock = document.getElementById(elementId);
+const textToCopy = codeBlock.textContent.trim().replace(/コピー$/, '').trim();
+
+```
+// Fallback for older browsers
+const tempTextarea = document.createElement(&#39;textarea&#39;);
+tempTextarea.value = textToCopy;
+document.body.appendChild(tempTextarea);
+tempTextarea.select();
+document.execCommand(&#39;copy&#39;);
+document.body.removeChild(tempTextarea);
+
+alert(&#39;コードがコピーされました！&#39;);
+```
+
+}
+\</script\>
+
+\</body\>
+\</html\>
