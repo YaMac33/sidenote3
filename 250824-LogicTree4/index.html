@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>25.8.25 概要</title>
+  <style>
+    :root{
+      --bg:#f6f8fb;
+      --card:#ffffff;
+      --ink:#1f2937;
+      --muted:#6b7280;
+      --primary:#2563eb;
+      --ok:#10b981;
+      --warn:#f59e0b;
+      --danger:#ef4444;
+      --code-bg:#0b1020;
+      --code-fg:#eaeefb;
+      --border:#e5e7eb;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      background:var(--bg);
+      color:var(--ink);
+      line-height:1.65;
+    }
+    header{
+      background:var(--primary);
+      color:#fff;
+      padding:1.25rem 1.5rem;
+    }
+    header h1{
+      margin:0;
+      font-size:1.3rem;
+      letter-spacing:.02em;
+    }
+    main{
+      max-width:980px;
+      margin:24px auto 64px;
+      padding:0 16px;
+    }
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:20px;
+      margin-bottom:16px;
+      box-shadow:0 6px 20px rgba(16,24,40,.04);
+    }
+    h2{font-size:1.1rem;margin:.2rem 0 0.8rem}
+    h3{font-size:1rem;margin:1.2rem 0 .6rem}
+    .meta{
+      display:grid;
+      grid-template-columns:120px 1fr;
+      gap:8px 16px;
+      border:1px dashed var(--border);
+      border-radius:10px;
+      padding:12px;
+      background:#fafbff;
+    }
+    .label{color:var(--muted)}
+    .pill{
+      display:inline-flex;align-items:center;gap:.45rem;
+      padding:.15rem .6rem;border-radius:999px;font-size:.8rem;
+      border:1px solid var(--border);background:#fff;
+    }
+    .pill.ok{border-color:#a7f3d0;background:#ecfdf5;color:#065f46}
+    .pill.warn{border-color:#fde68a;background:#fffbeb;color:#92400e}
+    .box{
+      border:1px solid var(--border);
+      border-radius:10px;
+      background:#fff;
+      padding:12px 14px;
+    }
+    .steps ol{margin:0;padding-left:1.2rem}
+    .steps li{margin:.4rem 0 .6rem}
+    pre{
+      position:relative;
+      background:var(--code-bg);
+      color:var(--code-fg);
+      border-radius:10px;
+      padding:14px 12px;
+      overflow:auto;
+      border:1px solid rgba(255,255,255,.08);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.03);
+      margin:10px 0 2px;
+    }
+    code{font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; font-size:.92rem}
+    .copy{
+      position:absolute; top:8px; right:8px;
+      background:var(--primary); border:none; color:#fff;
+      padding:.35rem .55rem; font-size:.8rem; border-radius:8px;
+      cursor:pointer;
+    }
+    .copy.copied{background:var(--ok)}
+    .hint{color:var(--muted); font-size:.9rem; margin:0 0 6px}
+    .grid-2{display:grid; gap:12px; grid-template-columns:1fr; }
+    @media (min-width:840px){ .grid-2{grid-template-columns:1fr 1fr} }
+    .callout{
+      border-left:4px solid var(--ok);
+      background:#f1fdf7;
+      padding:10px 12px; border-radius:8px; margin:.6rem 0;
+    }
+    .danger{border-left-color:var(--danger); background:#fef2f2}
+    .kbd{font-family:ui-monospace, monospace; background:#f3f4f6; border:1px solid #e5e7eb; padding:.05rem .35rem; border-radius:6px; font-size:.85em}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>25.8.25 概要</h1>
+  </header>
+
+  <main>
+    <!-- プロンプト & 回答 -->
+    <section class="card">
+      <h2>プロンプト（あなた）</h2>
+      <div class="box">
+        <div class="pill warn">事象</div>
+        <p class="hint">Replit 実行時のエラー</p>
+        <pre><button class="copy" onclick="copyCode(this)">コピー</button><code>Environment updated. Reloading shell...
+/nix/store/0nxvi9r5ymdlr2p24rjj9qzyms72zld1-bash-interactive-5.2p37/bin/bash: start.sh: No such file or directory</code></pre>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>回答（AI）</h2>
+      <div class="meta" style="margin-bottom:12px">
+        <div class="label">要約</div>
+        <div><span class="pill danger">原因: start.sh が存在しない</span> ／ <span class="pill ok">対処: ルート直下に start.sh を作成し起動コマンドを記述</span></div>
+        <div class="label">対象</div>
+        <div>Replit（FastAPI + React を同時起動する設定）</div>
+      </div>
+
+      <div class="callout">
+        <strong>なぜ起きた？</strong>  
+        <code>.replit</code> が <code>start.sh</code> の実行を指示しているのに、プロジェクト直下に <code>start.sh</code> が無いのが原因です。
+      </div>
+
+      <div class="steps">
+        <h3>解決手順（マニュアル）</h3>
+
+        <h4>1) 正しい場所に <code>start.sh</code> を作成する</h4>
+        <p>左のファイル一覧でルート（<span class="kbd">backend</span> / <span class="kbd">frontend</span> と同じ階層）を選び、<span class="kbd">+ Add file</span> → <span class="kbd">start.sh</span> を作成。</p>
+        <div class="hint">参考：ディレクトリ構成</div>
+        <pre><button class="copy" onclick="copyCode(this)">コピー</button><code>my-awesome-app/
+├── .replit
+├── start.sh   &lt;-- ★ ここに作成
+├── backend/
+└── frontend/</code></pre>
+
+        <h4>2) 下記スクリプトを <code>start.sh</code> に貼り付ける</h4>
+        <pre><button class="copy" onclick="copyCode(this)">コピー</button><code>#!/bin/bash
+
+# バックエンド（FastAPI）をバックグラウンドで起動します
+echo "Starting Backend..."
+cd backend
+uvicorn main:app --host 0.0.0.0 --port 8000 &
+
+# 一つ上の階層に戻ります
+cd ..
+
+# フロントエンド（React）を起動します
+echo "Starting Frontend..."
+cd frontend
+npm run dev -- --host</code></pre>
+        <p class="hint">※ Replit でプレビュー表示するため <code>--host</code> を付与しています。</p>
+
+        <div class="grid-2">
+          <div class="callout">
+            <strong>3) 役割のメモ</strong>
+            <ul>
+              <li><code>cd backend</code>：バックエンドへ移動</li>
+              <li><code>uvicorn ... &amp;</code>：FastAPI を<strong>並行</strong>起動</li>
+              <li><code>cd ..</code>：ルートへ戻る</li>
+              <li><code>cd frontend</code>：フロントへ移動</li>
+              <li><code>npm run dev -- --host</code>：React の開発サーバー起動</li>
+            </ul>
+          </div>
+          <div class="callout">
+            <strong>4) 実行</strong>
+            <p>ファイル保存後、Replit の <span class="kbd">▶ Run</span> を押すだけで FastAPI と React が両方起動します。</p>
+          </div>
+        </div>
+
+        <h3>トラブル時のチェックリスト</h3>
+        <ul>
+          <li><strong>権限</strong>：エラーが続く場合は <code>start.sh</code> の先頭 <code>#!/bin/bash</code> があるか確認。</li>
+          <li><strong>場所</strong>：<code>start.sh</code> が必ず「ルート直下」にあるか。</li>
+          <li><strong>ポート競合</strong>：他の Repl やタブで同じポートを使っていないか。</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>付録：関連ファイルのひな型</h2>
+      <div class="grid-2">
+        <div>
+          <h3>.replit（例）</h3>
+          <pre><button class="copy" onclick="copyCode(this)">コピー</button><code># .replit
+run = "bash start.sh"
+
+[packager]
+language = "python3"</code></pre>
+        </div>
+        <div>
+          <h3>backend/main.py（最小テスト）</h3>
+          <pre><button class="copy" onclick="copyCode(this)">コピー</button><code>from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.get("/api/test")
+def read_test():
+    return {"message": "Backend OK"}</code></pre>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    function copyCode(btn){
+      const code = btn.nextElementSibling.innerText;
+      navigator.clipboard.writeText(code).then(()=>{
+        const orig = btn.textContent;
+        btn.textContent = "コピーしました";
+        btn.classList.add("copied");
+        setTimeout(()=>{ btn.textContent = orig; btn.classList.remove("copied"); }, 1800);
+      });
+    }
+  </script>
+</body>
+</html>
