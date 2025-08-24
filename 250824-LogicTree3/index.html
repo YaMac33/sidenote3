@@ -1,1 +1,164 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>25.8.24 AIロジックツリー自動生成ツール 作成マニュアル3</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      line-height: 1.6;
+      background: #f7f9fc;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: #2c3e50;
+      color: white;
+      padding: 1rem 2rem;
+      font-size: 1.4rem;
+    }
+    main {
+      max-width: 950px;
+      margin: 2rem auto;
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    h1, h2, h3 {
+      color: #2c3e50;
+    }
+    pre {
+      background: #282c34;
+      color: #f8f8f2;
+      padding: 1rem;
+      border-radius: 6px;
+      overflow-x: auto;
+      position: relative;
+    }
+    code {
+      font-family: "Courier New", monospace;
+    }
+    .copy-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: #3498db;
+      color: white;
+      border: none;
+      padding: 0.3rem 0.6rem;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+    ul, ol {
+      padding-left: 1.2rem;
+    }
+  </style>
+</head>
+<body>
 
+<header>ReplitでFastAPI+Reactプロジェクトを開始する手順</header>
+
+<main>
+
+<h1>ステップ1：Replitアカウント登録とプロジェクト作成</h1>
+<ol>
+  <li><a href="https://replit.com/" target="_blank">Replit公式サイト</a>にアクセス</li>
+  <li>Google / GitHub / Appleアカウントでサインアップ</li>
+  <li>ホーム画面左上の <strong>+ Create Repl</strong> をクリック</li>
+  <li>テンプレート検索で「Python」を選択</li>
+  <li>プロジェクト名を入力（例：<code>ai-logic-tree</code>）→ <strong>+ Create Repl</strong></li>
+</ol>
+
+<h1>ステップ2：バックエンド（FastAPI）の準備</h1>
+<h3>1. ライブラリのインストール</h3>
+<pre><button class="copy-btn" onclick="copyCode(this)">コピー</button><code>pip install fastapi
+pip install uvicorn[standard]
+pip install python-dotenv
+pip install google-generativeai</code></pre>
+
+<h3>2. main.pyの編集</h3>
+<pre><button class="copy-btn" onclick="copyCode(this)">コピー</button><code>from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+import uvicorn
+
+app = FastAPI()
+
+# CORS設定
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.get("/api/test")
+def read_test():
+    return {"message": "バックエンドからのメッセージです！"}
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)</code></pre>
+
+<h3>3. バックエンドの起動確認</h3>
+<ul>
+  <li>画面上部の<strong>▶ Run</strong>ボタンをクリック</li>
+  <li><code>INFO: Application startup complete.</code> と表示されればOK</li>
+</ul>
+
+<h1>ステップ3：フロントエンド（React）の準備</h1>
+<h3>1. Reactプロジェクト作成</h3>
+<pre><button class="copy-btn" onclick="copyCode(this)">コピー</button><code>npm create vite@latest frontend -- --template react</code></pre>
+
+<h3>2. ライブラリのインストール</h3>
+<pre><button class="copy-btn" onclick="copyCode(this)">コピー</button><code>cd frontend
+npm install</code></pre>
+
+<h1>ステップ4：バックエンドとフロントエンドの同時起動設定</h1>
+<h3>1. .replitファイルを編集</h3>
+<pre><button class="copy-btn" onclick="copyCode(this)">コピー</button><code># .replit
+run = "bash start.sh"
+
+[packager]
+language = "python3"
+
+[[nix.channels]]
+name = "unstable"
+path = "github:NixOS/nixpkgs/nixpkgs-unstable"</code></pre>
+
+<h3>2. start.shを新規作成</h3>
+<pre><button class="copy-btn" onclick="copyCode(this)">コピー</button><code>#!/bin/bash
+
+echo "Starting Backend..."
+python main.py &
+
+echo "Starting Frontend..."
+cd frontend
+npm run dev</code></pre>
+
+<h1>ステップ5：動作確認</h1>
+<ol>
+  <li><strong>▶ Run</strong>を一度停止→再実行</li>
+  <li>バックエンドとフロントエンドのログが出力されることを確認</li>
+  <li>右上WebViewにReactの初期画面が表示されれば成功！</li>
+</ol>
+
+<p>これで1つのReplitプロジェクト内でFastAPIとReactを同時に動かす環境が完成しました。</p>
+
+</main>
+
+<script>
+function copyCode(button) {
+  const codeBlock = button.nextElementSibling.innerText;
+  navigator.clipboard.writeText(codeBlock).then(() => {
+    button.innerText = "コピー済み";
+    setTimeout(() => button.innerText = "コピー", 2000);
+  });
+}
+</script>
+
+</body>
+</html>
