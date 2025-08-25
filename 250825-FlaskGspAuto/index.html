@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>25.8.25 Flask+スプレッドシート+OpenAI連携マニュアル</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2, h3 {
+            border-bottom: 2px solid #4a90e2;
+            padding-bottom: 10px;
+            margin-top: 40px;
+            color: #4a90e2;
+        }
+        h1 {
+            font-size: 2em;
+        }
+        h2 {
+            font-size: 1.5em;
+        }
+        h3 {
+            font-size: 1.2em;
+            border-bottom-style: dotted;
+        }
+        code {
+            font-family: 'Courier New', Courier, monospace;
+        }
+        .code-block-container {
+            position: relative;
+            margin: 20px 0;
+        }
+        pre {
+            background-color: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 5px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #626262;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .copy-btn:hover {
+            background-color: #4a90e2;
+        }
+        .copy-btn.copied {
+            background-color: #28a745;
+        }
+        ul, ol {
+            padding-left: 20px;
+        }
+        li {
+            margin-bottom: 10px;
+        }
+        hr {
+            border: 0;
+            height: 1px;
+            background: #ddd;
+            margin: 40px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>25.8.25 Flask+スプレッドシート+OpenAI連携マニュアル</h1>
+        <p>はい、Flask＋Googleスプレッドシート＋OpenAI＋翻訳まで全部入りをReplitで動かすことは可能です。<br>
+        ただし、いくつか事前準備と注意点があります。</p>
+
+        <hr>
+
+        <h2>Replitで実装する前の準備</h2>
+        <ol>
+            <li><strong>OpenAI APIキーの取得</strong>
+                <ul>
+                    <li><a href="https://platform.openai.com" target="_blank">https://platform.openai.com</a> で発行</li>
+                </ul>
+            </li>
+            <li><strong>DeepL APIキーの取得（またはOpenAIで翻訳）</strong>
+                <ul>
+                    <li><a href="https://www.deepl.com/pro" target="_blank">https://www.deepl.com/pro</a> で無料版APIキーを取得可能</li>
+                    <li>もしくはOpenAIのgpt-4o-miniなどで翻訳</li>
+                </ul>
+            </li>
+            <li><strong>Googleスプレッドシートの用意</strong>
+                <ul>
+                    <li><code>rooms</code>シート（room_id, title, created_at, last_updated）</li>
+                    <li><code>messages</code>シート（message_id, room_id, role, content_ja, content_en, timestamp）</li>
+                </ul>
+            </li>
+            <li><strong>Google Cloudでサービスアカウント作成＋JSONキー取得</strong>
+                <ul>
+                    <li>gspreadでシート操作するための認証ファイルが必要</li>
+                    <li>Replitの「Secrets」にJSONキーの中身を環境変数として保存</li>
+                </ul>
+            </li>
+        </ol>
+
+        <hr>
+
+        <h2>Flaskアプリ構成（Replit用）</h2>
+        <div class="code-block-container">
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+            <pre><code>/app.py            ← Flaskメインサーバ
+/templates/
+   index.html       ← ChatGPT風UI
+/static/
+   style.css        ← 簡単なCSS（Bootstrapでも可）
+   script.js        ← API呼び出し用のJS</code></pre>
+        </div>
+
+        <hr>
+
+        <h2>処理の流れ</h2>
+        <ol>
+            <li><code>index.html</code>ロード → ルーム一覧取得（<code>GET /rooms</code>）</li>
+            <li>ルーム選択 or 新規作成 → Flaskが<code>room_id</code>を返す</li>
+            <li>メッセージ送信 →
+                <ul>
+                    <li>OpenAI APIで回答取得</li>
+                    <li>翻訳APIで英訳</li>
+                    <li>Googleスプレッドシートに保存</li>
+                </ul>
+            </li>
+            <li>画面に即時表示（非同期で追加）</li>
+        </ol>
+
+        <hr>
+
+        <h2>サンプルコード（全部入り最小構成）</h2>
+
+        <h3>app.py</h3>
+        <div class="code-block-container">
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+            <pre><code class="language-python">import os
+import uuid
+import datetime
+from flask import Flask, render_template, request, jsonify
+import openai
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
+
+# ===== 設定 =====
+openai.api_key = os.environ["OPENAI_API_KEY"]
+DEEPL_KEY = os.environ.get("DEEPL_API_KEY")  # DeepL使う場合
+
+# Google Sheets 認証
+scope = ["https://spreadsheets.google.com/feeds","https://www.googleapis.com/auth/drive"]
+creds_dict = {
+    # ReplitのSecretsに入れたJSONキーを環境変数として取得してdict化
+    "type": os.environ["GCP_TYPE"],
+    "project_id": os.environ["GCP_PROJECT_ID"],
+    "private_key_id": os.environ["GCP_PRIVATE_KEY_ID"],
+    "private_key": os.environ["GCP_PRIVATE_KEY"].replace("\\n", "\n"),
+    "client_email": os.environ["GCP_CLIENT_EMAIL"],
+    "client_id": os.environ["GCP_CLIENT_ID"],
+    "auth_uri": os.environ["GCP_AUTH_URI"],
+    "token_uri": os.environ["GCP_TOKEN_URI"],
+    "auth_provider_x509_cert_url": os.environ["GCP_AUTH_PROVIDER_X509_CERT_URL"],
+    "client_x509_cert_url": os.environ["GCP_CLIENT_X509_CERT_URL"]
+}
+creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
+client = gspread.authorize(creds)
+
+# スプレッドシート取得
+sheet_rooms = client.open("YourSheetName").worksheet("rooms")
+sheet_msgs = client.open("YourSheetName").worksheet("messages")
+
+app = Flask(__name__)
+
+# ===== ユーティリティ =====
+def call_chatgpt(prompt):
+    res = openai.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[{"role": "user", "content": prompt}],
+    )
+    return res.choices[0].message["content"]
+
+def translate_to_en(text):
+    # OpenAIで翻訳（DeepLに置き換え可）
+    res = openai.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[{"role": "user", "content": f"Translate to English: {text}"}],
+    )
+    return res.choices[0].message["content"]
+
+def save_room(title):
+    room_id = str(uuid.uuid4())
+    now = datetime.datetime.now().isoformat()
+    sheet_rooms.append_row([room_id, title, now, now])
+    return room_id
+
+def save_message(room_id, role, content_ja, content_en):
+    msg_id = str(uuid.uuid4())
+    now = datetime.datetime.now().isoformat()
+    sheet_msgs.append_row([msg_id, room_id, role, content_ja, content_en, now])
+    return msg_id
+
+# ===== APIエンドポイント =====
+@app.route("/")
+def index():
+    return render_template("index.html")
+
+@app.route("/rooms", methods=["GET"])
+def get_rooms():
+    rows = sheet_rooms.get_all_values()[1:]  # ヘッダー除外
+    data = [{"id": r[0], "title": r[1]} for r in rows]
+    return jsonify(data)
+
+@app.route("/rooms", methods=["POST"])
+def create_room():
+    title = request.json.get("title", "New Chat")
+    room_id = save_room(title)
+    return jsonify({"room_id": room_id})
+
+@app.route("/rooms/&lt;room_id&gt;/messages", methods=["GET"])
+def get_messages(room_id):
+    rows = sheet_msgs.get_all_values()[1:]
+    msgs = [r for r in rows if r[1] == room_id]
+    data = [{"role": r[2], "content_ja": r[3], "content_en": r[4]} for r in msgs]
+    return jsonify(data)
+
+@app.route("/rooms/&lt;room_id&gt;/messages", methods=["POST"])
+def post_message(room_id):
+    prompt = request.json.get("prompt")
+    response_ja = call_chatgpt(prompt)
+    prompt_en = translate_to_en(prompt)
+    response_en = translate_to_en(response_ja)
+
+    save_message(room_id, "user", prompt, prompt_en)
+    save_message(room_id, "assistant", response_ja, response_en)
+
+    return jsonify({
+        "prompt_ja": prompt,
+        "prompt_en": prompt_en,
+        "response_ja": response_ja,
+        "response_en": response_en
+    })
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=8080)</code></pre>
+        </div>
+
+        <h3>templates/index.html（超簡易UI）</h3>
+        <div class="code-block-container">
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+            <pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+  &lt;title&gt;ChatGPT風チャット&lt;/title&gt;
+  &lt;script&gt;
+  async function loadRooms() {
+    const res = await fetch("/rooms");
+    const rooms = await res.json();
+    const list = document.getElementById("rooms");
+    list.innerHTML = "";
+    rooms.forEach(r => {
+      const li = document.createElement("li");
+      li.innerHTML = `&lt;a href="#" onclick="selectRoom('${r.id}')"&gt;${r.title}&lt;/a&gt;`;
+      list.appendChild(li);
+    });
+  }
+  async function selectRoom(id) {
+    window.currentRoom = id;
+    const res = await fetch(`/rooms/${id}/messages`);
+    const msgs = await res.json();
+    const chat = document.getElementById("chat");
+    chat.innerHTML = "";
+    msgs.forEach(m => {
+      const div = document.createElement("div");
+      div.innerText = `${m.role}: ${m.content_ja}`;
+      chat.appendChild(div);
+    });
+  }
+  async function sendMessage() {
+    const prompt = document.getElementById("prompt").value;
+    const res = await fetch(`/rooms/${window.currentRoom}/messages`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt })
+    });
+    const data = await res.json();
+    selectRoom(window.currentRoom);
+  }
+  window.onload = loadRooms;
+  &lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;h1&gt;ChatGPT風チャット&lt;/h1&gt;
+  &lt;div style="float:left; width:20%;"&gt;
+    &lt;h3&gt;ルーム&lt;/h3&gt;
+    &lt;ul id="rooms"&gt;&lt;/ul&gt;
+  &lt;/div&gt;
+  &lt;div style="float:left; width:75%;"&gt;
+    &lt;div id="chat" style="height:300px; overflow:auto; border:1px solid #ccc;"&gt;&lt;/div&gt;
+    &lt;input id="prompt" style="width:80%;" /&gt;&lt;button onclick="sendMessage()"&gt;送信&lt;/button&gt;
+  &lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+        </div>
+
+        <hr>
+
+        <h2>次のステップ</h2>
+        <ol>
+            <li>ReplitでFlask環境を作成</li>
+            <li>Googleスプレッドシート＋APIキーのSecrets設定</li>
+            <li>このコードを貼って動作確認</li>
+            <li>見た目をChatGPT風にCSSで調整</li>
+        </ol>
+
+        <hr>
+        
+        <p>この構成であればチャットルーム管理・日本語と英語の両方保存・ブラウザ上で動作が全部実現できます。</p>
+        <p>次は、このままReplit用にセットアップ手順（Secretsの入れ方、シート設定）をまとめますか？</p>
+
+    </div>
+
+    <script>
+        function copyCode(button) {
+            const pre = button.nextElementSibling;
+            const code = pre.querySelector('code');
+            const textToCopy = code.innerText;
+
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                button.textContent = 'Copied!';
+                button.classList.add('copied');
+                setTimeout(() => {
+                    button.textContent = 'Copy';
+                    button.classList.remove('copied');
+                }, 2000);
+            }).catch(err => {
+                console.error('コピーに失敗しました', err);
+                button.textContent = 'Error';
+            });
+        }
+    </script>
+
+</body>
+</html>
