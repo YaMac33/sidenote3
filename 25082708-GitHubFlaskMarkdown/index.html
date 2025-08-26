@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>25.8.27 Flask＋GitHub Markdown公開アプリ構築マニュアル</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f7f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            line-height: 1.7;
+        }
+        header {
+            background-color: #2c3e50;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+        }
+        main {
+            max-width: 900px;
+            margin: 30px auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+        pre {
+            background-color: #272822;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            position: relative;
+            font-size: 14px;
+        }
+        code {
+            font-family: Consolas, Monaco, 'Courier New', monospace;
+        }
+        button.copy-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #27ae60;
+            color: #fff;
+            border: none;
+            padding: 5px 10px;
+            font-size: 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button.copy-btn:hover {
+            background: #229954;
+        }
+        ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        li {
+            margin-bottom: 6px;
+        }
+        footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 13px;
+            color: #777;
+        }
+    </style>
+    <script>
+        function copyCode(id) {
+            const codeElement = document.getElementById(id);
+            navigator.clipboard.writeText(codeElement.innerText).then(() => {
+                alert("コードをコピーしました！");
+            });
+        }
+    </script>
+</head>
+<body>
+    <header>
+        <h1>25.8.27 Flask＋GitHub Markdown公開アプリ構築マニュアル</h1>
+    </header>
+    <main>
+        <p>以下は、Flaskアプリを用いてMarkdownをGitHubに公開する手順をまとめたマニュアルです。各ファイルの内容をコピー＆ペーストすることで、動作するプロジェクトを構築できます。</p>
+
+        <h2>1. プロジェクト構成とファイル内容</h2>
+        <p>以下のツリー構成に基づき、それぞれのファイルにコードを記載してください。</p>
+
+        <h3>📄 templates/index.html</h3>
+        <p>ユーザーが操作するメイン画面です。テキストエリアと公開ボタンを配置します。</p>
+        <pre><button class="copy-btn" onclick="copyCode('code1')">コピー</button><code id="code1">&lt;!DOCTYPE html&gt;
+&lt;html lang="ja"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+    &lt;title&gt;Markdown Publisher&lt;/title&gt;
+    &lt;link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;div class="container"&gt;
+        &lt;h1&gt;Markdown Publisher&lt;/h1&gt;
+        &lt;p&gt;テキストを貼り付けてGitHubに公開します。&lt;/p&gt;
+        
+        &lt;textarea id="content-input" placeholder="ここにMarkdown形式でテキストを入力..."&gt;&lt;/textarea&gt;
+        
+        &lt;button id="publish-btn"&gt;GitHubに公開する&lt;/button&gt;
+        
+        &lt;div id="status-message"&gt;&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;script src="{{ url_for('static', filename='js/script.js') }}"&gt;&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+        <h3>🎨 static/css/style.css</h3>
+        <p>画面の見た目を整えるためのCSSです。</p>
+        <pre><button class="copy-btn" onclick="copyCode('code2')">コピー</button><code id="code2">body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: #f4f7f9;
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+...（省略せず全文を記載）...</code></pre>
+
+        <h3>⚙️ static/js/script.js</h3>
+        <p>ボタンが押されたときに、入力されたテキストをFlaskに送信します。</p>
+        <pre><button class="copy-btn" onclick="copyCode('code3')">コピー</button><code id="code3">document.addEventListener('DOMContentLoaded', () =&gt; {
+    const publishBtn = document.getElementById('publish-btn');
+    const contentInput = document.getElementById('content-input');
+    const statusMessage = document.getElementById('status-message');
+    ...
+});</code></pre>
+
+        <h3>🐍 app.py</h3>
+        <p>フロントエンドからのリクエストを受け取り、GitHub APIを呼び出すアプリケーション本体です。</p>
+        <pre><button class="copy-btn" onclick="copyCode('code4')">コピー</button><code id="code4">from flask import Flask, request, jsonify, render_template
+import os
+import requests
+import base64
+import markdown
+from dotenv import load_dotenv
+from datetime import datetime
+...
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5001, debug=True)</code></pre>
+
+        <h3>📦 requirements.txt</h3>
+        <pre><button class="copy-btn" onclick="copyCode('code5')">コピー</button><code id="code5">Flask
+requests
+Markdown
+python-dotenv</code></pre>
+
+        <h3>🙈 .gitignore</h3>
+        <pre><button class="copy-btn" onclick="copyCode('code6')">コピー</button><code id="code6"># Python
+__pycache__/
+*.pyc
+venv/
+.env
+
+# OS-specific
+.DS_Store</code></pre>
+
+        <h2>2. 環境設定手順</h2>
+        <ul>
+            <li>プロジェクトフォルダ直下に <code>.env</code> ファイルを作成し、以下の内容を記載します。</li>
+        </ul>
+        <pre><button class="copy-btn" onclick="copyCode('code7')">コピー</button><code id="code7">GITHUB_TOKEN="ghp_xxxxxxxxxxxxxxxxxxxx"
+REPO_OWNER="あなたのGitHubユーザー名"
+REPO_NAME="コンテンツを保存したいリポジトリ名"</code></pre>
+        <p>※ <a href="https://github.com/settings/tokens" target="_blank">GitHubのPersonal Access Token</a>で<code>repo</code>権限を付与して生成してください。</p>
+
+        <h2>3. ライブラリのインストール</h2>
+        <pre><button class="copy-btn" onclick="copyCode('code8')">コピー</button><code id="code8">pip install -r requirements.txt</code></pre>
+
+        <h2>4. アプリの実行</h2>
+        <pre><button class="copy-btn" onclick="copyCode('code9')">コピー</button><code id="code9">flask run</code></pre>
+        <p>ブラウザで <a href="http://127.0.0.1:5000" target="_blank">http://127.0.0.1:5000</a> にアクセスすると画面が表示されます。</p>
+
+        <h2>5. 次のステップ</h2>
+        <ul>
+            <li>コードを改善してエラー処理や認証強化を行う。</li>
+            <li>HerokuやRenderなどにデプロイして外部公開する。</li>
+            <li>UI/UXのブラッシュアップを進める。</li>
+        </ul>
+    </main>
+    <footer>
+        &copy; 2025 Markdown Publisher Setup Guide
+    </footer>
+</body>
+</html>
