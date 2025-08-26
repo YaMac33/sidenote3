@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>25.8.27 .tsx基礎解説</title>
+  <style>
+    :root{
+      --bg:#0f1724; --card:#0b1220; --accent:#7c5cff; --muted:#9aa4b2; --glass: rgba(255,255,255,0.03);
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New", monospace;
+    }
+    html,body{height:100%; margin:0; font-family: "Noto Sans JP", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;}
+    body{
+      background: linear-gradient(180deg, #061226 0%, #071022 100%);
+      color:#e6eef8;
+      display:flex; align-items:flex-start; justify-content:center; padding:40px;
+    }
+    .wrap{width:100%; max-width:1100px;}
+    header{
+      display:flex; align-items:center; gap:16px; margin-bottom:26px;
+    }
+    .logo{
+      width:64px; height:64px; background:linear-gradient(135deg,var(--accent),#4bb6ff); border-radius:12px;
+      display:flex; align-items:center; justify-content:center; font-weight:700; color:white; font-family:var(--mono);
+      box-shadow:0 6px 20px rgba(124,92,255,0.18);
+    }
+    h1{font-size:20px; margin:0 0 2px 0;}
+    p.lead{margin:0;color:var(--muted); font-size:14px;}
+    main{display:grid; grid-template-columns: 1fr 420px; gap:24px;}
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:12px; padding:20px; box-shadow: 0 6px 30px rgba(2,6,23,0.6); border:1px solid rgba(255,255,255,0.03);
+    }
+    .content h2{margin-top:0; color:#fff;}
+    .section{margin-bottom:18px;}
+    .muted{color:var(--muted); font-size:13px;}
+    pre.code{
+      background: linear-gradient(180deg, #07142a, #051223);
+      padding:14px; border-radius:10px; overflow:auto; font-family:var(--mono); font-size:13px;
+      color:#dbeafe; position:relative; border:1px solid rgba(255,255,255,0.03);
+      margin:10px 0;
+    }
+    .copy{
+      position:absolute; right:10px; top:10px; background:var(--accent); color:#041028; border:none; padding:6px 8px; border-radius:6px;
+      font-weight:700; cursor:pointer; font-size:12px;
+    }
+    .original{
+      white-space:pre-wrap; background:var(--glass); padding:12px; border-radius:8px; color:#e8f1ff; font-size:14px; line-height:1.7;
+      border:1px solid rgba(255,255,255,0.02);
+    }
+    a.ref{color:#aab9ff; text-decoration:underline;}
+    footer{margin-top:18px; color:var(--muted); font-size:13px; text-align:right;}
+    /* Responsive */
+    @media(max-width:980px){
+      main{grid-template-columns: 1fr;}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="logo">.tsx</div>
+      <div>
+        <h1>25.8.27 .tsx基礎解説</h1>
+        <p class="lead">TypeScript + JSX（.tsx）ファイルの意味と利点を、原文を全掲載した上で分かりやすくマニュアル化しました。</p>
+      </div>
+    </header>
+
+    <main>
+      <!-- Left: manual content -->
+      <section class="card content" aria-labelledby="manual-title">
+        <h2 id="manual-title">マニュアル：.tsx の基本と使いどころ</h2>
+
+        <div class="section">
+          <h3>概要（要点）</h3>
+          <p class="muted">.tsx ファイルはTypeScriptとJSXを組み合わせたファイルで、特にReact等のライブラリでUIを作るときに用いられます。</p>
+        </div>
+
+        <div class="section">
+          <h3>本文（原文の要旨を先に簡潔に）</h3>
+          <ul>
+            <li><strong>.tsx = TypeScript + JSX</strong></li>
+            <li>TypeScriptは型定義により安全で読みやすいコードを書くための拡張言語。</li>
+            <li>JSXはJavaScript内にHTMLのような記述を直接書ける構文（Reactで主に使用）。</li>
+            <li>.tsxにより安全なUI開発、コード可読性向上、開発効率アップが期待できる。</li>
+          </ul>
+        </div>
+
+        <div class="section">
+          <h3>詳しい説明（段落ごとに意訳・補足）</h3>
+
+          <h4>1）.tsx を一言で</h4>
+          <p>.tsx ファイルは、一言で言うと「TypeScriptとJSXを組み合わせたファイル」です。Webサイトやアプリの見た目を作る際によく使われる、比較的新しいファイル形式です。</p>
+
+          <h4>2）もう少し詳しく（2つの要素に分解）</h4>
+          <p><strong>1. TypeScript (.ts)</strong><br>
+            TypeScriptは、JavaScriptをより安全で書きやすく拡張したプログラミング言語です。JavaScriptのスーパーセット（上位互換）であり、書いたコードは最終的にJavaScriptに変換されて動きます。</p>
+          <p class="muted">特徴: 型定義ができるため、変数や関数に入れるデータの種類をあらかじめ決められます。これにより、開発中にエラーを見つけやすくなり、コードの品質が向上します。</p>
+
+          <p><strong>2. JSX</strong><br>
+            JSXは、JavaScriptのコードの中に、HTMLのような見た目でUI（ユーザーインターフェース）の構造を直接書き込めるようにした構文です。主にReactというライブラリで使われます。</p>
+          <p class="muted">特徴: 通常、JavaScriptでHTML要素を作成するには <code>document.createElement('div')</code> のようなコードを書く必要がありますが、JSXを使うと <code>&lt;div className="greeting"&gt;こんにちは&lt;/div&gt;</code> のように直感的に書けます。</p>
+
+          <h4>3）なぜ .tsx を使うのか？（メリット）</h4>
+          <ul>
+            <li><strong>安全なUI開発</strong>：TypeScriptの型チェックにより、コンポーネントに渡すデータの間違いを事前に防げます。</li>
+            <li><strong>コードの可読性向上</strong>：ロジックとHTMLの構造が同じファイルにまとまるため、振る舞いと見た目が追いやすくなります。</li>
+            <li><strong>開発効率の向上</strong>：VS Codeなどで補完が強力に働き、タイピングミスが減ります。</li>
+          </ul>
+
+          <h4>4）まとめ</h4>
+          <p class="muted">まとめると、.tsx はTypeScriptの安全性とJSXの書きやすさを両立させた、モダンなWeb開発（特にReact開発）に欠かせないファイル形式と言えます。</p>
+        </div>
+
+        <div class="section">
+          <h3>実践メモ：よくある使い方（短いサンプル）</h3>
+
+          <p>以下は、実務で見ることが多い簡単なコンポーネント例（エスケープ済み）。ワンタッチでコピーできます。</p>
+
+          <pre class="code" id="sample1">&lt;!-- Greeting.tsx --&gt;
+import React from 'react';
+
+type Props = {
+  name: string;
+};
+
+export const Greeting: React.FC&lt;Props&gt; = ({ name }) =&gt; {
+  return &lt;div className="greeting"&gt;こんにちは、{name}さん&lt;/div&gt;;
+};</pre>
+          <button class="copy" data-target="sample1" onclick="copyToClipboard(event)">COPY</button>
+
+          <pre class="code" id="sample2">// 既存のDOM操作とJSXの違い（説明用）
+document.createElement('div')  // 通常のDOM生成（冗長）
+
+&lt;div className="greeting"&gt;こんにちは&lt;/div&gt;  // JSXだと直感的</pre>
+          <button class="copy" data-target="sample2" onclick="copyToClipboard(event)">COPY</button>
+
+        </div>
+
+        <div class="section">
+          <h3>注意点 / よくある質問</h3>
+          <ul>
+            <li><strong>拡張子をいつ .ts から .tsx にするか？</strong><br>
+              JSX（&lt;...&gt; を含む）コードを含む場合はファイル拡張子を <code>.tsx</code> にしてください。JSXを含まない純粋なTypeScriptファイルは <code>.ts</code> のままでOKです。</li>
+            <li><strong>型定義の扱い</strong><br>
+              Props の型やコンポーネントの戻り値（JSX.Element 等）を明示すると可読性と安全性が上がります。</li>
+            <li><strong>トランスパイル</strong><br>
+              TypeScript は tsc や Babel などで最終的に JavaScript に変換されます。プロジェクト設定（tsconfig.json）で JSX の扱いを指定できます。</li>
+          </ul>
+        </div>
+
+        <div class="section">
+          <h3>参考リンク</h3>
+          <ul>
+            <li><a class="ref" href="https://www.typescriptlang.org/docs/" target="_blank" rel="noopener">TypeScript 公式ドキュメント</a></li>
+            <li><a class="ref" href="https://ja.reactjs.org/docs/getting-started.html" target="_blank" rel="noopener">React 公式ドキュメント（日本語）</a></li>
+          </ul>
+        </div>
+
+        <footer>作成日: 2025-08-27</footer>
+      </section>
+
+      <!-- Right: original full text + quick tips -->
+      <aside class="card">
+        <h3>原文（全文）</h3>
+        <div class="original" id="originalText">
+.tsx ファイルは、一言で言うと「TypeScriptとJSXを組み合わせたファイル」です。
+Webサイトやアプリの見た目を作る際によく使われる、比較的新しいファイル形式です。
+もう少し詳しく
+.tsx を理解するために、2つの要素に分けて見てみましょう。
+1. TypeScript (.ts)
+TypeScriptは、JavaScriptをより安全で書きやすく拡張したプログラミング言語です。JavaScriptのスーパーセット（上位互換）であり、書いたコードは最終的にJavaScriptに変換されて動きます。
+ * 特徴: 型定義ができるため、変数や関数に入れるデータの種類をあらかじめ決められます。これにより、開発中にエラーを見つきやすくなり、コードの品質が向上します。
+2. JSX
+JSXは、JavaScriptのコードの中に、HTMLのような見た目でUI（ユーザーインターフェース）の構造を直接書き込めるようにした構文です。主にReactというライブラリで使われます。
+ * 特徴: 通常、JavaScriptでHTML要素を作成するには document.createElement('div') のようなコードを書く必要がありますが、JSXを使うと <div className="greeting">こんにちは</div> のように直感的に書けます。
+なぜ .tsx を使うのか？
+この2つを組み合わせた .tsx ファイルは、Reactなどのフレームワークを使って開発する際に、以下のような大きなメリットがあります。
+ * 安全なUI開発: TypeScriptの型チェック機能のおかげで、コンポーネント（UIの部品）に渡すデータの間違いなどを事前に防ぐことができます。
+ * コードの可読性向上: JavaScriptのロジックとHTMLの構造が同じファイルにまとまっているため、どのような見た目でどのような動作をするのかが分かりやすくなります。
+ * 開発効率の向上: エディタ（VS Codeなど）の入力補完が強力に機能し、タイピングミスが減り、スピーディーに開発を進められます。
+まとめると、.tsx はTypeScriptの安全性とJSXの書きやすさを両立させた、モダンなWeb開発（特にReact開発）に欠かせないファイル形式と言えます。
+        </div>
+
+        <div style="margin-top:14px;">
+          <h4 style="margin:6px 0 6px 0;">クイックヒント</h4>
+          <ul style="padding-left:18px; color:var(--muted);">
+            <li>JSXを含むファイルは必ず <code>.tsx</code> にする。</li>
+            <li>Propsの型定義は早めに追加しておくと後で楽になる。</li>
+            <li>VS Code + ESLint + Prettier を入れると快適。</li>
+          </ul>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <script>
+    // コピー関数：ボタンの data-target にある pre#id の innerText をコピー
+    function copyToClipboard(e){
+      var btn = e.currentTarget || e.target;
+      var id = btn.getAttribute('data-target');
+      if(!id) return;
+      var el = document.getElementById(id);
+      if(!el) return;
+      // Chrome/modern browsers
+      navigator.clipboard.writeText(el.innerText).then(function(){
+        btn.innerText = 'COPIED';
+        setTimeout(()=> btn.innerText = 'COPY', 1200);
+      }, function(){
+        // fallback
+        try{
+          var range = document.createRange();
+          range.selectNodeContents(el);
+          var sel = window.getSelection();
+          sel.removeAllRanges();
+          sel.addRange(range);
+          document.execCommand('copy');
+          sel.removeAllRanges();
+          btn.innerText = 'COPIED';
+          setTimeout(()=> btn.innerText = 'COPY', 1200);
+        }catch(err){
+          alert('コピーに失敗しました。ブラウザのクリップボード機能を確認してください。');
+        }
+      });
+    }
+  </script>
+</body>
+</html>
