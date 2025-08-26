@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>25.8.27 VS Codeで使えるAIツールまとめ</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f9f9f9;
+      color: #333;
+    }
+    h1 {
+      border-bottom: 2px solid #444;
+      padding-bottom: 5px;
+      margin-bottom: 20px;
+    }
+    h2 {
+      margin-top: 30px;
+      border-left: 5px solid #007bff;
+      padding-left: 10px;
+    }
+    h3 {
+      margin-top: 20px;
+    }
+    p, li {
+      line-height: 1.6;
+    }
+    ul {
+      padding-left: 20px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 15px;
+      margin-bottom: 15px;
+    }
+    th, td {
+      border: 1px solid #aaa;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background-color: #f0f0f0;
+    }
+    .code-block {
+      position: relative;
+      background-color: #272822;
+      color: #f8f8f2;
+      padding: 10px;
+      border-radius: 5px;
+      font-family: monospace;
+      overflow-x: auto;
+      margin-top: 10px;
+      margin-bottom: 10px;
+    }
+    .copy-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 3px 6px;
+      font-size: 12px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    .copy-btn:hover {
+      background-color: #0056b3;
+    }
+  </style>
+  <script>
+    function copyCode(id) {
+      const code = document.getElementById(id).innerText;
+      navigator.clipboard.writeText(code).then(() => {
+        alert("コードをコピーしました");
+      });
+    }
+  </script>
+</head>
+<body>
+  <h1>25.8.27 VS Codeで使えるAIツールまとめ</h1>
+
+  <h2>プロンプト</h2>
+  <p>VS Code上で利用できるAIについて詳しく教えてほしい。</p>
+
+  <h2>回答（マニュアル化）</h2>
+  <p>VS Code上で利用できるAIは、単なるコード補完ツールからチャット相談できる「AIペアプログラマー」まで、開発のあらゆる場面をサポートします。これらは主に拡張機能として提供されます。</p>
+
+  <h3>1. コード補完・生成AI</h3>
+  <ul>
+    <li><strong>GitHub Copilot:</strong> 自然言語からのコード生成に強く、チャット機能も統合。</li>
+    <li><strong>Tabnine:</strong> 高精度なコード補完で、プロジェクトに合わせて学習。</li>
+    <li><strong>Codeium:</strong> 無料で強力なコード補完とチャット機能を提供。</li>
+  </ul>
+
+  <h3>2. AIチャット・アシスタント</h3>
+  <ul>
+    <li><strong>CodeGPT:</strong> ChatGPTをVS Code内で直接利用可能。</li>
+    <li><strong>Bito:</strong> ユニットテストやドキュメント生成も可能な多機能ツール。</li>
+    <li><strong>Phind:</strong> 開発者向けのAI検索エンジン。</li>
+  </ul>
+
+  <h3>3. 特化型AIツール</h3>
+  <ul>
+    <li><strong>IntelliCode:</strong> Microsoft公式。文脈に合わせた基本的な補完を提供。</li>
+    <li><strong>Mintlify:</strong> 選択したコードからドキュメントを自動生成。</li>
+  </ul>
+
+  <h3>主なAIツールの比較</h3>
+  <table>
+    <tr>
+      <th>機能</th>
+      <th>GitHub Copilot</th>
+      <th>Tabnine</th>
+      <th>Codeium</th>
+      <th>CodeGPT</th>
+    </tr>
+    <tr>
+      <td>主な用途</td>
+      <td>コード生成、チャット</td>
+      <td>コード補完</td>
+      <td>コード補完、チャット</td>
+      <td>AIチャット、コード解説</td>
+    </tr>
+    <tr>
+      <td>料金</td>
+      <td>有料（学生は無料）</td>
+      <td>無料・有料プラン</td>
+      <td>無料</td>
+      <td>APIキーが必要</td>
+    </tr>
+    <tr>
+      <td>特徴</td>
+      <td>自然言語からのコード生成に強い</td>
+      <td>プロジェクトに合わせた補完</td>
+      <td>無料で多機能</td>
+      <td>ChatGPTを直接利用</td>
+    </tr>
+  </table>
+
+  <h3>VS CodeでAIを使うメリット</h3>
+  <ul>
+    <li>開発スピードの向上</li>
+    <li>エラーの削減</li>
+    <li>学習の促進</li>
+    <li>問題解決の効率化</li>
+  </ul>
+
+  <p>まずは無料で使えるCodeiumやTabnineを試し、より高度な機能を求める場合はGitHub Copilotを検討すると良いでしょう。</p>
+</body>
+</html>
