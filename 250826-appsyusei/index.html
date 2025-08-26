@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>25.8.25 app.pyの必須修正ポイントマニュアル</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for better readability and aesthetics */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap');
+        
+        body {
+            font-family: 'Inter', 'Noto Sans JP', sans-serif;
+            background-color: #f8fafc; /* slate-50 */
+        }
+        
+        h1, h2, h3 {
+            font-weight: 700;
+        }
+
+        .code-block-container {
+            position: relative;
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .copy-button {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.375rem;
+            background-color: #4a5568; /* gray-700 */
+            color: white;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border: 1px solid #2d3748; /* gray-800 */
+        }
+
+        .copy-button:hover {
+            background-color: #2d3748; /* gray-800 */
+        }
+        
+        .copy-button.copied {
+            background-color: #2f855a; /* green-700 */
+        }
+
+        pre {
+            background-color: #1a202c; /* gray-900 */
+            color: #e2e8f0; /* slate-200 */
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        code {
+            font-family: 'Menlo', 'Monaco', 'Consolas', "Courier New", monospace;
+        }
+        
+        hr {
+            border-color: #e2e8f0; /* slate-200 */
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div class="container mx-auto p-4 sm:p-6 md:p-8 max-w-4xl">
+        
+        <header class="mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900">25.8.25 app.pyの必須修正ポイントマニュアル</h1>
+        </header>
+
+        <main class="bg-white p-6 sm:p-8 rounded-lg shadow-md">
+
+            <!-- Section 1: app.py Modifications -->
+            <section>
+                <h2 class="text-2xl font-semibold border-b pb-2 mb-4">app.py 必須の修正ポイント</h2>
+                
+                <!-- Subsection 1.1: Timestamp -->
+                <h3 class="text-xl font-semibold mt-6 mb-2">1. タイムスタンプを日本時間にする</h3>
+                <ul class="list-disc list-inside space-y-2 text-gray-700">
+                    <li>現在 <code>datetime.datetime.now().isoformat()</code> を使っていますが、これはサーバーのローカルタイム（多くはUTC）です。</li>
+                    <li>Python 標準の <code>zoneinfo</code> を使い、日本時間に変換します。</li>
+                </ul>
+
+                <div class="code-block-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+<pre><code class="language-python">
+from zoneinfo import ZoneInfo
+
+def save_room(title):
+    room_id = str(uuid.uuid4())
+    now = datetime.datetime.now(ZoneInfo("Asia/Tokyo")).isoformat()
+    sheet_rooms.append_row([room_id, title, now, now])
+    return room_id
+
+def save_message(room_id, role, content_ja):
+    msg_id = str(uuid.uuid4())
+    now = datetime.datetime.now(ZoneInfo("Asia/Tokyo")).isoformat()
+    sheet_msgs.append_row([msg_id, room_id, role, content_ja, "", now])
+    return msg_id
+</code></pre>
+                </div>
+                
+                <hr>
+
+                <!-- Subsection 1.2: API Addition -->
+                <h3 class="text-xl font-semibold mt-6 mb-2">2. チャットルームの名称変更・削除 API を追加</h3>
+                
+                <div class="code-block-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+<pre><code class="language-python">
+@app.route("/rooms/&lt;room_id&gt;", methods=["PATCH"])
+def rename_room(room_id):
+    new_title = request.json.get("title")
+    rows = sheet_rooms.get_all_values()
+    for i, r in enumerate(rows[1:], start=2):  # 2行目からデータ
+        if r[0] == room_id:
+            sheet_rooms.update_cell(i, 2, new_title)  # タイトルは2列目
+            # 更新日時を日本時間で保存
+            now = datetime.datetime.now(ZoneInfo("Asia/Tokyo")).isoformat()
+            sheet_rooms.update_cell(i, 4, now)  # 更新日が4列目なら
+            return jsonify({"status": "renamed"})
+    return jsonify({"error": "room not found"}), 404
+
+@app.route("/rooms/&lt;room_id&gt;", methods=["DELETE"])
+def delete_room(room_id):
+    rows_rooms = sheet_rooms.get_all_values()
+    for i, r in enumerate(rows_rooms[1:], start=2):
+        if r[0] == room_id:
+            sheet_rooms.delete_rows(i)
+            break
+
+    rows_msgs = sheet_msgs.get_all_values()
+    # 下から削除しないとインデックスがずれる
+    for i, r in enumerate(reversed(rows_msgs[1:]), start=2):
+        if r[1] == room_id:
+            idx = len(rows_msgs) - i + 1
+            sheet_msgs.delete_rows(idx)
+
+    return jsonify({"status": "deleted"})
+</code></pre>
+                </div>
+            </section>
+
+            <hr>
+
+            <!-- Section 2: Next Required Code -->
+            <section>
+                <h2 class="text-2xl font-semibold border-b pb-2 mb-4">次に必要なコード</h2>
+                <h3 class="text-lg font-semibold mt-4">templates/index.html</h3>
+                <ul class="list-disc list-inside space-y-2 mt-2 text-gray-700">
+                    <li>サブメニュー（名前変更・削除ボタン）を追加する場所を特定したい</li>
+                    <li>回答メッセージのHTML構造をどう出力しているか確認したい</li>
+                    <li>「回答全体をワンタッチコピー」ボタンを追加する場所</li>
+                    <li>「コードブロック単独コピー」機能をつけるために <code>&lt;pre&gt;&lt;code&gt;</code> 構造を適切に変換する必要あり</li>
+                    <li>「太字などが反映されてしまう問題」は、<code>&lt;code&gt;</code> 内でエスケープ処理をすることで解決可能です。</li>
+                    <li>Jinjaテンプレートで <code>{{ content | e }}</code> として出力する</li>
+                    <li>もしくはサーバーで <code>html.escape()</code> を使ってエスケープ</li>
+                </ul>
+            </section>
+
+            <hr>
+
+            <!-- Section 3: Summary -->
+            <section>
+                <h2 class="text-2xl font-semibold border-b pb-2 mb-4">まとめ</h2>
+                <ul class="list-disc list-inside space-y-2 text-gray-700">
+                    <li><code>app.py</code> は上記の修正・追加でOK</li>
+                    <li>次に <code>templates/index.html</code> を見せてください</li>
+                    <li>ここにサブメニュー（名称変更・削除）UIとワンタッチコピー機能を実装します。</li>
+                    <li>あとで <code>script.js</code> にAPI呼び出しやコピー処理を追加します。</li>
+                </ul>
+            </section>
+
+            <hr>
+
+            <!-- Section 4: Question -->
+            <section>
+                <h2 class="text-2xl font-semibold border-b pb-2 mb-4">質問</h2>
+                <blockquote class="border-l-4 border-slate-300 pl-4 py-2 my-4 bg-slate-50 text-gray-700">
+                    <p>templates/index.html のコードをまるごと送れますか？<br>（チャットUI全体を確認しないと、どこにメニューやコピー機能を入れるか決められません）</p>
+                </blockquote>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        function copyCode(button) {
+            // Find the <pre><code> element associated with the button
+            const codeBlockContainer = button.parentElement;
+            const codeElement = codeBlockContainer.querySelector('code');
+            
+            if (codeElement) {
+                // Create a temporary textarea element to hold the text
+                const textArea = document.createElement('textarea');
+                textArea.value = codeElement.innerText;
+                
+                // Make it invisible and append it to the body
+                textArea.style.position = 'fixed';
+                textArea.style.left = '-9999px';
+                document.body.appendChild(textArea);
+                
+                // Select and copy the text
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    // Provide feedback to the user
+                    button.textContent = 'Copied!';
+                    button.classList.add('copied');
+                    
+                    // Reset the button text after a short delay
+                    setTimeout(() => {
+                        button.textContent = 'Copy';
+                        button.classList.remove('copied');
+                    }, 2000);
+                } catch (err) {
+                    console.error('Failed to copy text: ', err);
+                    button.textContent = 'Error';
+                }
+                
+                // Clean up the temporary element
+                document.body.removeChild(textArea);
+            }
+        }
+    </script>
+
+</body>
+</html>
