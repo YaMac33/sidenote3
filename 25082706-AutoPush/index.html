@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>25.8.27 WebアプリでテキストをHTML化し自動Pushする方法</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f9f9f9;
+      color: #333;
+    }
+    h1 {
+      border-bottom: 2px solid #444;
+      padding-bottom: 5px;
+      margin-bottom: 20px;
+    }
+    h2 {
+      margin-top: 30px;
+      border-left: 5px solid #007bff;
+      padding-left: 10px;
+    }
+    h3 {
+      margin-top: 20px;
+    }
+    p, li {
+      line-height: 1.6;
+    }
+    ul {
+      padding-left: 20px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 15px;
+      margin-bottom: 15px;
+    }
+    th, td {
+      border: 1px solid #aaa;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f0f0f0;
+    }
+    .code-block {
+      position: relative;
+      background-color: #272822;
+      color: #f8f8f2;
+      padding: 10px;
+      border-radius: 5px;
+      font-family: monospace;
+      overflow-x: auto;
+      margin-top: 10px;
+      margin-bottom: 10px;
+    }
+    .copy-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 3px 6px;
+      font-size: 12px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    .copy-btn:hover {
+      background-color: #0056b3;
+    }
+  </style>
+  <script>
+    function copyCode(id) {
+      const code = document.getElementById(id).innerText;
+      navigator.clipboard.writeText(code).then(() => {
+        alert("コードをコピーしました");
+      });
+    }
+  </script>
+</head>
+<body>
+  <h1>25.8.27 WebアプリでテキストをHTML化し自動Pushする方法</h1>
+
+  <h2>概要</h2>
+  <p>本文をHTMLに変換し、GitHubへ自動Pushするツールは十分に実現可能です。多くのブログやドキュメントサイトが似た仕組みを採用しています。</p>
+
+  <h2>全体の流れ</h2>
+  <ul>
+    <li><strong>入力:</strong> 本文を貼り付けるフォーム（Webページ）</li>
+    <li><strong>処理:</strong> テキストをHTMLに変換</li>
+    <li><strong>出力:</strong> HTMLファイルをGitHubに自動Push</li>
+  </ul>
+
+  <h2>Webアプリ版の作り方</h2>
+  <h3>処理の流れ</h3>
+  <ul>
+    <li><strong>フロントエンド (ブラウザ)</strong>
+      <ul>
+        <li>Webページを開く</li>
+        <li>テキストエリアに本文を貼り付け、「公開」ボタンを押す</li>
+        <li>入力テキストをバックエンドへ送信</li>
+      </ul>
+    </li>
+    <li><strong>バックエンド (サーバー)</strong>
+      <ul>
+        <li>テキストを受信</li>
+        <li>Markdown → HTML変換（<code>markdown-it</code>などを利用）</li>
+        <li>GitHub APIでHTMLファイルをPush（保存先やブランチを指定）</li>
+      </ul>
+    </li>
+    <li><strong>GitHub</strong>
+      <ul>
+        <li>Pushによりリポジトリ更新</li>
+        <li>GitHub Pages有効時は自動で公開</li>
+      </ul>
+    </li>
+  </ul>
+
+  <h2>サーバー側のプログラム例（Python / Flask）</h2>
+  <div class="code-block">
+    <button class="copy-btn" onclick="copyCode('code1')">コピー</button>
+    <pre id="code1">from flask import Flask, request, jsonify
+import markdown  # MarkdownをHTMLに変換するライブラリ
+import requests  # GitHub APIを叩くためのライブラリ
+import base64
+import os
+
+app = Flask(__name__)
+
+# --- GitHubの設定 ---
+GITHUB_TOKEN = os.environ.get("GITHUB_PERSONAL_ACCESS_TOKEN") # 環境変数からトークンを読み込む
+REPO_OWNER = "your-github-username"
+REPO_NAME = "your-repo-name"
+FILE_PATH = "public/new-page.html" # 保存したいファイルのパス
+BRANCH = "main"
+
+API_URL = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/contents/{FILE_PATH}"
+
+@app.route("/publish", methods=["POST"])
+def publish_to_github():
+    text_content = request.json.get("text")
+    if not text_content:
+        return jsonify({"error": "テキストがありません"}), 400
+
+    html_content = markdown.markdown(text_content)
+
+    headers = {
+        "Authorization": f"token {GITHUB_TOKEN}",
+        "Accept": "application/vnd.github.v3+json",
+    }
+    encoded_content = base64.b64encode(html_content.encode('utf-8')).decode('utf-8')
+
+    data = {
+        "message": "新しいページを自動で追加",
+        "content": encoded_content,
+        "branch": BRANCH,
+    }
+
+    response = requests.put(API_URL, headers=headers, json=data)
+
+    if response.status_code in [200, 201]:
+        return jsonify({"message": "GitHubへのPushに成功しました！"}), 200
+    else:
+        return jsonify({"error": "GitHubへのPushに失敗しました", "details": response.json()}), 500
+
+if __name__ == "__main__":
+    app.run(debug=True)</pre>
+  </div>
+
+  <h2>このコードのポイント</h2>
+  <ul>
+    <li><code>/publish</code> にPOSTすると実行</li>
+    <li><code>markdown</code>ライブラリで簡単にHTML変換</li>
+    <li>GitHub APIをPersonal Access Tokenで認証</li>
+  </ul>
+
+  <h2>必要な知識とツール</h2>
+  <ul>
+    <li>プログラミング言語（Python, Node.js など）</li>
+    <li>Webフレームワーク（Flask, FastAPI, Expressなど）</li>
+    <li>GitHub API操作（ファイル作成・更新）</li>
+    <li>HTML/CSS/JavaScript（フロントエンド作成）</li>
+    <li>サーバー環境（Render, Herokuなど）</li>
+  </ul>
+
+  <h2>まとめ</h2>
+  <p>既存の技術を組み合わせれば実現可能です。まずは手元PCでHTML変換＋手動Pushのスクリプトを作り、全体像を把握することから始めるのがおすすめです。</p>
+</body>
+</html>
