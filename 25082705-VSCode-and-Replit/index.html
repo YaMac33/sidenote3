@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>25.8.27 VS CodeとReplitの違い</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f9f9f9;
+      color: #333;
+    }
+    h1 {
+      border-bottom: 2px solid #444;
+      padding-bottom: 5px;
+      margin-bottom: 20px;
+    }
+    h2 {
+      margin-top: 30px;
+      border-left: 5px solid #007bff;
+      padding-left: 10px;
+    }
+    h3 {
+      margin-top: 20px;
+    }
+    p, li {
+      line-height: 1.6;
+    }
+    ul {
+      padding-left: 20px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 15px;
+      margin-bottom: 15px;
+    }
+    th, td {
+      border: 1px solid #aaa;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background-color: #f0f0f0;
+    }
+    .code-block {
+      position: relative;
+      background-color: #272822;
+      color: #f8f8f2;
+      padding: 10px;
+      border-radius: 5px;
+      font-family: monospace;
+      overflow-x: auto;
+      margin-top: 10px;
+      margin-bottom: 10px;
+    }
+    .copy-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 3px 6px;
+      font-size: 12px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    .copy-btn:hover {
+      background-color: #0056b3;
+    }
+  </style>
+  <script>
+    function copyCode(id) {
+      const code = document.getElementById(id).innerText;
+      navigator.clipboard.writeText(code).then(() => {
+        alert("コードをコピーしました");
+      });
+    }
+  </script>
+</head>
+<body>
+  <h1>25.8.27 VS CodeとReplitの違い</h1>
+
+  <h2>概要</h2>
+  <p>VS Codeでもコードをその場で実行してテスト可能です。ただし、<strong>「どこでコードが動いているか」</strong>という環境が大きな違いです。</p>
+
+  <h2>根本的な違い：環境</h2>
+  <ul>
+    <li><strong>Replit → クラウド上の「オールインワンPC」 💻☁️</strong><br>
+      ブラウザを開くだけで開発に必要な環境が揃います。プログラミング言語やツールはReplitがクラウド上に用意し、環境構築は一切不要です。
+    </li>
+    <li><strong>VS Code → 自分のPCに入れる「高機能なテキストエディタ」 ✍️🖥️</strong><br>
+      自分のPC上で動作するアプリです。PythonやNode.jsなど、必要なプログラミング言語を事前にインストールする必要があります。環境構築を自由にカスタマイズできるのが特徴です。
+    </li>
+  </ul>
+
+  <h2>機能比較</h2>
+  <table>
+    <tr>
+      <th></th>
+      <th>Replit</th>
+      <th>VS Code (Visual Studio Code)</th>
+    </tr>
+    <tr>
+      <td>環境</td>
+      <td>クラウド（ブラウザだけで完結）</td>
+      <td>ローカル（自分のPC）</td>
+    </tr>
+    <tr>
+      <td>セットアップ</td>
+      <td>不要（アカウント作成のみ）</td>
+      <td>必要（アプリと言語のインストール）</td>
+    </tr>
+    <tr>
+      <td>コードの実行</td>
+      <td>✅ 「Run」ボタンで即実行</td>
+      <td>✅ ターミナルや拡張機能で実行</td>
+    </tr>
+    <tr>
+      <td>共同編集</td>
+      <td>◎ 得意（リアルタイム）</td>
+      <td>△ 拡張機能で可能</td>
+    </tr>
+    <tr>
+      <td>カスタマイズ</td>
+      <td>△ 限定的</td>
+      <td>◎ 非常に高い（拡張機能が豊富）</td>
+    </tr>
+    <tr>
+      <td>手軽さ</td>
+      <td>◎ 非常に手軽</td>
+      <td>△ セットアップに少し手間</td>
+    </tr>
+  </table>
+
+  <h2>まとめ</h2>
+  <p>「その場でコードを実行してテストできるか」は<strong>両方とも可能</strong>ですが、手軽さが異なります。</p>
+  <ul>
+    <li><strong>Replit</strong>：環境構築不要。初心者や即開発したい人に最適。</li>
+    <li><strong>VS Code</strong>：環境構築は必要だが、高度なカスタマイズやプロ仕様の開発が可能。</li>
+  </ul>
+  <p><strong>学習目的 → VS Code<br>
+  すぐ試したい → Replit</strong></p>
+</body>
+</html>
