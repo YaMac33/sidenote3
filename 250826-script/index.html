@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>25.8.26 script.jsの修正と機能実装マニュアル</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for better readability and aesthetics */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap');
+        
+        body {
+            font-family: 'Inter', 'Noto Sans JP', sans-serif;
+            background-color: #f8fafc; /* slate-50 */
+        }
+        
+        h1, h2, h3 {
+            font-weight: 700;
+        }
+
+        .code-block-container {
+            position: relative;
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .copy-button {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.375rem;
+            background-color: #4a5568; /* gray-700 */
+            color: white;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border: 1px solid #2d3748; /* gray-800 */
+        }
+
+        .copy-button:hover {
+            background-color: #2d3748; /* gray-800 */
+        }
+        
+        .copy-button.copied {
+            background-color: #2f855a; /* green-700 */
+        }
+
+        pre {
+            background-color: #1a202c; /* gray-900 */
+            color: #e2e8f0; /* slate-200 */
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        code {
+            font-family: 'Menlo', 'Monaco', 'Consolas', "Courier New", monospace;
+        }
+        
+        hr {
+            border-color: #e2e8f0; /* slate-200 */
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div class="container mx-auto p-4 sm:p-6 md:p-8 max-w-4xl">
+        
+        <header class="mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900">25.8.27 script.jsの修正と機能実装マニュアル</h1>
+            <p class="mt-2 text-gray-600">script.js でメッセージ描画部分がわかったので、以下の修正で要望すべてに対応できます。</p>
+        </header>
+
+        <main class="bg-white p-6 sm:p-8 rounded-lg shadow-md">
+
+            <!-- Section 1: Copy All Content -->
+            <section>
+                <h3 class="text-xl font-semibold mt-6 mb-2">1. 回答全体をワンタッチコピー</h3>
+                <p class="text-gray-700"><code>appendMessage()</code> で assistant メッセージの場合にコピー用ボタンを追加します。</p>
+                <div class="code-block-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+<pre><code class="language-javascript">
+function appendMessage(role, text, timestamp = null) {
+    const container = document.createElement("div");
+    container.classList.add('message-container', role);
+
+    const messageDiv = document.createElement("div");
+    messageDiv.classList.add('message');
+
+    if (role === 'user') {
+        messageDiv.innerText = text;
+    } else {
+        // 回答全体コピー用ボタンを追加
+        const copyAllBtn = document.createElement('button');
+        copyAllBtn.classList.add('copy-all-btn');
+        copyAllBtn.title = "回答全体をコピー";
+        copyAllBtn.textContent = "📋";
+        copyAllBtn.onclick = () => {
+            navigator.clipboard.writeText(text).catch(err => console.error("コピー失敗:", err));
+        };
+        container.appendChild(copyAllBtn);
+
+        messageDiv.innerHTML = formatMessageContent(text);
+        // コードブロックに個別コピーを付与
+        setTimeout(() => addCopyButtonsToCode(messageDiv), 0);
+    }
+
+    const timestampDiv = document.createElement("div");
+    timestampDiv.classList.add('timestamp');
+    timestampDiv.innerText = formatTimestamp(timestamp ? new Date(timestamp) : new Date());
+
+    container.appendChild(messageDiv);
+    container.appendChild(timestampDiv);
+    chatWindow.appendChild(container);
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+    return container;
+}
+</code></pre>
+                </div>
+            </section>
+            
+            <hr>
+
+            <!-- Section 2: Copy Code Blocks -->
+            <section>
+                <h3 class="text-xl font-semibold mt-6 mb-2">2. コードブロックだけコピー可能にする</h3>
+                <p class="text-gray-700"><code>formatMessageContent()</code> で <code>&lt;pre&gt;&lt;code&gt;</code> 構造を生成し、描画後にボタンを付ける関数を作ります。</p>
+                <div class="code-block-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+<pre><code class="language-javascript">
+function formatMessageContent(text) {
+    // HTMLエスケープしてからコード化
+    const escapeHtml = (str) =>
+        str.replace(/&/g, "&amp;")
+           .replace(/</g, "&lt;")
+           .replace(/>/g, "&gt;")
+           .replace(/"/g, "&quot;")
+           .replace(/'/g, "&#39;");
+
+    const safeText = escapeHtml(text);
+
+    return safeText
+        .replace(/```([\s\S]*?)```/g, '&lt;pre&gt;&lt;code&gt;$1&lt;/code&gt;&lt;/pre&gt;')
+        .replace(/`([^`\n]+)`/g, '&lt;code&gt;$1&lt;/code&gt;')
+        .replace(/\n/g, '&lt;br&gt;');
+}
+
+function addCopyButtonsToCode(messageEl) {
+    const codeBlocks = messageEl.querySelectorAll('pre');
+    codeBlocks.forEach(pre => {
+        const btn = document.createElement('button');
+        btn.classList.add('copy-code-btn');
+        btn.title = "コードをコピー";
+        btn.textContent = "📋";
+        btn.onclick = () => {
+            const codeText = pre.innerText;
+            navigator.clipboard.writeText(codeText).catch(err => console.error("コピー失敗:", err));
+        };
+        pre.insertAdjacentElement('beforebegin', btn);
+    });
+}
+</code></pre>
+                </div>
+                <div class="mt-4 p-4 bg-slate-100 rounded-md">
+                    <h4 class="font-semibold text-gray-800">ポイント</h4>
+                    <ul class="list-disc list-inside space-y-1 mt-2 text-gray-700">
+                        <li><code>escapeHtml()</code> でタグや太字を無効化（見た目はコード、機能は安全）。</li>
+                        <li><code>innerHTML</code> に直接代入してもHTMLが実行されない仕様になる。</li>
+                    </ul>
+                </div>
+            </section>
+
+            <hr>
+
+            <!-- Section 3: API Methods -->
+            <section>
+                <h3 class="text-xl font-semibold mt-6 mb-2">3. ルーム名称変更・削除APIのHTTPメソッド</h3>
+                <ul class="list-disc list-inside space-y-2 text-gray-700">
+                    <li>あなたの <code>script.js</code> は <code>PUT /rooms/:id</code> を呼んでいますが、<code>app.py</code> 側は <code>PATCH</code> を実装します（PUTでも良いですが統一しましょう）。</li>
+                </ul>
+                <div class="code-block-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+<pre><code class="language-python">
+@app.route("/rooms/&lt;room_id&gt;", methods=["PUT"])
+def rename_room(room_id):
+    ...
+</code></pre>
+                </div>
+                <ul class="list-disc list-inside space-y-2 mt-4 text-gray-700">
+                    <li>削除APIは既に <code>DELETE</code> を使っているのでそのままでOKです。</li>
+                </ul>
+            </section>
+
+            <hr>
+
+            <!-- Section 4: CSS -->
+            <section>
+                <h3 class="text-xl font-semibold mt-6 mb-2">4. CSSに追加するもの</h3>
+                <p class="text-gray-700">コピー用ボタンを見やすくします（例）：</p>
+                <div class="code-block-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+<pre><code class="language-css">
+.copy-all-btn, .copy-code-btn {
+  cursor: pointer;
+  background: #eee;
+  border: none;
+  padding: 2px 6px;
+  margin: 2px;
+  font-size: 0.9em;
+  border-radius: 4px;
+}
+.copy-all-btn:hover, .copy-code-btn:hover {
+  background: #ddd;
+}
+</code></pre>
+                </div>
+            </section>
+
+            <hr>
+
+            <!-- Section 5: app.py Summary -->
+            <section>
+                <h3 class="text-xl font-semibold mt-6 mb-2">5. app.py 側の修正要点（再掲）</h3>
+                <ul class="list-disc list-inside space-y-2 text-gray-700">
+                    <li>タイムスタンプは日本時間にする：
+                        <div class="code-block-container">
+                            <button class="copy-button" onclick="copyCode(this)">Copy</button>
+<pre><code class="language-python">
+from zoneinfo import ZoneInfo
+now = datetime.datetime.now(ZoneInfo("Asia/Tokyo")).isoformat()
+</code></pre>
+                        </div>
+                    </li>
+                    <li>ルーム名称変更APIを <code>PUT</code> に合わせる：
+                        <div class="code-block-container">
+                            <button class="copy-button" onclick="copyCode(this)">Copy</button>
+<pre><code class="language-python">
+@app.route("/rooms/&lt;room_id&gt;", methods=["PUT"])
+def rename_room(room_id):
+    new_title = request.json.get("title")
+    rows = sheet_rooms.get_all_values()
+    ...
+</code></pre>
+                        </div>
+                    </li>
+                </ul>
+            </section>
+            
+            <hr>
+
+            <!-- Section 6: Final Outcome & Next Steps -->
+            <section>
+                <h2 class="text-2xl font-semibold border-b pb-2 mb-4">最終成果</h2>
+                <ul class="list-disc list-inside space-y-2 text-gray-700">
+                    <li>全回答ワンタッチコピー → assistantメッセージにボタン追加</li>
+                    <li>コードブロック単独コピー → <code>&lt;pre&gt;&lt;code&gt;</code> 変換＋個別ボタン追加</li>
+                    <li>HTMLタグや太字がコード内で無効化 → <code>escapeHtml()</code> を導入</li>
+                    <li>名称変更・削除の動作API整合性 → <code>PUT</code> or <code>PATCH</code>に統一</li>
+                    <li>日本時間での保存 → <code>ZoneInfo</code>を導入</li>
+                </ul>
+
+                <h3 class="text-xl font-semibold mt-6 mb-2">次のステップ：</h3>
+                <ol class="list-decimal list-inside space-y-2 text-gray-700">
+                    <li><code>app.py</code> に上記修正を入れる（タイムゾーン、日本語タイトル変更API）。</li>
+                    <li><code>script.js</code> をこの改良版に置き換える。</li>
+                    <li><code>style.css</code> にコピー用ボタンの見た目を追加する。</li>
+                </ol>
+
+                <h3 class="text-xl font-semibold mt-6 mb-2">実装後、動作確認ポイント：</h3>
+                <ul class="list-disc list-inside space-y-2 text-gray-700">
+                    <li>AIの回答でコードが出た時にボタンが複数出るか？</li>
+                    <li>「回答全体コピー」で全文が取れるか？</li>
+                    <li>コード中の <strong>**太字**</strong> や <code>&lt;b&gt;</code> がただの文字列として表示されるか？</li>
+                </ul>
+            </section>
+
+            <hr>
+
+            <!-- Section 7: Question -->
+            <section>
+                <h2 class="text-2xl font-semibold border-b pb-2 mb-4">質問</h2>
+                <blockquote class="border-l-4 border-slate-300 pl-4 py-2 my-4 bg-slate-50 text-gray-700">
+                    <p>app.py のルーム名変更APIは PUT に統一しますか？それとも PATCH に変更しますか？<br>（script.js 側に合わせて PUT 実装するのがシンプルです）</p>
+                </blockquote>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        function copyCode(button) {
+            const codeBlockContainer = button.parentElement;
+            const codeElement = codeBlockContainer.querySelector('code');
+            
+            if (codeElement) {
+                const textArea = document.createElement('textarea');
+                textArea.value = codeElement.innerText;
+                
+                textArea.style.position = 'fixed';
+                textArea.style.left = '-9999px';
+                document.body.appendChild(textArea);
+                
+                textArea.select();
+                try {
+                    // Use execCommand as a fallback for broader compatibility
+                    document.execCommand('copy');
+                    button.textContent = 'Copied!';
+                    button.classList.add('copied');
+                    
+                    setTimeout(() => {
+                        button.textContent = 'Copy';
+                        button.classList.remove('copied');
+                    }, 2000);
+                } catch (err) {
+                    console.error('Failed to copy text: ', err);
+                    button.textContent = 'Error';
+                }
+                
+                document.body.removeChild(textArea);
+            }
+        }
+    </script>
+
+</body>
+</html>
