@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>25.8.27 HTML自動生成ツールの開発言語と構成例</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f9f9f9;
+      color: #333;
+    }
+    h1 {
+      border-bottom: 2px solid #444;
+      padding-bottom: 5px;
+      margin-bottom: 20px;
+    }
+    h2 {
+      margin-top: 30px;
+      border-left: 5px solid #007bff;
+      padding-left: 10px;
+    }
+    h3 {
+      margin-top: 20px;
+    }
+    p, li {
+      line-height: 1.6;
+    }
+    ul {
+      padding-left: 20px;
+    }
+    .code-block {
+      position: relative;
+      background-color: #272822;
+      color: #f8f8f2;
+      padding: 10px;
+      border-radius: 5px;
+      font-family: monospace;
+      overflow-x: auto;
+      margin-top: 10px;
+      margin-bottom: 10px;
+      white-space: pre;
+    }
+    .copy-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 3px 6px;
+      font-size: 12px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    .copy-btn:hover {
+      background-color: #0056b3;
+    }
+  </style>
+  <script>
+    function copyCode(id) {
+      const code = document.getElementById(id).innerText;
+      navigator.clipboard.writeText(code).then(() => {
+        alert("コードをコピーしました");
+      });
+    }
+  </script>
+</head>
+<body>
+  <h1>25.8.27 HTML自動生成ツールの開発言語と構成例</h1>
+
+  <h2>概要</h2>
+  <p>
+    「本文を貼り付けたらHTML化して自動でGitHubにPushする」ツールの開発において、最適なプログラミング言語と推奨するプロジェクト構成例を紹介します。
+  </p>
+
+  <h2>おすすめの言語</h2>
+  <p>最もおすすめの言語は<strong>Python</strong>です。</p>
+  <h3>Pythonをおすすめする理由</h3>
+  <ul>
+    <li>シンプルで学びやすい：文法がやさしく、初学者でも直感的に書ける</li>
+    <li>ライブラリが豊富：HTML変換やGitHub API操作のライブラリが充実</li>
+    <li>汎用性が高い：Web開発・データ分析・AI開発など幅広く活用可能</li>
+  </ul>
+  <p>次点の候補としては<strong>Node.js (JavaScript)</strong>も有力です。フロントエンドとバックエンドを同じ言語で開発できます。</p>
+
+  <h2>おすすめのツリー構成（Python / Flask）</h2>
+  <div class="code-block">
+    <button class="copy-btn" onclick="copyCode('code1')">コピー</button>
+    <pre id="code1">my-publisher-app/
+├── app.py              # メインのアプリケーション（サーバー処理）
+├── requirements.txt    # 必要なライブラリの一覧
+├── .gitignore          # Gitの管理対象外にするファイルを設定
+├── static/             # CSSやJavaScriptファイルを置く場所
+│   ├── css/
+│   │   └── style.css
+│   └── js/
+│       └── script.js
+└── templates/          # HTMLファイルを置く場所
+    └── index.html</pre>
+  </div>
+
+  <h3>各ファイル・フォルダの役割</h3>
+  <ul>
+    <li><strong>app.py</strong>：ユーザー入力をHTML化しGitHubに送信するメイン処理</li>
+    <li><strong>requirements.txt</strong>：使用ライブラリを記載（例: Flask, requests）。<br>他環境で<code>pip install -r requirements.txt</code>で再現可能</li>
+    <li><strong>.gitignore</strong>：アップロード不要なファイル（APIキーや自動生成ファイルなど）を指定</li>
+    <li><strong>static/</strong>：CSSやJavaScriptを配置しWebページの見た目や動作を制御</li>
+    <li><strong>templates/</strong>：HTMLファイルを配置（Flaskがここから表示）。<br><code>index.html</code>にテキスト入力フォームを作成</li>
+  </ul>
+
+  <h2>まとめ</h2>
+  <p>
+    上記の構成はシンプルながら拡張性もあり、多くのWebアプリ開発で採用される標準的な形です。まずはこの構成で開発を始めることをおすすめします。
+  </p>
+</body>
+</html>
