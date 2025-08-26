@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>25.8.27 iPad開発環境比較</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f9f9f9;
+      color: #333;
+    }
+    h1 {
+      border-bottom: 2px solid #444;
+      padding-bottom: 5px;
+      margin-bottom: 20px;
+    }
+    h2 {
+      margin-top: 30px;
+      border-left: 5px solid #007bff;
+      padding-left: 10px;
+    }
+    h3 {
+      margin-top: 20px;
+    }
+    p, li {
+      line-height: 1.6;
+    }
+    ul {
+      padding-left: 20px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 15px;
+      margin-bottom: 15px;
+    }
+    th, td {
+      border: 1px solid #aaa;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background-color: #f0f0f0;
+    }
+    .code-block {
+      position: relative;
+      background-color: #272822;
+      color: #f8f8f2;
+      padding: 10px;
+      border-radius: 5px;
+      font-family: monospace;
+      overflow-x: auto;
+      margin-top: 10px;
+      margin-bottom: 10px;
+    }
+    .copy-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 3px 6px;
+      font-size: 12px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    .copy-btn:hover {
+      background-color: #0056b3;
+    }
+  </style>
+  <script>
+    function copyCode(id) {
+      const code = document.getElementById(id).innerText;
+      navigator.clipboard.writeText(code).then(() => {
+        alert("コードをコピーしました");
+      });
+    }
+  </script>
+</head>
+<body>
+  <h1>25.8.27 iPad開発環境比較</h1>
+
+  <h2>概要</h2>
+  <p>iPadでブラウザ開発を行う場合、<strong>GitHub Codespaces</strong>が最も本格的ですが、<strong>Replit</strong>も手軽で優れた選択肢です。一方、<strong>VS Code for Web (vscode.dev)</strong> は軽量ですが機能が限定的です。</p>
+
+  <h2>1. GitHub Codespaces：最もパワフルで本格的な開発環境</h2>
+  <p>クラウド上でフル機能のVS Codeを実行。iPadのブラウザからデスクトップ同等の開発体験が可能です。</p>
+  <h3>長所</h3>
+  <ul>
+    <li>完全なVS Code体験（拡張機能、ターミナル、デバッグ）</li>
+    <li>iPadスペックに依存しないパワフルな実行環境</li>
+    <li>GitHubとのシームレスな連携</li>
+  </ul>
+  <h3>短所</h3>
+  <ul>
+    <li>無料枠（月120コア時間）を超えると有料</li>
+    <li>起動に数十秒〜1分かかる</li>
+  </ul>
+  <h3>おすすめな人</h3>
+  <ul>
+    <li>仕事や本格的な個人開発にiPadを活用したい人</li>
+    <li>特定の拡張機能や設定が必須な人</li>
+  </ul>
+
+  <h2>2. Replit：手軽さと共同編集に優れたオールインワン環境</h2>
+  <p>環境構築不要で即開発開始。AIによるコード生成や簡易デプロイも可能。</p>
+  <h3>長所</h3>
+  <ul>
+    <li>セットアップ不要ですぐ開始</li>
+    <li>Googleドキュメントのようなリアルタイム共同編集</li>
+    <li>Webアプリをワンクリックで公開可能</li>
+    <li>AIがコード生成・修正をサポート</li>
+  </ul>
+  <h3>短所</h3>
+  <ul>
+    <li>VS Codeほど環境のカスタマイズはできない</li>
+    <li>無料プランではマシンスペックやプロジェクト数に制限</li>
+  </ul>
+  <h3>おすすめな人</h3>
+  <ul>
+    <li>プログラミング初心者や学習目的の人</li>
+    <li>アイデアを素早く形にしたいプロトタイピング開発者</li>
+    <li>友人やチームと共同開発したい人</li>
+  </ul>
+
+  <h2>3. VS Code for Web (vscode.dev)：軽量なコード編集ツール</h2>
+  <p>クラウド実行環境を持たない軽量VS Code。コード閲覧や簡単な編集に適しています。</p>
+  <h3>長所</h3>
+  <ul>
+    <li>起動が非常に速い</li>
+    <li>無料利用可能</li>
+    <li>GitHub連携（URLを <code>github.com</code> → <code>github.dev</code> に変更で開く）</li>
+  </ul>
+  <h3>短所</h3>
+  <ul>
+    <li>ターミナルやデバッグ機能がない</li>
+    <li>iPadのファイルシステムにアクセス不可</li>
+  </ul>
+  <h3>おすすめな人</h3>
+  <ul>
+    <li>外出先でコードレビューや軽微な修正をしたい人</li>
+    <li>プロジェクト全体を素早く閲覧したい人</li>
+  </ul>
+
+  <h2>まとめ</h2>
+  <table>
+    <tr>
+      <th></th>
+      <th>GitHub Codespaces</th>
+      <th>Replit</th>
+      <th>VS Code for Web</th>
+    </tr>
+    <tr>
+      <td>総合評価</td>
+      <td>★★★★★</td>
+      <td>★★★★☆</td>
+      <td>★★☆☆☆</td>
+    </tr>
+    <tr>
+      <td>主な用途</td>
+      <td>本格的な開発</td>
+      <td>学習、プロトタイピング</td>
+      <td>コード閲覧・軽微な編集</td>
+    </tr>
+    <tr>
+      <td>実行環境</td>
+      <td>◯ (パワフル)</td>
+      <td>◯ (手軽)</td>
+      <td>× (なし)</td>
+    </tr>
+    <tr>
+      <td>ターミナル</td>
+      <td>◯</td>
+      <td>◯</td>
+      <td>×</td>
+    </tr>
+    <tr>
+      <td>手軽さ</td>
+      <td>△ (起動やや遅い)</td>
+      <td>◎ (即時開始)</td>
+      <td>◎ (即時開始)</td>
+    </tr>
+    <tr>
+      <td>料金</td>
+      <td>無料枠あり（超過後は従量課金）</td>
+      <td>無料プランあり（高機能版は有料）</td>
+      <td>無料</td>
+    </tr>
+  </table>
+
+  <p><strong>結論：</strong>本格開発は<strong>GitHub Codespaces</strong>、学習や簡易開発・共同編集は<strong>Replit</strong>、軽いコード編集は<strong>VS Code for Web</strong>が最適。</p>
+</body>
+</html>
