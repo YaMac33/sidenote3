@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>25.08.28 Replit AIとGitHub Copilotの比較</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Roboto, sans-serif;
+      background-color: #0d1117;
+      color: #c9d1d9;
+      margin: 0;
+      padding: 0;
+      line-height: 1.7;
+    }
+    header {
+      background: #161b22;
+      padding: 1.5rem 2rem;
+      text-align: center;
+      border-bottom: 1px solid #30363d;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.8rem;
+      color: #58a6ff;
+    }
+    main {
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+    h2 {
+      color: #58a6ff;
+      margin-top: 2rem;
+      font-size: 1.4rem;
+      border-bottom: 1px solid #30363d;
+      padding-bottom: 0.5rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0;
+      font-size: 0.95rem;
+    }
+    table th, table td {
+      border: 1px solid #30363d;
+      padding: 0.6rem;
+      text-align: left;
+    }
+    table th {
+      background-color: #161b22;
+      color: #58a6ff;
+    }
+    .copy-block {
+      position: relative;
+      background: #161b22;
+      border: 1px solid #30363d;
+      padding: 1rem;
+      font-family: monospace;
+      overflow-x: auto;
+      margin: 1rem 0;
+      border-radius: 4px;
+    }
+    .copy-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: #21262d;
+      color: #c9d1d9;
+      border: 1px solid #30363d;
+      padding: 0.2rem 0.6rem;
+      font-size: 0.8rem;
+      cursor: pointer;
+      border-radius: 3px;
+    }
+    .copy-btn:hover {
+      background: #30363d;
+    }
+    footer {
+      text-align: center;
+      color: #8b949e;
+      font-size: 0.85rem;
+      padding: 2rem 0 1rem;
+      border-top: 1px solid #30363d;
+      margin-top: 3rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>25.08.28 Replit AIとGitHub Copilotの比較</h1>
+  </header>
+  <main>
+    <p>ReplitのAIエージェントが持つ、チャット形式でアプリのアイデアを伝えると、必要な技術を選定し、コードを書き、デプロイまで自動で行う機能は非常に画期的で、多くの開発者に衝撃を与えました。しかし、VSCodeとGitHubのAI、特に<strong>GitHub Copilot</strong>は、現在の開発環境において、より強力で多機能な選択肢と言えるでしょう。</p>
+
+    <h2>VSCodeとGitHub Copilotの連携が強力な理由</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>機能</th>
+          <th>Replit AIエージェント</th>
+          <th>GitHub Copilot (VSCode内)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>コード補完</td>
+          <td>入力中のコードを補完</td>
+          <td>より高度で文脈を理解した補完 (関数全体や複数行に渡る提案)</td>
+        </tr>
+        <tr>
+          <td>AIチャット</td>
+          <td>○ (自然言語でのコード生成)</td>
+          <td>○ (コードの解説、リファクタリング、テスト生成など、より対話的)</td>
+        </tr>
+        <tr>
+          <td>デバッグ支援</td>
+          <td>○</td>
+          <td>○ (エラーの解決策を提案)</td>
+        </tr>
+        <tr>
+          <td>リポジトリ全体</td>
+          <td>△ (ファイル単位での理解が主)</td>
+          <td>◎ (ワークスペース全体のコードを理解し、一貫性のある提案)</td>
+        </tr>
+        <tr>
+          <td>コードレビュー</td>
+          <td>×</td>
+          <td>○ (Pull Requestの変更点を要約し、レビューを支援)</td>
+        </tr>
+        <tr>
+          <td>自律エージェント</td>
+          <td>△ (アプリ生成)</td>
+          <td>◎ (Issueを割り当てると自律的にコードを修正し、Pull Requestを作成)</td>
+        </tr>
+        <tr>
+          <td>CLI連携</td>
+          <td>×</td>
+          <td>○ (コマンドライン上でのAIアシスタント)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>GitHub Copilotは「単なるコード生成」を超えている</h2>
+    <p>ReplitのAIエージェントは、「ゼロからイチ」を生み出すのが得意です。アイデアを素早く形にし、プロトタイプを作成する上で非常に優れています。</p>
+    <p>一方で、GitHub Copilotは、VSCodeという多くの開発者が使い慣れたエディタ上で、開発のあらゆる場面をサポートする<strong>有能な相棒</strong>のような存在です。単にコードを書くだけでなく、以下のような高度な機能を提供します。</p>
+
+    <ul>
+      <li>ワークスペース全体を理解 (<code>@workspace</code>)：プロジェクト内のすべてのファイルを横断的に理解し、他のファイルとの関連性を考慮した、より精度の高いコード提案や修正を行います。</li>
+      <li>Pull Requestの要約とレビュー：あなたが書いたコードの変更点をAIが自動で要約してくれるため、チームメンバーがレビューしやすくなります。</li>
+      <li>自律的なコーディングエージェント：GitHubのIssue（課題）をCopilotに割り当てると、AIが自律的に問題解決のためのコードを書き、テストを実行し、修正案をPull Requestとして提出します。</li>
+    </ul>
+
+    <h2>結論：どちらが「すごい」か？</h2>
+    <ul>
+      <li>アイデアを素早く形にしたい、プロトタイピングしたい ➡️ <strong>Replit AIエージェント</strong>は非常に強力なツールです。</li>
+      <li>既存のプロジェクトで、より効率的かつ高品質な開発を行いたい ➡️ <strong>VSCodeとGitHub Copilot</strong>の組み合わせが、より広範で深いサポートを提供してくれます。</li>
+    </ul>
+
+    <p>ReplitのAIエージェントが与えた衝撃は大きいですが、現状では、開発ワークフロー全体への統合度と機能の多様性という点で、GitHub Copilotに軍配が上がると言えるでしょう。</p>
+  </main>
+  <footer>
+    &copy; 2025 Tech Manual. All rights reserved.
+  </footer>
+  <script>
+    document.addEventListener("click", function(e) {
+      if (e.target.classList.contains("copy-btn")) {
+        const codeBlock = e.target.previousElementSibling;
+        navigator.clipboard.writeText(codeBlock.textContent)
+          .then(() => e.target.textContent = "Copied!")
+          .catch(() => e.target.textContent = "Error");
+        setTimeout(() => e.target.textContent = "Copy", 1500);
+      }
+    });
+  </script>
+</body>
+</html>
