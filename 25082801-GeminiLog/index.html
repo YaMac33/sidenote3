@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>25.8.28 Geminiの会話保存と検索ガイド</title>
+  <meta name="description" content="Geminiとのやりとりを保存・検索するための方法まとめ。自動保存、エクスポート、公開リンク、ローカル検索、そして自作ツール（キーワード検索／セマンティック検索）のサンプルを解説します。">
+  <style>
+    /* ---- Reset-ish ---- */
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: "Helvetica Neue", Arial, Meiryo, "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+      background: linear-gradient(180deg,#0f1724 0%, #071029 60%);
+      color:#e6eef8;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      line-height:1.6;
+    }
+
+    /* ---- Container ---- */
+    .wrap{
+      max-width:980px;
+      margin:40px auto;
+      padding:36px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:12px;
+      box-shadow: 0 10px 30px rgba(2,6,23,0.6);
+      border:1px solid rgba(255,255,255,0.03);
+    }
+
+    header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      margin-bottom:18px;
+    }
+    .eyebrow{
+      font-size:13px;
+      color:#9fb9d8;
+    }
+    h1{
+      margin:0;
+      font-size:20px;
+      letter-spacing:0.02em;
+    }
+    .subtitle{
+      color:#a9c6e0;
+      font-size:13px;
+      margin-top:6px;
+    }
+
+    /* ---- Main content ---- */
+    article{margin-top:18px}
+    h2{
+      color:#dff3ff;
+      margin-top:28px;
+      margin-bottom:8px;
+      font-size:16px;
+      border-left:4px solid #3aa0ff;
+      padding-left:10px;
+    }
+    p{margin:10px 0; color:#d7eafc}
+    ul{margin:8px 0 12px 20px}
+    li{margin:6px 0}
+    a{color:#88c7ff; text-decoration:underline}
+    .note{background:rgba(255,255,255,0.02); padding:10px; border-radius:8px; color:#bfe2ff; font-size:14px; margin:12px 0;}
+
+    /* ---- Buttons & links ---- */
+    .links{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+    .chip{
+      background:rgba(255,255,255,0.03);
+      border:1px solid rgba(255,255,255,0.02);
+      padding:8px 12px;
+      border-radius:999px;
+      font-size:13px;
+      color:#cfe9ff;
+    }
+
+    /* ---- Code block ---- */
+    .code-area{
+      margin-top:12px;
+      position:relative;
+      border-radius:10px;
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,0.03);
+      background: linear-gradient(180deg, rgba(3,6,12,0.6), rgba(5,10,20,0.45));
+    }
+    pre{
+      margin:0;
+      padding:20px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Courier New", monospace;
+      font-size:13px;
+      color:#eaf6ff;
+      white-space:pre-wrap;
+      word-break:break-word;
+    }
+    .code-toolbar{
+      position:absolute;
+      top:8px;
+      right:8px;
+      display:flex;
+      gap:8px;
+    }
+    .copy-btn{
+      background:linear-gradient(180deg,#1e293b,#0b1220);
+      color:#d6eefc;
+      border:1px solid rgba(255,255,255,0.03);
+      padding:8px 10px;
+      border-radius:8px;
+      font-size:13px;
+      cursor:pointer;
+      box-shadow:0 4px 14px rgba(2,6,23,0.6);
+    }
+    .copy-btn:active{transform:translateY(1px)}
+
+    /* ---- Footer ---- */
+    footer{
+      margin-top:28px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      color:#9fb9d8;
+      font-size:13px;
+    }
+
+    /* small screens */
+    @media (max-width:600px){
+      .wrap{margin:18px;padding:18px}
+      h1{font-size:18px}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <div class="eyebrow">ガイド</div>
+        <h1>25.8.28 Geminiの会話保存と検索ガイド</h1>
+        <div class="subtitle">Geminiの履歴を「保存・検索・活用」するための実践的な方法とサンプル（初心者〜上級者向け）</div>
+      </div>
+      <div style="text-align:right">
+        <div class="chip">更新: 2025-08-28</div>
+      </div>
+    </header>
+
+    <article>
+      <p class="note"><strong>この記事の目的：</strong>Gemini（Googleの大規模会話AI）とのやりとりを後で振り返せるようにする方法を分かりやすくまとめます。自動保存・エクスポート・公開リンク・ローカル検索、さらに自作ツール（キーワード検索／セマンティック検索）までカバー。</p>
+
+      <h2>結論（要約）</h2>
+      <ul>
+        <li>まずは手軽に：Geminiアクティビティの検索を使う（最短）。</li>
+        <li>バックアップ目的で：Googleデータエクスポート（Takeout）でHTMLをダウンロード。</li>
+        <li>高度な使い方：エクスポートしたデータをベクトル化してセマンティック検索（RAG）を構築する。</li>
+      </ul>
+
+      <h2>方法1 — Geminiアプリのアクティビティ（自動保存・検索）</h2>
+      <p>Geminiの会話は、設定がオンなら自動的に <a href="https://gemini.google.com" target="_blank" rel="noopener">gemini.google.com</a> の「アクティビティ」に保存されます。画面上の検索バーでキーワード検索が可能で、日付（例：8月28日）を見て該当スレッドを開けます。</p>
+      <div class="links">
+        <a class="chip" href="https://gemini.google.com" target="_blank" rel="noopener">Gemini（gemini.google.com）</a>
+      </div>
+
+      <h2>方法2 — 回答をエクスポート（個別）</h2>
+      <p>各回答の共有アイコンから「Googleドキュメントへエクスポート」や「Gmail下書きへ保存」などが可能。コード回答はそのまま Google Colab や Replit に流し込めます。</p>
+      <div class="links">
+        <a class="chip" href="https://docs.google.com" target="_blank" rel="noopener">Google ドキュメント</a>
+        <a class="chip" href="https://mail.google.com" target="_blank" rel="noopener">Gmail</a>
+        <a class="chip" href="https://colab.research.google.com" target="_blank" rel="noopener">Google Colab</a>
+        <a class="chip" href="https://replit.com" target="_blank" rel="noopener">Replit</a>
+      </div>
+
+      <h2>方法3 — 公開リンクを作成して共有</h2>
+      <p>会話単位で「公開リンクを作成」できます。誰でも見られる点に注意（機密情報は避ける）。ブックマークしておけば簡単に振り返れます。</p>
+
+      <h2>方法4 — ローカルにコピー＆ペースト</h2>
+      <p>シンプルかつ確実。Notion・Google Keep・ローカルテキストに貼り付け。オフラインでの保存・編集が可能。</p>
+      <div class="links">
+        <a class="chip" href="https://www.notion.so" target="_blank" rel="noopener">Notion</a>
+        <a class="chip" href="https://keep.google.com" target="_blank" rel="noopener">Google Keep</a>
+      </div>
+
+      <h2>チャットルーム全体（全データ）をエクスポートする方法</h2>
+      <p>大量の会話をまとめて取得したいときは <strong>Google データエクスポート（Takeout）</strong> が便利です。エクスポートしたZIPにはHTMLファイルが含まれ、各発言に詳細なタイムスタンプ（年月日時分秒）が記録されています。</p>
+      <div class="links">
+        <a class="chip" href="https://takeout.google.com" target="_blank" rel="noopener">Google データエクスポート（Takeout）</a>
+      </div>
+
+      <h2>「〇〇の話をしたのはいつ？」とGeminiに聞けるか？</h2>
+      <p>結論：Gemini自身はアカウントレベルで横断的に全履歴を自由にスキャンして答える能力を持っていません（※プライバシーと設計上の制約）。ただし、Geminiアクティビティの検索バーやTakeoutのタイムスタンプを使えば自分で特定できます。</p>
+
+      <h2>全データを添付してGeminiに質問するのは可能？（実務上の注意）</h2>
+      <p>理論上は可能ですが、現実的な制約があります：</p>
+      <ul>
+        <li>コンテキストウィンドウの上限 —— 全データを一括で読み込めない。</li>
+        <li>ファイル数・サイズ制限 —— 一度にアップロードできるファイル数やサイズに制約がある。</li>
+        <li>設計意図 —— 「会話履歴を丸ごと読み込ませて長期記憶化する」用途には向いていない。</li>
+      </ul>
+
+      <h2>実用的なアプローチ（おすすめ順）</h2>
+      <ol>
+        <li>まずはGeminiアクティビティの検索を試す（最短で手間がない）。</li>
+        <li>定期的にTakeoutでバックアップを作る（オフライン保管）。</li>
+        <li>プログラミングで専用の検索ツール（キーワード検索→セマンティック検索）を作る。</li>
+      </ol>
+
+      <h2>上級者向け：会話データを使った検索ツールのサンプル</h2>
+      <p>以下は「TakeoutでエクスポートしたHTMLファイル群をフォルダに置き、キーワードで検索するPythonの簡易スクリプト」のサンプルです。ワンタッチコピー用ボタン付きで掲載しています。</p>
+
+      <div class="code-area" id="code1">
+        <div class="code-toolbar">
+          <button class="copy-btn" data-target="snippet1" title="クリップボードにコピー">コピー</button>
+        </div>
+        <pre><code id="snippet1">&lt;!-- Python: simple_keyword_search.py --&gt;
+# フォルダ内のHTMLファイルを検索して、ヒット箇所を表示する簡易スクリプト
+# 依存: beautifulsoup4
+# 実行: python simple_keyword_search.py /path/to/exported/html "検索キーワード"
+
+import sys
+import os
+from bs4 import BeautifulSoup
+
+def extract_text_from_html(path):
+    with open(path, "r", encoding="utf-8") as f:
+        soup = BeautifulSoup(f, "html.parser")
+    # 本文に当たる要素を抽出（環境によって調整が必要）
+    texts = []
+    for tag in soup.find_all(["p","div","span","li"]):
+        if tag.get_text(strip=True):
+            texts.append(tag.get_text(" ", strip=True))
+    return "\\n".join(texts)
+
+def search_folder(folder, keyword):
+    for root, _, files in os.walk(folder):
+        for fn in files:
+            if fn.lower().endswith(".html") or fn.lower().endswith(".htm"):
+                path = os.path.join(root, fn)
+                text = extract_text_from_html(path)
+                if keyword.lower() in text.lower():
+                    print("---- HIT:", path)
+                    # 出現箇所を抜粋表示
+                    idx = text.lower().find(keyword.lower())
+                    start = max(0, idx-80)
+                    end = min(len(text), idx+80)
+                    print(text[start:end].replace("\\n"," "))
+                    print()
+if __name__ == '__main__':
+    if len(sys.argv) &lt; 3:
+        print("Usage: python simple_keyword_search.py /path/to/html \"keyword\"")
+        sys.exit(1)
+    folder = sys.argv[1]
+    keyword = sys.argv[2]
+    search_folder(folder, keyword)
+</code></pre>
+      </div>
+
+      <p>ポイント：これは最低限の実装例です。HTML構造に合わせて抽出ロジック（タグやクラス）を調整してください。</p>
+
+      <h2>上級：セマンティック検索（RAG）の概念と簡単な流れ</h2>
+      <p>キーワード一致ではなく「意味で探す」場合、次の流れで実装します。</p>
+      <ol>
+        <li>エクスポートした各会話を小さなチャンク（例：200〜500トークン）に分割。</li>
+        <li>各チャンクをベクトル（埋め込み）に変換（Sentence Transformers等）。</li>
+        <li>FAISSやAnnoy等のベクトルDBに格納。</li>
+        <li>ユーザーのクエリをベクトル化して、類似度の高いチャンクを取得。</li>
+        <li>そのチャンクだけをモデル（Gemini等）に渡して回答生成（RAG）。</li>
+      </ol>
+      <p>以下はその概念を示す疑似コードの短い例（実行環境に応じてライブラリを選んでください）。</p>
+
+      <div class="code-area" id="code2">
+        <div class="code-toolbar">
+          <button class="copy-btn" data-target="snippet2" title="クリップボードにコピー">コピー</button>
+        </div>
+        <pre><code id="snippet2">&lt;!-- Python: rag_pipeline_example.py (疑似コード) --&gt;
+# 依存例: sentence-transformers, faiss-cpu, langchain (任意)
+# フロー:
+# 1) HTMLを読み -> 2) チャンク化 -> 3) 埋め込み作成 -> 4) FAISSに登録
+# 5) クエリを埋め込み -> 6) 類似チャンクを取得 -> 7) Geminiに渡して要約/回答
+
+from sentence_transformers import SentenceTransformer
+import faiss
+# (HTML読み取り、チャンク化のコードは省略)
+model = SentenceTransformer('all-MiniLM-L6-v2')  # 例
+# embeddings = model.encode(list_of_chunks)
+# faiss_index = faiss.IndexFlatL2(embeddings.shape[1])
+# faiss_index.add(embeddings)
+# query_emb = model.encode([user_query])
+# D, I = faiss_index.search(query_emb, k=5)
+# relevant_chunks = [list_of_chunks[i] for i in I[0]]
+# その後、relevant_chunksをまとめてGeminiに渡しつつ質問する（RAG）
+</code></pre>
+      </div>
+
+      <h2>実践アドバイスと注意点</h2>
+      <ul>
+        <li>まずはGemini内蔵の検索で十分な場合が多い（手間がかからず即効性がある）。</li>
+        <li>機密情報は公開リンクや共有に出さない。公開リンクは誰でも見られます。</li>
+        <li>自作ツールを作る場合、TakeoutのHTML構造に依存するため、テストと調整を丁寧に行う。</li>
+        <li>大量データを扱うなら、ベクトルDB + セマンティック検索が最も実用的。</li>
+      </ul>
+
+      <h2>関連リンク（参考）</h2>
+      <div class="links">
+        <a class="chip" href="https://gemini.google.com" target="_blank" rel="noopener">Gemini</a>
+        <a class="chip" href="https://takeout.google.com" target="_blank" rel="noopener">Google Takeout</a>
+        <a class="chip" href="https://docs.google.com" target="_blank" rel="noopener">Google ドキュメント</a>
+        <a class="chip" href="https://colab.research.google.com" target="_blank" rel="noopener">Google Colab</a>
+        <a class="chip" href="https://replit.com" target="_blank" rel="noopener">Replit</a>
+        <a class="chip" href="https://www.notion.so" target="_blank" rel="noopener">Notion</a>
+        <a class="chip" href="https://keep.google.com" target="_blank" rel="noopener">Google Keep</a>
+      </div>
+
+      <footer>
+        <div>最終更新: 2025-08-28</div>
+        <div>作成: Gemini会話保存ガイド</div>
+      </footer>
+    </article>
+  </div>
+
+  <script>
+    // コピー機能（コードブロックをワンタッチでコピー）
+    document.querySelectorAll('.copy-btn').forEach(function(btn){
+      btn.addEventListener('click', async function(){
+        const targetId = btn.getAttribute('data-target');
+        const el = document.getElementById(targetId);
+        if(!el) return;
+        // code block 内のテキストをそのままコピー（HTMLエスケープされた表現）
+        const text = el.innerText || el.textContent;
+        try{
+          await navigator.clipboard.writeText(text);
+          btn.innerText = 'コピー完了';
+          setTimeout(()=> btn.innerText = 'コピー', 1200);
+        }catch(e){
+          // フォールバック
+          const ta = document.createElement('textarea');
+          ta.value = text;
+          document.body.appendChild(ta);
+          ta.select();
+          try { document.execCommand('copy'); btn.innerText = 'コピー完了'; }
+          catch(e){ alert('コピーできませんでした'); }
+          document.body.removeChild(ta);
+          setTimeout(()=> btn.innerText = 'コピー', 1200);
+        }
+      });
+      // 初期ラベル
+      btn.innerText = 'コピー';
+    });
+  </script>
+</body>
+</html>
