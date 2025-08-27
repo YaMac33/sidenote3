@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>25.8.27 GitHub連携手順（Personal Access Token 設定）</title>
+  <style>
+    :root{
+      --bg1:#071026; --bg2:#071228; --card:#07182b; --accent:#6ee7b7; --accent2:#8b5cf6;
+      --muted:#9fb3c9; --glass: rgba(255,255,255,0.02);
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New", monospace;
+      --radius:12px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%; margin:0; font-family:"Noto Sans JP", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;}
+    body{
+      background: linear-gradient(180deg,var(--bg1) 0%, var(--bg2) 100%);
+      color: #e6f4fb;
+      padding:36px;
+      display:flex;
+      justify-content:center;
+      align-items:flex-start;
+    }
+    .wrap{width:100%; max-width:1200px;}
+    header{display:flex; gap:16px; align-items:center; margin-bottom:22px;}
+    .logo{
+      width:68px; height:68px; border-radius:14px;
+      background: linear-gradient(135deg,var(--accent2),var(--accent));
+      display:flex; align-items:center; justify-content:center; font-weight:800; color:white;
+      font-family:var(--mono); box-shadow: 0 8px 30px rgba(7,22,42,0.6);
+      font-size:18px;
+    }
+    h1{margin:0; font-size:20px;}
+    p.lead{margin:0; color:var(--muted); font-size:14px;}
+
+    main{display:grid; grid-template-columns: 1fr 420px; gap:22px;}
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:var(--radius); padding:20px; border:1px solid rgba(255,255,255,0.03);
+      box-shadow: 0 10px 30px rgba(2,8,20,0.6);
+    }
+
+    .content h2{margin-top:0; color:#fff;}
+    .section{margin-bottom:16px;}
+    .muted{color:var(--muted); font-size:13px;}
+
+    pre.code{
+      background: linear-gradient(180deg,#051022,#04101b);
+      padding:14px; border-radius:10px; overflow:auto; font-family:var(--mono); font-size:13px;
+      color:#dff6f0; position:relative; border:1px solid rgba(255,255,255,0.02);
+      margin:10px 0;
+      white-space:pre-wrap;
+    }
+    .copy{
+      position:absolute; right:10px; top:10px; background:var(--accent); color:#022a26; border:none;
+      padding:6px 8px; border-radius:8px; font-weight:700; cursor:pointer; font-size:12px;
+    }
+
+    table.spec{width:100%; border-collapse:collapse; margin-top:8px;}
+    table.spec th, table.spec td{padding:8px 10px; text-align:left; border-bottom:1px solid rgba(255,255,255,0.03);}
+    table.spec th{color:var(--muted); font-weight:600; font-size:13px;}
+    a.ref{color:#bfeee6; text-decoration:underline;}
+    footer{margin-top:12px; color:var(--muted); font-size:13px; text-align:right;}
+
+    .original{
+      white-space:pre-wrap; background:linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01));
+      padding:12px; border-radius:10px; color:#e6f4fb; font-size:14px; line-height:1.7; border:1px solid rgba(255,255,255,0.02);
+      max-height:64vh; overflow:auto;
+    }
+
+    @media(max-width:980px){
+      main{grid-template-columns:1fr; }
+      .original{max-height:40vh;}
+    }
+
+    .note{background:rgba(255,255,255,0.02); border-left:4px solid var(--accent); padding:10px 12px; border-radius:6px; color:var(--muted);}
+    .kbd{background:rgba(255,255,255,0.03); padding:2px 6px; border-radius:6px; font-family:var(--mono);}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="logo">GitHub</div>
+      <div>
+        <h1>25.8.27 GitHub連携手順（Personal Access Token 設定）</h1>
+        <p class="lead">このページは「本文を全文掲載」しつつ、GitHubとの連携（Personal Access Token の作成・環境変数設定）を分かりやすくマニュアル化したものです。</p>
+      </div>
+    </header>
+
+    <main>
+      <!-- Left: Manualized content -->
+      <section class="card content" aria-labelledby="manual-title">
+        <h2 id="manual-title">マニュアル：GitHub Personal Access Token の作成とアプリ連携手順</h2>
+
+        <div class="section">
+          <h3>要点（サマリ）</h3>
+          <p class="muted">このアプリをGitHubと連携するには、GitHub Personal Access Token（PAT／個人アクセストークン）を作成してアプリの環境変数 <span class="kbd">GITHUB_TOKEN</span> に設定します。接続テスト後、リポジトリ名・ブランチ・コミットメッセージを指定して「変換してGitHubにプッシュ」すると自動でHTMLファイルが作成・更新されます。</p>
+        </div>
+
+        <div class="section">
+          <h3>手順（簡潔）</h3>
+          <ol>
+            <li><strong>GitHubでPersonal Access Tokenを作成</strong>（設定画面へは下の参考リンクを参照）</li>
+            <li><strong>取得したトークンを安全な場所に保存</strong>（再表示されません）</li>
+            <li><strong>環境変数に設定</strong>：アプリ側（Replitやサーバー）で <code>GITHUB_TOKEN</code> を設定</li>
+            <li><strong>接続テスト</strong>：アプリの「接続テスト」でアクセス権を確認</li>
+            <li><strong>リポジトリ設定・運用</strong>：ユーザー名/リポジトリ名、ブランチ（通常 main）、コミットメッセージをセットしてプッシュ</li>
+          </ol>
+        </div>
+
+        <div class="section">
+          <h3>詳細（本文に沿ったステップ）</h3>
+          <h4>1. GitHub Personal Access Tokenの作成</h4>
+          <p>以下の順でトークンを発行してください（画面はGitHubの設定画面）。</p>
+          <ul>
+            <li>GitHubにログインして、右上のプロフィール画像をクリック</li>
+            <li>「Settings」→「Developer settings」→「Personal access tokens」→「Tokens (classic)」を選択</li>
+            <li>「Generate new token」→「Generate new token (classic)」をクリック</li>
+            <li>設定項目（例）:
+              <ul>
+                <li><strong>Note</strong>: 「Text to HTML Publisher」など分かりやすい名前</li>
+                <li><strong>Expiration</strong>: お好みの期限（90日推奨）</li>
+                <li><strong>Scopes</strong>: <code>repo</code>（リポジトリへのフルアクセス）, <code>workflow</code>（GitHub Actionsワークフロー）にチェック</li>
+              </ul>
+            </li>
+            <li>「Generate token」をクリックしてトークンを生成</li>
+            <li><strong>重要</strong>: 表示されたトークンをコピーして安全な場所に保存（再表示されません）</li>
+          </ul>
+        </div>
+
+        <div class="section">
+          <h4>2. Replit（または実行環境）でのToken設定</h4>
+          <p class="muted">取得した Personal Access Token をアプリの環境変数 <code>GITHUB_TOKEN</code> として設定してください。Replit では Secrets / Environment variables の設定画面から追加できます。</p>
+
+          <p class="muted">例：.env ファイル（ローカルやサーバーで使う場合）</p>
+          <pre class="code" id="envBlock">GITHUB_TOKEN="ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"</pre>
+          <button class="copy" data-target="envBlock" onclick="copyToClipboard(event)">COPY</button>
+        </div>
+
+        <div class="section">
+          <h3>接続テストとリポジトリ設定</h3>
+          <ul>
+            <li><strong>接続テスト</strong>: アプリの GitHub 設定セクションで「接続テスト」ボタンをクリックして、リポジトリへのアクセスを確認してください。</li>
+            <li><strong>リポジトリ設定</strong>:
+              <ul>
+                <li>リポジトリ名を「ユーザー名/リポジトリ名」の形式で入力</li>
+                <li>ブランチを選択（通常は「main」）</li>
+                <li>コミットメッセージを設定</li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+
+        <div class="section">
+          <h3>使用方法（アプリ側の操作）</h3>
+          <ol>
+            <li>テキストを入力</li>
+            <li>ファイル名とディレクトリを設定</li>
+            <li>「変換してGitHubにプッシュ」ボタンをクリック</li>
+            <li>アプリケーションは自動的に：
+              <ul>
+                <li>テキストをHTMLに変換</li>
+                <li>指定したGitHubリポジトリにファイルを作成/更新</li>
+                <li>コミットを実行</li>
+              </ul>
+            </li>
+          </ol>
+        </div>
+
+        <div class="section">
+          <h3>注意点 &amp; セキュリティ</h3>
+          <ul>
+            <li>Personal Access Token は非常に強力な権限を持ちます。絶対に公開リポジトリや公開ページにトークンをコミットしないでください。</li>
+            <li>必要最小限の権限（Scopes）に絞る・有効期限を設定する・定期的にローテーションすることを推奨します。</li>
+            <li>Render や GitHub Actions などへのデプロイ時は、それぞれの環境の「Secrets/Environment variables」機能を使って安全に保存してください。</li>
+          </ul>
+        </div>
+
+        <div class="section">
+          <h3>参考リンク</h3>
+          <ul>
+            <li><a class="ref" href="https://github.com/settings/tokens" target="_blank" rel="noopener">GitHub — Personal access tokens（設定画面）</a></li>
+            <li><a class="ref" href="https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token" target="_blank" rel="noopener">GitHub Docs — Creating a personal access token</a></li>
+            <li><a class="ref" href="https://replit.com/docs" target="_blank" rel="noopener">Replit Docs（環境変数 / Secrets の設定）</a></li>
+          </ul>
+        </div>
+
+        <footer>作成日: 2025-08-27</footer>
+      </section>
+
+      <!-- Right: original full text -->
+      <aside class="card">
+        <h3>原文（本文を過不足なく全文掲載）</h3>
+        <div class="original" id="originalText">
+Q.このアプリとGitHubを連携させるにはどうすればいい？
+
+A.このアプリケーションをGitHubと連携させるには、GitHub Personal Access Token（個人アクセストークン）が必要です。以下の手順で設定してください：
+1. GitHub Personal Access Tokenの作成
+GitHubにログインして、右上のプロフィール画像をクリック
+「Settings」→「Developer settings」→「Personal access tokens」→「Tokens (classic)」を選択
+「Generate new token」→「Generate new token (classic)」をクリック
+以下の設定を行います：
+Note: 「Text to HTML Publisher」など分かりやすい名前
+Expiration: お好みの期限（90日推奨）
+Scopes: 以下にチェック
+repo (リポジトリへのフルアクセス)
+workflow (GitHub Actionsワークフロー)
+「Generate token」をクリックしてトークンを生成
+重要: 表示されたトークンをコピーして安全な場所に保存（再表示されません）
+2. ReplitでのToken設定
+GitHubとの連携には、GitHub Personal Access Tokenが必要です。
+Personal Access Tokenは、GitHubがアプリケーションに安全にアクセスを許可するための認証キーです。このトークンにより、アプリケーションがあなたのGitHubリポジトリにファイルを作成・更新できるようになります。
+上記の手順でGitHubから取得したPersonal Access Tokenを、環境変数 GITHUB_TOKEN として設定してください。
+
+素晴らしいです！GitHub Tokenが正常に設定されました。これでアプリケーションがGitHubと連携できるようになりました。
+次の手順
+接続テスト: GitHub設定セクションで「接続テスト」ボタンをクリックして、リポジトリへのアクセスを確認してください
+リポジトリ設定:
+リポジトリ名を「ユーザー名/リポジトリ名」の形式で入力
+ブランチを選択（通常は「main」）
+コミットメッセージを設定
+使用方法:
+テキストを入力
+ファイル名とディレクトリを設定
+「変換してGitHubにプッシュ」ボタンをクリック
+アプリケーションは自動的に：
+テキストをHTMLに変換
+指定したGitHubリポジトリにファイルを作成/更新
+コミットを実行
+        </div>
+
+        <div style="margin-top:12px;">
+          <h4 style="margin:8px 0 6px 0;">クイックチェックリスト</h4>
+          <ul style="color:var(--muted); padding-left:18px;">
+            <li>トークンは発行後すぐにコピーして安全に保管する。</li>
+            <li>Scopeは必要最小限（repo, workflow等）に限定する。</li>
+            <li>Replit の Secrets（環境変数）や Render/GitHub のシークレットを使って安全に保存する。</li>
+          </ul>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <script>
+    // コピー関数：pre.code の innerText をコピー（data-target pattern）
+    document.querySelectorAll('.copy').forEach(btn=>{
+      btn.addEventListener('click', function(e){
+        const id = this.getAttribute('data-target');
+        const el = document.getElementById(id);
+        if(!el){
+          // fallback: find nearest pre.code sibling
+          let pre = this.previousElementSibling;
+          if(pre && pre.classList.contains('code')){
+            copyText(pre.innerText, this);
+            return;
+          }
+          return;
+        }
+        copyText(el.innerText, this);
+      });
+    });
+
+    function copyToClipboard(e){
+      const btn = e.currentTarget || e.target;
+      const id = btn.getAttribute('data-target');
+      const el = document.getElementById(id);
+      if(el) copyText(el.innerText, btn);
+    }
+
+    function copyText(text, btn){
+      navigator.clipboard.writeText(text).then(()=>{
+        const orig = btn.innerText;
+        btn.innerText = 'COPIED';
+        setTimeout(()=> btn.innerText = orig, 1200);
+      }).catch(()=>{
+        // fallback
+        try{
+          const textarea = document.createElement('textarea');
+          textarea.value = text; document.body.appendChild(textarea);
+          textarea.select(); document.execCommand('copy'); textarea.remove();
+          const orig = btn.innerText;
+          btn.innerText = 'COPIED';
+          setTimeout(()=> btn.innerText = orig, 1200);
+        }catch(e){
+          alert('コピーに失敗しました。ブラウザのクリップボード設定を確認してください。');
+        }
+      });
+    }
+  </script>
+</body>
+</html>
