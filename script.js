@@ -59,21 +59,44 @@ document.addEventListener("DOMContentLoaded", function () {
                 visibleDirs.forEach(item => {
                     const dirName = item.name;
                     const card = document.createElement("a");
-                    card.href = `./${dirName}/`;
                     card.className = "project-card";
-                    card.innerHTML = `<h3>${dirName}</h3>`; 
+                    card.innerHTML = `<h3>${dirName}</h3>`; // 初期表示はディレクトリ名
                     projectListContainer.appendChild(card);
                     
-                    const indexUrl = `https://raw.githubusercontent.com/${username}/${repoName}/main/${dirName}/index.html`;
-                    fetch(indexUrl)
-                        .then(res => res.text())
+                    // まずindex.htmlの取得を試みる
+                    const indexHtmlUrl = `https://raw.githubusercontent.com/${username}/${repoName}/main/${dirName}/index.html`;
+                    fetch(indexHtmlUrl)
+                        .then(res => {
+                            if (!res.ok) throw new Error('index.html not found');
+                            return res.text();
+                        })
                         .then(html => {
+                            // index.htmlが見つかった場合
+                            card.href = `./${dirName}/`; // リンク先はディレクトリ
                             const match = html.match(/<title>(.*?)<\/title>/i);
                             const title = match ? match[1] : dirName;
                             card.querySelector("h3").textContent = title;
                         })
                         .catch(() => {
-                            console.warn(`Could not fetch title for: ${dirName}`);
+                            // index.htmlが見つからなかった場合、index.mdの取得を試みる
+                            const indexMdUrl = `https://raw.githubusercontent.com/${username}/${repoName}/main/${dirName}/index.md`;
+                            fetch(indexMdUrl)
+                                .then(res => {
+                                    if (!res.ok) throw new Error('index.md not found');
+                                    return res.text();
+                                })
+                                .then(markdown => {
+                                    // index.mdが見つかった場合
+                                    card.href = `./${dirName}/index.md`; // リンク先は.mdファイル
+                                    const match = markdown.match(/^#\s+(.*)/m); // 最初のH1見出し(#)をタイトルとして抽出
+                                    const title = match ? match[1] : dirName;
+                                    card.querySelector("h3").textContent = title;
+                                })
+                                .catch(() => {
+                                    // どちらのファイルも見つからなかった場合
+                                    card.href = `./${dirName}/`; // とりあえずディレクトリにリンク
+                                    console.warn(`Could not find index.html or index.md in: ${dirName}`);
+                                });
                         });
                 });
             })
