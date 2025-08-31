@@ -1,12 +1,12 @@
 name: Deploy to GitHub Pages
 
 on:
-  push: 
+  push:
     branches: ["main"]
   workflow_dispatch:
 
 permissions:
-  contents: write # HTMLを書き込むために 'write' に変更
+  contents: read
   pages: write
   id-token: write
 
@@ -15,29 +15,11 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-and-deploy: # ジョブを1つに統合
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      # --- ここからが追加・変更部分 ---
-      - name: Install Pandoc
-        run: sudo apt-get update && sudo apt-get install -y pandoc
-
-      - name: Convert Markdown to HTML
-        run: |
-          # ルート以外の全てのindex.mdを検索し、同じディレクトリにindex.htmlとして変換
-          find . -type f -name "index.md" -not -path "./index.md" | while read mdfile; do
-            dir=$(dirname "$mdfile")
-            # style.cssを適用し、目次も自動生成する例
-            pandoc "$mdfile" -o "$dir/index.html" --standalone --css "../style.css" --toc
-            echo "Converted $mdfile to $dir/index.html"
-          done
-      # --- ここまでが追加・変更部分 ---
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -59,6 +41,15 @@ jobs:
         with:
           path: '.'
 
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+        with:
+          path: '.'
