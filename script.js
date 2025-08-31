@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", function () {
-    
+
     // 1. ヘッダーを読み込んで表示
     fetch('header.html')
         .then(response => {
@@ -50,7 +50,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 projectListContainer.innerHTML = "";
                 data.reverse();
                 const visibleDirs = data.filter(item => item.type === "dir" && !item.name.startsWith('.'));
-                
+
                 if (visibleDirs.length === 0) {
                     projectListContainer.innerHTML = "<p>まだ記事がありません。</p>";
                     return;
@@ -62,7 +62,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     card.className = "project-card";
                     card.innerHTML = `<h3>${dirName}</h3>`; // 初期表示はディレクトリ名
                     projectListContainer.appendChild(card);
-                    
+
                     // まずindex.htmlの取得を試みる
                     const indexHtmlUrl = `https://raw.githubusercontent.com/${username}/${repoName}/main/${dirName}/index.html`;
                     fetch(indexHtmlUrl)
