@@ -36,7 +36,7 @@ document.addEventListener("DOMContentLoaded", function () {
             document.body.insertAdjacentHTML('beforeend', fallbackFooter);
         });
 
-    // 3. GitHub APIから記事一覧を取得
+    // 3. GitHub APIからMarkdownファイル一覧を取得
     const username = "YaMac33";
     const repoName = "sidenote3";
     const projectListContainer = document.getElementById("project-list-container");
@@ -49,54 +49,33 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(data => {
                 projectListContainer.innerHTML = "";
                 data.reverse();
-                const visibleDirs = data.filter(item => item.type === "dir" && !item.name.startsWith('.'));
+                const markdownFiles = data.filter(item => item.type === "file" && item.name.endsWith('.md') && !item.name.startsWith('.'));
                 
-                if (visibleDirs.length === 0) {
+                if (markdownFiles.length === 0) {
                     projectListContainer.innerHTML = "<p>まだ記事がありません。</p>";
                     return;
                 }
 
-                visibleDirs.forEach(item => {
-                    const dirName = item.name;
+                markdownFiles.forEach(item => {
+                    const fileName = item.name;
+                    const baseName = fileName.replace('.md', '');
                     const card = document.createElement("a");
+                    card.href = `./${fileName}`;
                     card.className = "project-card";
-                    card.innerHTML = `<h3>${dirName}</h3>`; // 初期表示はディレクトリ名
+                    card.innerHTML = `<h3>${baseName}</h3>`; 
                     projectListContainer.appendChild(card);
                     
-                    // まずindex.htmlの取得を試みる
-                    const indexHtmlUrl = `https://raw.githubusercontent.com/${username}/${repoName}/main/${dirName}/index.html`;
-                    fetch(indexHtmlUrl)
-                        .then(res => {
-                            if (!res.ok) throw new Error('index.html not found');
-                            return res.text();
-                        })
-                        .then(html => {
-                            // index.htmlが見つかった場合
-                            card.href = `./${dirName}/`; // リンク先はディレクトリ
-                            const match = html.match(/<title>(.*?)<\/title>/i);
-                            const title = match ? match[1] : dirName;
+                    const markdownUrl = `https://raw.githubusercontent.com/${username}/${repoName}/main/${fileName}`;
+                    fetch(markdownUrl)
+                        .then(res => res.text())
+                        .then(markdown => {
+                            // Markdownファイルからタイトルを抽出（# で始まる最初の行）
+                            const titleMatch = markdown.match(/^#\s+(.+)$/m);
+                            const title = titleMatch ? titleMatch[1].trim() : baseName;
                             card.querySelector("h3").textContent = title;
                         })
                         .catch(() => {
-                            // index.htmlが見つからなかった場合、index.mdの取得を試みる
-                            const indexMdUrl = `https://raw.githubusercontent.com/${username}/${repoName}/main/${dirName}/index.md`;
-                            fetch(indexMdUrl)
-                                .then(res => {
-                                    if (!res.ok) throw new Error('index.md not found');
-                                    return res.text();
-                                })
-                                .then(markdown => {
-                                    // index.mdが見つかった場合
-                                    card.href = `./${dirName}/index.md`; // リンク先は.mdファイル
-                                    const match = markdown.match(/^#\s+(.*)/m); // 最初のH1見出し(#)をタイトルとして抽出
-                                    const title = match ? match[1] : dirName;
-                                    card.querySelector("h3").textContent = title;
-                                })
-                                .catch(() => {
-                                    // どちらのファイルも見つからなかった場合
-                                    card.href = `./${dirName}/`; // とりあえずディレクトリにリンク
-                                    console.warn(`Could not find index.html or index.md in: ${dirName}`);
-                                });
+                            console.warn(`Could not fetch title for: ${fileName}`);
                         });
                 });
             })
