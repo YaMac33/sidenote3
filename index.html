@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SideNote3</title>
+    <title>SideNote</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="./pagefind/pagefind-ui.css" rel="stylesheet">
@@ -11,11 +11,15 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- 共通ヘッダーを読み込み -->
+    <div id="header"></div>
     <div id="search" class="max-w-2xl mx-auto my-8 px-4"></div>
     <main id="project-list-container" class="project-list" aria-live="polite">
         <div class="loader"></div>
     </main>
 
+    <!-- 共通フッターを読み込み -->
+    <div id="footer"></div>
     <script src="script.js"></script>
     
     <script src="./pagefind/pagefind-ui.js" type="text/javascript"></script>
