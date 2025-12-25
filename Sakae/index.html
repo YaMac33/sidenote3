@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>栄町が描く未来への旅路：第6次総合計画</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', 'Meiryo', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .slide {
+            background: white;
+            border-radius: 20px;
+            padding: 60px;
+            margin: 30px 0;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            min-height: 600px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            transition: transform 0.3s ease;
+        }
+
+        .slide:hover {
+            transform: translateY(-5px);
+        }
+
+        .slide-title {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 600px;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide-title::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+
+        h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            line-height: 1.3;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            z-index: 1;
+        }
+
+        h2 {
+            font-size: 2.2em;
+            color: #667eea;
+            margin-bottom: 30px;
+            border-bottom: 4px solid #667eea;
+            padding-bottom: 15px;
+        }
+
+        h3 {
+            font-size: 1.6em;
+            color: #764ba2;
+            margin: 25px 0 15px 0;
+        }
+
+        .subtitle {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+            font-weight: 600;
+            z-index: 1;
+        }
+
+        .date {
+            font-size: 1.1em;
+            opacity: 0.9;
+            z-index: 1;
+        }
+
+        .vision-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+            margin: 30px 0;
+        }
+
+        .vision-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .vision-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+        }
+
+        .vision-card h4 {
+            font-size: 1.3em;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .vision-card p {
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .philosophy-box {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            margin: 30px 0;
+            font-size: 1.4em;
+            font-weight: 600;
+            color: #5a3825;
+        }
+
+        .chart-container {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 25px 0;
+        }
+
+        .bar-item {
+            margin: 15px 0;
+        }
+
+        .bar-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .bar {
+            height: 35px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: barShine 2s infinite;
+        }
+
+        @keyframes barShine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            padding: 30px;
+            border-radius: 15px;
+            margin: 25px 0;
+            border-left: 6px solid #667eea;
+        }
+
+        .priority-area {
+            background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+
+        .pillars-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .pillar-card {
+            background: white;
+            border: 3px solid #667eea;
+            padding: 25px;
+            border-radius: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .pillar-card:hover {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .pillar-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .pillar-card:hover .pillar-number {
+            color: white;
+        }
+
+        .stat-box {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 60px;
+            border-radius: 20px;
+            text-align: center;
+            margin: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .stat-number {
+            font-size: 4em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            padding: 12px 0;
+            padding-left: 30px;
+            position: relative;
+            line-height: 1.8;
+        }
+
+        li::before {
+            content: "▶";
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .goal-display {
+            text-align: center;
+            padding: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 20px;
+            margin: 30px 0;
+        }
+
+        .goal-numbers {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 40px;
+            margin: 30px 0;
+        }
+
+        .goal-current, .goal-target {
+            font-size: 5em;
+            font-weight: bold;
+        }
+
+        .goal-arrow {
+            font-size: 3em;
+        }
+
+        @media (max-width: 768px) {
+            .slide {
+                padding: 30px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            h2 {
+                font-size: 1.6em;
+            }
+
+            .vision-grid, .pillars-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .goal-numbers {
+                flex-direction: column;
+            }
+        }
+
+        .strategy-card {
+            background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
+            padding: 30px;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+
+        .wind-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .wind-card {
+            padding: 30px;
+            border-radius: 15px;
+        }
+
+        .tailwind {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+        }
+
+        .headwind {
+            background: linear-gradient(135deg, #d299c2 0%, #fef9d7 100%);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- スライド1: タイトル -->
+        <div class="slide slide-title">
+            <h1>栄町が描く未来への旅路<br>第6次総合計画</h1>
+            <div class="subtitle">「笑顔あふれるあたたかいまち 水と緑のふるさと さかえ」</div>
+            <div class="date">栄町｜令和7年12月</div>
+        </div>
+
+        <!-- スライド2: ビジョン -->
+        <div class="slide">
+            <h2>私たちが目指す北極星：共有する未来の姿<br>「笑顔あふれるあたたかいまち」とは？</h2>
+            
+            <div class="vision-grid">
+                <div class="vision-card">
+                    <h4>温かな社会</h4>
+                    <p>あたかいになれい、まちる社会。社会構造が大きく変化する中でも、誰もが不安なく、健康で心豊かに暮らせる社会。</p>
+                </div>
+                <div class="vision-card">
+                    <h4>育むコミュニティ</h4>
+                    <p>地域ぐるみで子どもを育み、地域ぐるみで子どもを育み、世代を超えた人々がつながる、優しさに満ちたコミュニティ。</p>
+                </div>
+                <div class="vision-card">
+                    <h4>歴史と自然の継承</h4>
+                    <p>未来まで「歴史を大切にふるさと」。豊かな自然と、先人たちが築いた歴史・文化を未来へ紡いでいく「水と緑のふるさと」。</p>
+                </div>
+            </div>
+
+            <div class="philosophy-box">
+                基本理念（Basic Philosophy）<br>
+                みんなが希望をもって安心して暮らせるまちづくり
+            </div>
+        </div>
+
+        <!-- スライド3: 住民の声 -->
+        <div class="slide">
+            <h2>私たちの羅針盤：すべての計画は、皆さんの声から始まる</h2>
+            
+            <p style="font-size: 1.2em; margin-bottom: 20px;">
+                令和7年7月に実施した町民意識調査では、2,000人の皆さんに「住み続けたいまち」の姿を伺いました。
+            </p>
+
+            <h3>望ましい(住み続けたい)と思う町のイメージは？</h3>
+            
+            <div class="chart-container">
+                <div class="bar-item">
+                    <div class="bar-label">
+                        <span>安心・安全</span>
+                        <span>50.4%</span>
+                    </div>
+                    <div class="bar" style="width: 100%;"></div>
+                </div>
+                <div class="bar-item">
+                    <div class="bar-label">
+                        <span>自然あふれる</span>
+                        <span>37.9%</span>
+                    </div>
+                    <div class="bar" style="width: 75%;"></div>
+                </div>
+                <div class="bar-item">
+                    <div class="bar-label">
+                        <span>希望がもてる</span>
+                        <span>17.8%</span>
+                    </div>
+                    <div class="bar" style="width: 35%;"></div>
+                </div>
+                <div class="bar-item">
+                    <div class="bar-label">
+                        <span>未来につながる</span>
+                        <span>17.0%</span>
+                    </div>
+                    <div class="bar" style="width: 34%;"></div>
+                </div>
+                <div class="bar-item">
+                    <div class="bar-label">
+                        <span>安らぎのある</span>
+                        <span>16.2%</span>
+                    </div>
+                    <div class="bar" style="width: 32%;">                    </div>
+                </div>
+            </div>
+
+            <div class="highlight-box" style="margin-top: 30px;">
+                <p style="font-size: 1.2em; font-weight: 600; text-align: center;">
+                    戦略的な土地利用によって、コンパクトで魅力あふれるまちの骨格を形成し、<br>
+                    人口16,000人という目標を物理的に支えます。
+                </p>
+            </div>
+        </div>
+
+        <!-- スライド12: 重点戦略1 -->
+        <div class="slide">
+            <h2>重点戦略 ①：こどもまんなか社会の実現</h2>
+            
+            <p style="font-size: 1.2em; margin-bottom: 30px;">
+                町民意識調査でも最も要望の多かった「子育て・育児支援の充実」。<br>
+                私たちは、町の未来を担うこどもたちへの投資を最優先します。
+            </p>
+
+            <h3>主な取り組み</h3>
+            <div class="strategy-card">
+                <ul style="font-size: 1.1em;">
+                    <li><strong>切れ目のない支援：</strong>妊娠期から子育て期まで、経済的・精神的な負担を軽減する一貫したサポート体制を構築</li>
+                    <li><strong>こどもの居場所づくり：</strong>すべてのこどもが安心して過ごし、自己肯定感を育む場を地域に創出</li>
+                    <li><strong>地域ぐるみの育児：</strong>学校・家庭・地域社会が一体となり、たくましく生き抜く「楽っこ」を育てる</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- スライド13: 重点戦略2 -->
+        <div class="slide">
+            <h2>重点戦略 ②：活力と賑わいに満ちたまちの創出</h2>
+            
+            <p style="font-size: 1.2em; margin-bottom: 30px;">
+                「まちの発展が期待できない」という不安を払拭し、<br>
+                「希望がもてる」未来へ。
+            </p>
+
+            <h3>主な取り組み</h3>
+            <div class="strategy-card">
+                <ul style="font-size: 1.1em;">
+                    <li><strong>成田空港のポテンシャルを最大限に活用：</strong>空港機能強化による雇用・物流の波及効果を確実に捉え、関連企業の誘致を推進</li>
+                    <li><strong>稼げる地域産業の創出：</strong>農業・商業の高付加価値化を支援し、後継者不足などの課題に対応</li>
+                    <li><strong>新たな観光資源の発掘：</strong>ドラムの里を拠点に、歴史・文化・自然を活かした体験型観光を強化し、交流人口を増やす</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- スライド14: 成功の尺度 -->
+        <div class="slide">
+            <h2>成功の尺度：私たちが本当に測りたいもの</h2>
+            
+            <div style="text-align: center; margin: 40px 0;">
+                <div style="background: linear-gradient(135deg, #fdcb6e 0%, #e17055 100%); padding: 40px; border-radius: 20px; color: white;">
+                    <h3 style="color: white; margin-bottom: 20px;">ウェルビーイング（Well-being）</h3>
+                    <p style="font-size: 1.2em; line-height: 1.8;">
+                        身体的・精神的・社会的に良好な状態にある「幸福」。経済的な豊かさだけでなく、心豊かな暮らしそのものを指します。
+                    </p>
+                </div>
+            </div>
+
+            <h3>栄町民の現在の幸福度（令和7年度）</h3>
+            <div class="stat-box">
+                <div class="stat-number">6.3 / 10</div>
+                <div class="stat-label">平均スコア</div>
+                <p style="margin-top: 20px; font-size: 1.1em;">全体の63.9%が「幸福」と感じている（参照値6〜10）</p>
+            </div>
+
+            <p style="font-size: 1.2em; margin-top: 30px; text-align: center;">
+                千葉県平均の6.4点をわずかに下回る現在地。しかし、ここからが私たちの挑戦です。
+            </p>
+        </div>
+
+        <!-- スライド15: 究極のゴール -->
+        <div class="slide">
+            <h2>私たちの究極のゴール：より幸福なコミュニティへ</h2>
+            
+            <div class="goal-display">
+                <h3 style="color: white; font-size: 2em; margin-bottom: 30px;">幸福度の向上</h3>
+                <div class="goal-numbers">
+                    <div>
+                        <div class="goal-current">6.3</div>
+                        <div style="font-size: 1.2em;">現在 Current</div>
+                    </div>
+                    <div class="goal-arrow">→</div>
+                    <div>
+                        <div class="goal-target">6.5</div>
+                        <div style="font-size: 1.2em;">目標 Target - 令和16年度</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="highlight-box" style="margin-top: 30px;">
+                <p style="font-size: 1.3em; font-weight: 600; line-height: 1.8;">
+                    私たちのゴールは、計画を遂行することではありません。<br>
+                    <strong>町民一人ひとりの幸福度（ウェルビーイング）を高めること</strong>です。<br><br>
+                    特に、幸福度が平均より低い10代から20代の若者世代が、希望を持てるまちへ。
+                </p>
+            </div>
+
+            <div style="text-align: center; margin-top: 50px; padding: 40px; background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); border-radius: 20px;">
+                <p style="font-size: 1.5em; font-weight: bold; color: #2d3436;">
+                    このまちに住むすべての人が、希望をもって安心して暮らせる未来を、<br>
+                    共に創りましょう。
+                </p>
+            </div>
+        </div>
+
+        <!-- ナビゲーション -->
+        <div style="text-align: center; padding: 40px; color: white;">
+            <p style="font-size: 1.2em;">スクロールして全スライドをご覧ください</p>
+            <p style="margin-top: 10px; opacity: 0.8;">全15スライド</p>
+        </div>
+    </div>
+
+    <script>
+        // スムーズスクロール効果
+        document.addEventListener('DOMContentLoaded', function() {
+            const slides = document.querySelectorAll('.slide');
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '0';
+                        entry.target.style.transform = 'translateY(20px)';
+                        setTimeout(() => {
+                            entry.target.style.transition = 'all 0.6s ease';
+                            entry.target.style.opacity = '1';
+                            entry.target.style.transform = 'translateY(0)';
+                        }, 100);
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            slides.forEach(slide => observer.observe(slide));
+        });
+    </script>
+</body>
+</html>
+
+            <div class="highlight-box">
+                <p style="font-size: 1.3em; font-weight: 600;">
+                    私たちが掲げる「安心」と「自然」というテーマは、<br>
+                    町民の皆さんが最も望んでいる未来の姿そのものです。
+                </p>
+            </div>
+        </div>
+
+        <!-- スライド4: 最優先課題 -->
+        <div class="slide">
+            <h2>皆さんの声に応える、私たちの最優先課題</h2>
+            
+            <p style="font-size: 1.2em; margin-bottom: 20px;">
+                施策の「重要度」は高いにもかかわらず、「満足度」が低い分野。<br>
+                これこそが、私たちが最優先で取り組むべき課題です。
+            </p>
+
+            <div class="priority-area">
+                <h3 style="color: #2d3436; margin-bottom: 20px;">最優先エリア</h3>
+                <ul style="font-size: 1.1em;">
+                    <li><strong>災害対応・避難体制：</strong>重要度 4.335 / 満足度 3.417</li>
+                    <li><strong>防犯対策：</strong>重要度 4.335 / 満足度（平均）</li>
+                    <li><strong>医療受診環境体制：</strong>重要度 4.260 / 満足度（平均）</li>
+                    <li><strong>路線バス等の公共交通ネットワーク：</strong>重要度 4.224 / 満足度 2.621</li>
+                    <li><strong>安全駅の利便性：</strong>重要度（高）/ 満足度 2.581</li>
+                    <li><strong>まちなか商店の活性化：</strong>重要度（高）/ 満足度 2.507</li>
+                </ul>
+            </div>
+
+            <div class="highlight-box">
+                <p style="font-size: 1.3em; font-weight: 600; text-align: center;">
+                    これらの課題解決なくして、町の未来はありません。<br>
+                    第6次総合計画は、これらの声に正面から向き合います。
+                </p>
+            </div>
+        </div>
+
+        <!-- スライド5: 人口推移 -->
+        <div class="slide">
+            <h2>私たちの旅の出発点：岐路に立つ、栄町の現実</h2>
+            
+            <h3>栄町の将来推計人口</h3>
+            
+            <div class="chart-container">
+                <p style="font-size: 1.1em; margin-bottom: 20px;">
+                    <strong>国勢調査人口：20,127人（2020年）</strong><br>
+                    国立社会保障・人口問題研究所 推計
+                </p>
+                <div style="text-align: center; margin: 30px 0;">
+                    <div style="font-size: 3em; color: #d63031;">12,399人</div>
+                    <div style="font-size: 1.2em; color: #636e72;">2045年予測</div>
+                </div>
+            </div>
+
+            <div class="highlight-box">
+                <p style="font-size: 1.3em; font-weight: 600;">
+                    何もしなければ、20年後、町の人口は現在の約6割に減少する可能性があります。
+                </p>
+                <p style="margin-top: 15px; line-height: 1.8;">
+                    これは、地域経済の縮小、担い手不足、社会インフラの維持困難など、町の存続に関わる深刻な課題に直結します。
+                </p>
+            </div>
+        </div>
+
+        <!-- スライド6: 希望の兆し -->
+        <div class="slide">
+            <h2>しかし、希望の兆しはすでにある</h2>
+            
+            <div style="text-align: center; margin: 40px 0;">
+                <div style="font-size: 3.5em; font-weight: bold; color: #00b894;">24年ぶりの社会増</div>
+                <p style="font-size: 1.3em; margin-top: 20px;">
+                    若者向けの定住・移住施策や子育て支援策が実を結び、令和3年度以降、転入者が転出者を上回る<strong>「社会増」</strong>が続いています。<br>
+                    私たちの挑戦は、すでに成果を生み出しているのです。
+                </p>
+            </div>
+
+            <div class="strategy-card">
+                <h3 style="color: #2d3436;">社会増減の推移</h3>
+                <p style="font-size: 1.1em; line-height: 1.8; margin-top: 15px;">
+                    過去のマイナス傾向から、令和3年度に+77人、令和4年度に+104人、令和5年度に+10人、令和6年度に+14人と、4年連続でプラスを記録しています。
+                </p>
+            </div>
+        </div>
+
+        <!-- スライド7: 環境分析 -->
+        <div class="slide">
+            <h2>私たちを取り巻く環境：追い風と向かい風</h2>
+            
+            <div class="wind-container">
+                <div class="wind-card tailwind">
+                    <h3>✈️ 追い風</h3>
+                    <h4>まちの活性化が期待できる要因</h4>
+                    <ul>
+                        <li><strong>成田空港の機能強化</strong><br>2030年代後半に向け、発着容量1.7倍、従業員数1.6倍へ。雇用増加と経済波及効果</li>
+                        <li><strong>近隣エリアの発展</strong><br>最新まちづくり・大型商業施設に隣接し、新たな人の流れが期待できる</li>
+                    </ul>
+                </div>
+
+                <div class="wind-card headwind">
+                    <h3>☁️ 向かい風</h3>
+                    <h4>乗り越えるべき時代の潮流</h4>
+                    <ul>
+                        <li><strong>全国的な人口減少と少子高齢化</strong><br>日本全体の大きな趨勢であり、自然減の拡大は避けられない</li>
+                        <li><strong>激甚化する自然災害</strong><br>気候変動による大雨・台風・猛暑日下型地震への備えは喫緊の課題</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- スライド8: 目標 -->
+        <div class="slide">
+            <h2>私たちが目指す目的地：2045年、人口16,000人のまちへ</h2>
+            
+            <div style="text-align: center; margin: 40px 0;">
+                <div style="font-size: 1.5em; margin-bottom: 20px;">現在 20,127人 → 目標 <span style="font-size: 2em; color: #00b894; font-weight: bold;">16,000人</span></div>
+                <p style="font-size: 1.2em; line-height: 1.8; text-align: left; margin-top: 30px;">
+                    人口減少の速度を受け入れつつも、ただ流されるのではない。<strong>成田空港の機能強化を好機と捉え、定住移住施策を強く推進する</strong>ことで、減少スピードを緩やかにし、持続可能なまちの規模を維持する。これが私たちの戦略的目標です。
+                </p>
+            </div>
+
+            <div class="highlight-box">
+                <p style="font-size: 1.1em; text-align: center;">
+                    <strong>10/15 ページ</strong><br>
+                    目標 16,000人
+                </p>
+            </div>
+        </div>
+
+        <!-- スライド9: ロードマップ -->
+        <div class="slide">
+            <h2>未来へのロードマップ：第6次総合計画の全体像</h2>
+            
+            <div style="text-align: center; margin: 40px 0;">
+                <div style="background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%); padding: 30px; border-radius: 15px; margin-bottom: 30px;">
+                    <h3 style="color: #2d3436;">究極像（Vision）</h3>
+                    <p style="font-size: 1.3em; font-weight: 600;">笑顔あふれるあたたかいまち<br>水と緑のふるさと さかえ</p>
+                </div>
+
+                <div style="background: linear-gradient(135deg, #74b9ff 0%, #a29bfe 100%); padding: 30px; border-radius: 15px; margin-bottom: 30px; color: white;">
+                    <h3>基本理念（Philosophy）</h3>
+                    <p style="font-size: 1.2em;">みんなが希望をもって安心して暮らせるまちづくり</p>
+                </div>
+
+                <div style="background: linear-gradient(135deg, #fab1a0 0%, #ff7675 100%); padding: 30px; border-radius: 15px; color: white;">
+                    <h3>まちづくりの横断的視点（Cross-cutting Perspectives）</h3>
+                    <p style="font-size: 1.1em;">3つの視点で政策を統合</p>
+                </div>
+            </div>
+
+            <p style="text-align: center; font-size: 1.2em; margin-top: 30px;">
+                この体系的な計画が、2045年の目標達成に向けた私たちの道標となります。
+            </p>
+        </div>
+
+        <!-- スライド10: 7つの柱 -->
+        <div class="slide">
+            <h2>私たちの旅を支える7つの柱</h2>
+            
+            <div class="pillars-grid">
+                <div class="pillar-card">
+                    <div class="pillar-number">1 🛡️</div>
+                    <h3>安全・安心のまちをつくる</h3>
+                    <p>防災、消防、防犯体制の強化</p>
+                </div>
+
+                <div class="pillar-card">
+                    <div class="pillar-number">2 👨‍👩‍👧‍👦</div>
+                    <h3>こどもの健やかな成長を見守るまちをつくる</h3>
+                    <p>「こどもまんなか社会」の実現</p>
+                </div>
+
+                <div class="pillar-card">
+                    <div class="pillar-number">3 🏡</div>
+                    <h3>自然と調和した快適でくらしやすいまちをつくる</h3>
+                    <p>定住促進、都市基盤整備</p>
+                </div>
+
+                <div class="pillar-card">
+                    <div class="pillar-number">4 💝</div>
+                    <h3>支え合い助け合える健康でまちをつくる</h3>
+                    <p>健康寿命の延伸、地域共生社会</p>
+                </div>
+
+                <div class="pillar-card">
+                    <div class="pillar-number">5 📚</div>
+                    <h3>心豊かに学び生きがいが育つまちをつくる</h3>
+                    <p>学校教育・社会教育の推進</p>
+                </div>
+
+                <div class="pillar-card">
+                    <div class="pillar-number">6 🌱</div>
+                    <h3>活力に賑わいに満ちた元気をつくる</h3>
+                    <p>農業・商工業の振興、観光活性化</p>
+                </div>
+
+                <div class="pillar-card">
+                    <div class="pillar-number">7 🏛️</div>
+                    <h3>持続可能な行財政運営できるまちをつくる</h3>
+                    <p>健全な財政運営、DX推進</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- スライド11: 土地利用 -->
+        <div class="slide">
+            <h2>計画をかたちに：未来の土地利用構想</h2>
+            
+            <div style="margin: 30px 0;">
+                <h3>5つのエリア戦略</h3>
+                <div class="vision-grid">
+                    <div class="vision-card">
+                        <h4>🏪 駅周辺活性化エリア</h4>
+                        <p>安食駅を中心に、店舗を集積し、にぎわいを創出</p>
+                    </div>
+                    <div class="vision-card">
+                        <h4>🏘️ 住居誘導エリア</h4>
+                        <p>新興住宅地区を核に、利便性の高いエリアに、若い世代の新たなるまちをもたらす良好な住環境を整備</p>
+                    </div>
+                    <div class="vision-card">
+                        <h4>🏭 産業誘導エリア</h4>
+                        <p>矢口工業団地周辺で事業承継を推進し、雇用を創出</p>
+                    </div>
+                </div>
+                <div class="vision-grid" style="grid-template-columns: repeat(2, 1fr); margin-top: 20px;">
+                    <div class="vision-card">
+                        <h4>⛩️ 観光活性化エリア</h4>
+                        <p>房総のむらを中心に交流人口の拡大を図る</p>
+                    </div>
+                    <div class="vision-card">
+                        <h4>🌾 農業振興地域</h4>
+                        <p>新町田地区など優良農地の保全と活用</p>
+                    </div>
+                </div>
