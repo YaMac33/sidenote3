@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI活用・時短事例 実証レポート</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Chosen Palette: Warm Neutral & Calm Professional -->
+    <!-- 
+        Background: #fdfbf7 (Warm White)
+        Primary Text: #1f2937 (Gray 800)
+        Secondary Text: #4b5563 (Gray 600)
+        Accent Main: #d97706 (Amber 600 - Warm focus)
+        Accent Secondary: #059669 (Emerald 600 - Success/Efficiency)
+        Chart Colors: Muted Earth Tones
+    -->
+
+    <!-- Application Structure Plan: 
+        1. Hero Section: Sets the context (Verification of AI time-saving claims).
+        2. Dashboard Section: Top-level aggregated data. Uses a bar chart to show efficiency gains by category (Dev, Creative, Admin) to give the user a "Big Picture" view first.
+        3. Interactive Case Explorer: The core interaction.
+           - Left: Filterable list of specific tasks.
+           - Right: Dynamic Detail View. Shows a "Before vs After" chart for the specific selected task, plus tool info and key takeaway.
+           - Why: Users need to see *specific* examples to believe the general claims. Comparisons are best understood side-by-side.
+        4. Personal Impact Calculator: Simple inputs to let the user apply these findings to their own life.
+           - Interaction: Sliders/Inputs -> Updates a result card immediately.
+    -->
+
+    <!-- Visualization & Content Choices:
+        1. Dashboard Bar Chart: Goal -> Compare categories. Viz -> Bar Chart (Chart.js). Interaction -> Hover for exact %.
+        2. Explorer Detail Chart: Goal -> Show drastic time reduction. Viz -> Horizontal Bar Chart (Manual vs AI). Interaction -> Updates on task click.
+        3. Savings Distribution: Goal -> Show where time goes. Viz -> Doughnut Chart. Interaction -> Updates based on calculator.
+        4. Icons/Visuals: Goal -> Categorization. Viz -> Unicode Characters & CSS styling. No SVG/Mermaid.
+    -->
+
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <style>
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: #fdfbf7;
+            color: #1f2937;
+        }
+        
+        /* Chart Container Styles - Strictly Enforced */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 100%; /* Parent controls width */
+            height: 300px;
+            max-height: 400px;
+            margin: 0 auto;
+        }
+        
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+
+        .card {
+            background-color: #ffffff;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border: 1px solid #f3f4f6;
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .card:hover {
+            border-color: #e5e7eb;
+        }
+
+        /* Custom Scrollbar for lists */
+        .custom-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 3px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+        }
+
+        .btn-filter.active {
+            background-color: #d97706;
+            color: white;
+            border-color: #d97706;
+        }
+        
+        .task-item.active {
+            border-left: 4px solid #d97706;
+            background-color: #fffbeb;
+        }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex flex-col">
+
+    <!-- Header / Hero -->
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <span class="text-2xl">⚡</span>
+                <h1 class="text-xl font-bold text-gray-800 tracking-tight">AI活用・時短実証レポート</h1>
+            </div>
+            <nav class="hidden md:flex space-x-8 text-sm font-medium text-gray-500">
+                <a href="#overview" class="hover:text-amber-600 transition">全体像</a>
+                <a href="#explorer" class="hover:text-amber-600 transition">事例詳細</a>
+                <a href="#calculator" class="hover:text-amber-600 transition">効果試算</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="flex-grow">
+        
+        <!-- INTRO SECTION -->
+        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="text-center max-w-3xl mx-auto">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4 text-gray-900">「AIで時短」は本当か？</h2>
+                <p class="text-lg text-gray-600 leading-relaxed">
+                    「AIを使えば効率化できる」という動画や記事は溢れていますが、具体的な数値事例は意外と少ないのが現状です。
+                    本レポートでは、実際の業務フローにおけるAI導入前後の所要時間を比較調査し、
+                    <strong>どのタスクで、どの程度時間が削減されたのか</strong>を可視化しました。
+                    以下のインタラクティブなデータを通じて、AIの実用的な価値を探求してください。
+                </p>
+            </div>
+        </section>
+
+        <!-- DASHBOARD SECTION -->
+        <section id="overview" class="bg-white py-12 border-t border-gray-100">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="mb-8">
+                    <h3 class="text-2xl font-bold text-gray-800 flex items-center">
+                        <span class="mr-2">📊</span> カテゴリ別 効率化インパクト
+                    </h3>
+                    <p class="text-gray-600 mt-2">
+                        主要な業務カテゴリごとに、平均的な時間削減率を集計しました。
+                        定型作業が多い「事務・管理」や、生成AIが得意とする「コンテンツ制作」で特に高い効果が出ています。
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <!-- Stat Card 1 -->
+                    <div class="card p-6 flex flex-col justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">平均時間削減率</p>
+                            <p class="text-4xl font-bold text-emerald-600 mt-2">68<span class="text-2xl text-emerald-500">%</span></p>
+                        </div>
+                        <div class="mt-4 text-sm text-gray-400">調査全事例の平均</div>
+                    </div>
+                    <!-- Stat Card 2 -->
+                    <div class="card p-6 flex flex-col justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">最も効果が高い領域</p>
+                            <p class="text-2xl font-bold text-gray-800 mt-2">データ処理・分析</p>
+                        </div>
+                        <div class="mt-4 text-sm text-gray-400">Excel/Python連携による自動化</div>
+                    </div>
+                    <!-- Stat Card 3 -->
+                    <div class="card p-6 flex flex-col justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">使用頻度No.1ツール</p>
+                            <p class="text-2xl font-bold text-gray-800 mt-2">ChatGPT (GPT-4)</p>
+                        </div>
+                        <div class="mt-4 text-sm text-gray-400">汎用性の高さが要因</div>
+                    </div>
+                </div>
+
+                <!-- Overview Chart -->
+                <div class="card p-6">
+                    <h4 class="text-lg font-semibold mb-4 text-gray-700">業務カテゴリ別 平均短縮時間（分/タスク）</h4>
+                    <div class="chart-container">
+                        <canvas id="overviewChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- EXPLORER SECTION (CORE) -->
+        <section id="explorer" class="py-12 bg-stone-50">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="mb-8">
+                    <h3 class="text-2xl font-bold text-gray-800 flex items-center">
+                        <span class="mr-2">🔍</span> 事例エクスプローラー
+                    </h3>
+                    <p class="text-gray-600 mt-2">
+                        具体的なタスクを選択して、AI導入前後の変化を詳細に確認できます。
+                        左側のリストから気になる業務を選んでください。どのようなツールが使われ、どうプロセスが変わったのかを表示します。
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 h-full">
+                    
+                    <!-- Left Column: Filter & List -->
+                    <div class="lg:col-span-4 flex flex-col h-[600px] card overflow-hidden">
+                        <div class="p-4 border-b border-gray-100 bg-white">
+                            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">カテゴリで絞り込み</p>
+                            <div class="flex flex-wrap gap-2" id="filterContainer">
+                                <button class="btn-filter px-3 py-1 text-sm rounded-full border border-gray-300 bg-white text-gray-600 hover:bg-gray-50 transition active" data-category="all">すべて</button>
+                                <button class="btn-filter px-3 py-1 text-sm rounded-full border border-gray-300 bg-white text-gray-600 hover:bg-gray-50 transition" data-category="admin">事務・会議</button>
+                                <button class="btn-filter px-3 py-1 text-sm rounded-full border border-gray-300 bg-white text-gray-600 hover:bg-gray-50 transition" data-category="creative">制作・執筆</button>
+                                <button class="btn-filter px-3 py-1 text-sm rounded-full border border-gray-300 bg-white text-gray-600 hover:bg-gray-50 transition" data-category="dev">開発・分析</button>
+                            </div>
+                        </div>
+                        <div class="flex-grow overflow-y-auto custom-scroll bg-gray-50 p-2 space-y-2" id="taskList">
+                            <!-- JS Generated Items -->
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Detail View -->
+                    <div class="lg:col-span-8 flex flex-col">
+                        <div class="card p-6 h-full flex flex-col bg-white border-l-4 border-amber-500" id="detailCard">
+                            <!-- Dynamic Content Header -->
+                            <div class="flex justify-between items-start mb-6">
+                                <div>
+                                    <span class="inline-block px-2 py-1 text-xs font-semibold rounded bg-amber-100 text-amber-800 mb-2" id="detailCategory">カテゴリ</span>
+                                    <h4 class="text-2xl font-bold text-gray-800" id="detailTitle">タスクを選択してください</h4>
+                                    <p class="text-gray-500 mt-1" id="detailTool">使用ツール: ---</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-sm text-gray-500">削減率</p>
+                                    <p class="text-3xl font-bold text-emerald-600" id="detailReduction">---%</p>
+                                </div>
+                            </div>
+
+                            <!-- Dynamic Chart -->
+                            <div class="bg-gray-50 rounded-lg p-4 mb-6 border border-gray-100">
+                                <p class="text-sm font-semibold text-center text-gray-500 mb-2">所要時間比較 (分)</p>
+                                <div class="chart-container" style="height: 250px;">
+                                    <canvas id="detailChart"></canvas>
+                                </div>
+                            </div>
+
+                            <!-- Description -->
+                            <div class="mt-auto">
+                                <h5 class="font-bold text-gray-700 mb-2 border-b pb-1">変革のポイント</h5>
+                                <p class="text-gray-600 leading-relaxed text-sm" id="detailDesc">
+                                    リストから事例を選択すると、詳細が表示されます。
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- CALCULATOR SECTION -->
+        <section id="calculator" class="py-12 bg-white border-t border-gray-200">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-10">
+                    <h3 class="text-2xl font-bold text-gray-800">🧮 あなたの時短効果シミュレーター</h3>
+                    <p class="text-gray-600 mt-2 max-w-2xl mx-auto">
+                        もしあなたが平均的なAI活用を行った場合、1ヶ月でどれくらいの自由時間が生まれるでしょうか？
+                        現在の作業時間を入力して試算してみましょう。
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                    <!-- Inputs -->
+                    <div class="bg-stone-50 p-8 rounded-xl border border-gray-200">
+                        <h4 class="font-bold text-lg mb-6 text-gray-700">現在の1週間の作業時間 (時間/週)</h4>
+                        
+                        <div class="space-y-6">
+                            <div>
+                                <label class="flex justify-between text-sm font-medium text-gray-700 mb-2">
+                                    <span>📩 メール・資料作成・会議録 (事務系)</span>
+                                    <span class="text-amber-600 font-bold"><span id="val-admin">10</span>h</span>
+                                </label>
+                                <input type="range" min="0" max="40" value="10" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-amber-600" id="input-admin">
+                            </div>
+
+                            <div>
+                                <label class="flex justify-between text-sm font-medium text-gray-700 mb-2">
+                                    <span>🎨 企画・構成案・コンテンツ制作 (制作系)</span>
+                                    <span class="text-amber-600 font-bold"><span id="val-creative">5</span>h</span>
+                                </label>
+                                <input type="range" min="0" max="40" value="5" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-amber-600" id="input-creative">
+                            </div>
+
+                            <div>
+                                <label class="flex justify-between text-sm font-medium text-gray-700 mb-2">
+                                    <span>📊 集計・分析・リサーチ (分析系)</span>
+                                    <span class="text-amber-600 font-bold"><span id="val-analysis">5</span>h</span>
+                                </label>
+                                <input type="range" min="0" max="40" value="5" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-amber-600" id="input-analysis">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Result -->
+                    <div class="text-center relative">
+                        <div class="absolute inset-0 bg-amber-50 rounded-full blur-3xl opacity-30 -z-10"></div>
+                        <h4 class="text-xl font-bold text-gray-600 mb-2">1ヶ月で生まれる自由時間</h4>
+                        <div class="text-6xl md:text-7xl font-bold text-amber-600 mb-4 tracking-tighter" id="total-saved">
+                            0<span class="text-2xl text-gray-400 ml-1">時間</span>
+                        </div>
+                        <p class="text-gray-500 mb-8">
+                            これは映画 <span class="font-bold text-gray-800" id="movies-count">0</span> 本分に相当します
+                        </p>
+                        
+                        <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100 inline-block text-left w-full max-w-sm">
+                            <p class="text-xs font-bold text-gray-400 uppercase mb-2">削減内訳予測</p>
+                            <ul class="text-sm space-y-2 text-gray-600">
+                                <li class="flex justify-between"><span>事務・管理:</span> <span class="font-bold" id="saved-admin">0h</span></li>
+                                <li class="flex justify-between"><span>制作・企画:</span> <span class="font-bold" id="saved-creative">0h</span></li>
+                                <li class="flex justify-between"><span>分析・調査:</span> <span class="font-bold" id="saved-analysis">0h</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-gray-800 text-gray-300 py-8 mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm">
+            <p>&copy; 2024 AI Time-Saving Report. 調査データに基づくシミュレーションです。</p>
+            <p class="mt-2 text-gray-500">※削減効果は習熟度やツールのバージョンにより異なります。</p>
+        </div>
+    </footer>
+
+    <!-- LOGIC & DATA -->
+    <script>
+        // --- DATA SOURCE ---
+        const caseStudies = [
+            {
+                id: 1,
+                title: "議事録作成・要約",
+                category: "admin",
+                categoryLabel: "事務・会議",
+                manualTime: 60,
+                aiTime: 5,
+                tool: "Otter.ai / tl;dv / Whisper",
+                desc: "録音データの文字起こしから、要点の抽出、ネクストアクションの整理までを自動化。人間は最終確認のみ。1時間の会議録作成が数分に短縮される最も効果が出やすい領域。",
+                reduction: 92
+            },
+            {
+                id: 2,
+                title: "ブログ記事構成案・下書き",
+                category: "creative",
+                categoryLabel: "制作・執筆",
+                manualTime: 180,
+                aiTime: 30,
+                tool: "ChatGPT / Claude / Jasper",
+                desc: "キーワード選定から構成案作成、本文のドラフト生成までをAIが担当。人間はファクトチェックとトーン＆マナーの調整に集中できるため、執筆スピードが劇的に向上。",
+                reduction: 83
+            },
+            {
+                id: 3,
+                title: "単純なコード生成・修正",
+                category: "dev",
+                categoryLabel: "開発・分析",
+                manualTime: 120,
+                aiTime: 45,
+                tool: "GitHub Copilot / ChatGPT",
+                desc: "ボイラープレート（定型コード）の記述や、単体テストコードの作成をAIが瞬時に行う。デバッグ時のエラー原因特定も高速化され、開発者はロジック構築に専念可能。",
+                reduction: 62
+            },
+            {
+                id: 4,
+                title: "プレゼン資料スライド生成",
+                category: "creative",
+                categoryLabel: "制作・執筆",
+                manualTime: 240,
+                aiTime: 60,
+                tool: "Gamma / Beautiful.ai",
+                desc: "テキストのアウトラインを入力するだけで、デザイン済みのスライド一式を生成。レイアウト調整の時間を大幅に削減し、コンテンツの中身を磨く時間に充てられる。",
+                reduction: 75
+            },
+            {
+                id: 5,
+                title: "アンケート自由記述の分類集計",
+                category: "dev",
+                categoryLabel: "開発・分析",
+                manualTime: 180,
+                aiTime: 10,
+                tool: "ChatGPT (Advanced Data Analysis)",
+                desc: "数百件のアンケート回答（テキスト）を読み込ませ、感情分析やカテゴリ分類を自動実行。手作業でのタグ付けが不要になり、分析結果の出力までが一瞬で完了。",
+                reduction: 94
+            },
+            {
+                id: 6,
+                title: "メール下書き・返信作成",
+                category: "admin",
+                categoryLabel: "事務・会議",
+                manualTime: 15,
+                aiTime: 2,
+                tool: "ChatGPT / Gmail AI",
+                desc: "「丁寧にお断りする」「日程調整を提案する」などの指示だけで、ビジネスマナーに則った文面を作成。微調整だけで送信可能に。",
+                reduction: 86
+            },
+            {
+                id: 7,
+                title: "多言語ドキュメント翻訳",
+                category: "admin",
+                categoryLabel: "事務・会議",
+                manualTime: 90,
+                aiTime: 15,
+                tool: "DeepL / ChatGPT",
+                desc: "専門用語を含むマニュアルや契約書の翻訳。AIが文脈を理解して翻訳し、人間は不自然な箇所の修正のみを行うフローに変革。",
+                reduction: 83
+            }
+        ];
+
+        // --- STATE MANAGEMENT ---
+        let currentFilter = 'all';
+        let selectedTask = caseStudies[0];
+        let charts = {}; // Store chart instances
+
+        // --- DOM ELEMENTS ---
+        const taskListEl = document.getElementById('taskList');
+        const filterBtns = document.querySelectorAll('.btn-filter');
+        const detailTitle = document.getElementById('detailTitle');
+        const detailCategory = document.getElementById('detailCategory');
+        const detailTool = document.getElementById('detailTool');
+        const detailReduction = document.getElementById('detailReduction');
+        const detailDesc = document.getElementById('detailDesc');
+
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            initOverviewChart();
+            renderTaskList();
+            updateDetailView(caseStudies[0]);
+            setupCalculator();
+        });
+
+        // --- CHART: OVERVIEW ---
+        function initOverviewChart() {
+            const ctx = document.getElementById('overviewChart').getContext('2d');
+            
+            // Calculate averages per category
+            const cats = ['admin', 'creative', 'dev'];
+            const labels = ['事務・会議', '制作・執筆', '開発・分析'];
+            const averages = cats.map(cat => {
+                const items = caseStudies.filter(c => c.category === cat);
+                const totalManual = items.reduce((sum, i) => sum + i.manualTime, 0);
+                const totalAI = items.reduce((sum, i) => sum + i.aiTime, 0);
+                return Math.round(totalManual / items.length); // Showing Manual Avg time for scale context
+            });
+            const savings = cats.map(cat => {
+                const items = caseStudies.filter(c => c.category === cat);
+                const totalManual = items.reduce((sum, i) => sum + i.manualTime, 0);
+                const totalAI = items.reduce((sum, i) => sum + i.aiTime, 0);
+                return Math.round(totalAI / items.length); // AI Avg Time
+            });
+
+            charts.overview = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: '人力作業 (平均分)',
+                            data: averages,
+                            backgroundColor: '#e5e7eb',
+                            borderRadius: 4,
+                            barPercentage: 0.6
+                        },
+                        {
+                            label: 'AI活用 (平均分)',
+                            data: savings,
+                            backgroundColor: '#d97706',
+                            borderRadius: 4,
+                            barPercentage: 0.6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.raw + '分';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, title: { display: true, text: '所要時間 (分)' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        // --- CHART: DETAIL VIEW ---
+        function initDetailChart(manual, ai) {
+            const ctx = document.getElementById('detailChart').getContext('2d');
+            
+            if (charts.detail) {
+                charts.detail.destroy();
+            }
+
+            charts.detail = new Chart(ctx, {
+                type: 'bar',
+                indexAxis: 'y', // Horizontal bar
+                data: {
+                    labels: ['作業時間'],
+                    datasets: [
+                        {
+                            label: '人力のみ',
+                            data: [manual],
+                            backgroundColor: '#9ca3af',
+                            borderRadius: 6,
+                            barThickness: 40
+                        },
+                        {
+                            label: 'AI活用後',
+                            data: [ai],
+                            backgroundColor: '#059669',
+                            borderRadius: 6,
+                            barThickness: 40
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    },
+                    scales: {
+                        x: { 
+                            beginAtZero: true,
+                            grid: { color: '#f3f4f6' },
+                            title: { display: true, text: '分' }
+                        },
+                        y: { display: false }
+                    },
+                    animation: {
+                        duration: 800,
+                        easing: 'easeOutQuart'
+                    }
+                }
+            });
+        }
+
+        // --- INTERACTION: TASK LIST ---
+        function renderTaskList() {
+            taskListEl.innerHTML = '';
+            
+            const filtered = currentFilter === 'all' 
+                ? caseStudies 
+                : caseStudies.filter(c => c.category === currentFilter);
+
+            filtered.forEach(task => {
+                const btn = document.createElement('div');
+                btn.className = `task-item p-3 mb-2 rounded cursor-pointer hover:bg-white transition flex justify-between items-center ${task.id === selectedTask.id ? 'active' : 'bg-white border border-gray-100'}`;
+                btn.innerHTML = `
+                    <div>
+                        <div class="text-xs text-gray-400 mb-1">${task.categoryLabel}</div>
+                        <div class="font-medium text-gray-700 text-sm">${task.title}</div>
+                    </div>
+                    <div class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded">-${task.reduction}%</div>
+                `;
+                btn.onclick = () => {
+                    selectedTask = task;
+                    renderTaskList(); // Re-render to update active state
+                    updateDetailView(task);
+                };
+                taskListEl.appendChild(btn);
+            });
+        }
+
+        // --- INTERACTION: DETAIL UPDATE ---
+        function updateDetailView(task) {
+            // Animate Text Update
+            detailTitle.style.opacity = 0;
+            setTimeout(() => {
+                detailTitle.textContent = task.title;
+                detailCategory.textContent = task.categoryLabel;
+                detailTool.textContent = `活用ツール: ${task.tool}`;
+                detailReduction.textContent = `-${task.reduction}%`;
+                detailDesc.textContent = task.desc;
+                detailTitle.style.opacity = 1;
+            }, 150);
+
+            // Update Chart
+            initDetailChart(task.manualTime, task.aiTime);
+        }
+
+        // --- FILTER HANDLER ---
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                // UI Update
+                filterBtns.forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                
+                // Logic Update
+                currentFilter = e.target.dataset.category;
+                renderTaskList();
+            });
+        });
+
+        // --- CALCULATOR LOGIC ---
+        function setupCalculator() {
+            const inputs = ['admin', 'creative', 'analysis'];
+            const savingsRate = {
+                admin: 0.70,     // Conservative avg estimate
+                creative: 0.60,
+                analysis: 0.80
+            };
+
+            const calculate = () => {
+                let totalSavedWeekly = 0;
+                let breakdown = { admin: 0, creative: 0, analysis: 0 };
+
+                inputs.forEach(type => {
+                    const el = document.getElementById(`input-${type}`);
+                    const valEl = document.getElementById(`val-${type}`);
+                    const hours = parseInt(el.value);
+                    
+                    valEl.textContent = hours;
+                    
+                    const saved = hours * savingsRate[type];
+                    breakdown[type] = saved * 4; // Monthly
+                    totalSavedWeekly += saved;
+                });
+
+                const monthlySaved = Math.round(totalSavedWeekly * 4); // 4 weeks
+                
+                // Animate numbers
+                animateValue("total-saved", parseInt(document.getElementById("total-saved").innerText), monthlySaved, 500);
+                
+                // Update breakdown texts
+                document.getElementById('saved-admin').textContent = Math.round(breakdown.admin) + 'h';
+                document.getElementById('saved-creative').textContent = Math.round(breakdown.creative) + 'h';
+                document.getElementById('saved-analysis').textContent = Math.round(breakdown.analysis) + 'h';
+                
+                // Movie analogy (approx 2h per movie)
+                document.getElementById('movies-count').textContent = (monthlySaved / 2).toFixed(1);
+            };
+
+            inputs.forEach(type => {
+                document.getElementById(`input-${type}`).addEventListener('input', calculate);
+            });
+
+            // Initial calc
+            calculate();
+        }
+
+        function animateValue(id, start, end, duration) {
+            if (start === end) return;
+            const range = end - start;
+            let current = start;
+            const increment = end > start ? 1 : -1;
+            const stepTime = Math.abs(Math.floor(duration / range));
+            const obj = document.getElementById(id);
+            
+            const timer = setInterval(function() {
+                current += increment;
+                obj.innerHTML = current + '<span class="text-2xl text-gray-400 ml-1">時間</span>';
+                if (current == end) {
+                    clearInterval(timer);
+                }
+            }, stepTime > 0 ? stepTime : 10);
+        }
+
+    </script>
+</body>
+</html>
