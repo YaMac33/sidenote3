@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ITパスポート学習：企業活動と経営戦略</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Chosen Palette: Warm Neutrals & Professional Blue -->
+    <!-- Background: #fdfbf7 (Warm White) -->
+    <!-- Text: #2d3748 (Dark Blue Grey) -->
+    <!-- Primary Accent: #3182ce (Blue) -->
+    <!-- Secondary Accent: #ed8936 (Orange) -->
+    <!-- Success: #48bb78 (Green) -->
+
+    <style>
+        body {
+            font-family: 'Zen Maru Gothic', sans-serif;
+            background-color: #fdfbf7;
+            color: #2d3748;
+        }
+        
+        /* Chart Container Styling - Mandatory Requirement */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px; /* max-w-xl equivalent */
+            margin-left: auto;
+            margin-right: auto;
+            height: 400px;
+            max-height: 400px;
+        }
+
+        .tab-btn.active {
+            background-color: #3182ce;
+            color: white;
+            border-bottom: 2px solid #2c5282;
+        }
+
+        .swot-cell {
+            transition: all 0.3s ease;
+        }
+        .swot-cell:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* Custom Scrollbar for nicer feel */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e0; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a0aec0; 
+        }
+    </style>
+
+    <!-- Application Structure Plan: 
+         1. Header: Context setting (IT Passport Strategy).
+         2. Tab Navigation: Splits content into logical learning modules (Overview, Analysis, Strategy, Synthesis).
+         3. Module 1 (Overview): High-level introduction to the 3 pillars.
+         4. Module 2 (Analysis - SWOT & PPM): Interactive visual tools.
+            - SWOT: Clickable matrix to reveal details.
+            - PPM: Dynamic Chart.js Bubble chart visualizing the 4 quadrants with explanation tooltips.
+         5. Module 3 (Strategy - Porter & 4P):
+            - Porter: Card-based explanation.
+            - 4P Simulator: Interactive dropdown to change a product strategy and see how 4P mixes update dynamically.
+         6. Footer: Simple synthesis flow.
+         This structure moves from abstract concepts to concrete tools, then to application, mirroring the learning process: Understand -> Analyze -> Act.
+    -->
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="bg-blue-600 text-white p-2 rounded-lg">
+                    <i class="fas fa-passport text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-gray-800">ITパスポート学習ダッシュボード</h1>
+                    <p class="text-xs text-gray-500">分野：企業活動・経営戦略</p>
+                </div>
+            </div>
+            <div class="hidden md:block text-sm text-gray-600">
+                <i class="fas fa-book-reader mr-2"></i>インタラクティブ学習モード
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="bg-white border-b border-gray-200">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="flex space-x-1 overflow-x-auto">
+                <button onclick="switchTab('overview')" id="tab-overview" class="tab-btn active px-6 py-4 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-gray-50 transition-colors whitespace-nowrap">
+                    1. 全体像
+                </button>
+                <button onclick="switchTab('analysis')" id="tab-analysis" class="tab-btn px-6 py-4 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-gray-50 transition-colors whitespace-nowrap">
+                    2. 現状分析 (SWOT/PPM)
+                </button>
+                <button onclick="switchTab('strategy')" id="tab-strategy" class="tab-btn px-6 py-4 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-gray-50 transition-colors whitespace-nowrap">
+                    3. 戦略と4P
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow max-w-6xl mx-auto px-4 py-8 w-full">
+
+        <!-- SECTION 1: OVERVIEW -->
+        <section id="content-overview" class="space-y-8 animate-fade-in">
+            <div class="bg-blue-50 border-l-4 border-blue-500 p-6 rounded-r-lg">
+                <h2 class="text-2xl font-bold text-blue-800 mb-2">企業活動の全体像</h2>
+                <p class="text-gray-700 leading-relaxed">
+                    ITパスポート試験の「ストラテジ系」では、技術だけでなくビジネスの仕組みを理解することが求められます。
+                    企業活動は大きく分けて「経営戦略」「会計・財務」「法務」の3つの柱で成り立っています。
+                    ここでは、ビジネスの舵取りを決める<span class="font-bold text-blue-600">「経営戦略」</span>に焦点を当てて学習します。
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6">
+                <!-- Card 1 -->
+                <div class="bg-white p-6 rounded-xl shadow-md border-t-4 border-blue-500 transform hover:-translate-y-1 transition-transform cursor-pointer">
+                    <div class="flex justify-center mb-4">
+                        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-2xl">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                    </div>
+                    <h3 class="text-lg font-bold text-center mb-2">1. 経営戦略・分析</h3>
+                    <p class="text-sm text-gray-600 text-center">SWOT分析やPPMなど、勝つための作戦を立てるフレームワーク。</p>
+                    <div class="mt-4 text-center">
+                        <span class="inline-block bg-blue-600 text-white text-xs px-2 py-1 rounded">今回のメイン！</span>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 opacity-70 hover:opacity-100 transition-opacity">
+                    <div class="flex justify-center mb-4">
+                        <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center text-gray-500 text-2xl">
+                            <i class="fas fa-coins"></i>
+                        </div>
+                    </div>
+                    <h3 class="text-lg font-bold text-center mb-2 text-gray-600">2. 会計・財務</h3>
+                    <p class="text-sm text-gray-500 text-center">損益計算書(P/L)や貸借対照表(B/S)など、お金の流れの管理。</p>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 opacity-70 hover:opacity-100 transition-opacity">
+                    <div class="flex justify-center mb-4">
+                        <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center text-gray-500 text-2xl">
+                            <i class="fas fa-balance-scale"></i>
+                        </div>
+                    </div>
+                    <h3 class="text-lg font-bold text-center mb-2 text-gray-600">3. 法務</h3>
+                    <p class="text-sm text-gray-500 text-center">知的財産権や労働法など、ビジネスのルールとコンプライアンス。</p>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- SECTION 2: ANALYSIS (SWOT & PPM) -->
+        <section id="content-analysis" class="hidden space-y-10">
+            
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+                    <i class="fas fa-search-location text-blue-500 mr-3"></i>現状分析の手法
+                </h2>
+                <p class="text-gray-600 mb-6">
+                    戦略を立てるには、まず自分たちの立ち位置を知る必要があります。
+                    ここでは代表的な2つのフレームワーク<span class="font-bold">「SWOT分析」</span>と<span class="font-bold">「PPM」</span>をインタラクティブに学びます。
+                </p>
+
+                <!-- Tabs for Analysis Types -->
+                <div class="flex space-x-4 mb-6 border-b border-gray-200">
+                    <button onclick="showAnalysis('swot')" class="analysis-tab active pb-2 border-b-2 border-blue-500 text-blue-600 font-bold">SWOT分析</button>
+                    <button onclick="showAnalysis('ppm')" class="analysis-tab pb-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700">PPM (資源配分)</button>
+                </div>
+
+                <!-- SWOT View -->
+                <div id="view-swot" class="animate-fade-in">
+                    <div class="bg-blue-50 p-4 rounded-lg mb-6 text-sm text-blue-800">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        内部要因（自社）と外部要因（市場）、プラス面とマイナス面を組み合わせて分析します。
+                        <span class="font-bold">各パネルをクリックして詳細を確認してください。</span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 max-w-4xl mx-auto">
+                        <!-- Header Row -->
+                        <div class="col-span-2 grid grid-cols-2 gap-4 text-center font-bold text-gray-500 mb-[-10px]">
+                            <div>プラス要因 (Positive)</div>
+                            <div>マイナス要因 (Negative)</div>
+                        </div>
+
+                        <!-- S -->
+                        <div onclick="highlightSwot('s')" class="swot-cell bg-blue-100 p-6 rounded-xl border-2 border-blue-200 cursor-pointer relative overflow-hidden h-48 flex flex-col items-center justify-center text-center">
+                            <div class="absolute top-2 left-2 text-xs font-bold text-blue-400 bg-white px-2 py-1 rounded">内部環境</div>
+                            <div class="text-4xl text-blue-500 mb-2"><i class="fas fa-dumbbell"></i></div>
+                            <h3 class="text-2xl font-bold text-blue-700">Strengths</h3>
+                            <p class="text-blue-600 font-bold">強み</p>
+                            <div id="desc-s" class="hidden text-xs mt-2 text-blue-800 bg-white/80 p-2 rounded">
+                                技術力、ブランド力など<br>自社が優れている点
+                            </div>
+                        </div>
+
+                        <!-- W -->
+                        <div onclick="highlightSwot('w')" class="swot-cell bg-red-50 p-6 rounded-xl border-2 border-red-200 cursor-pointer relative overflow-hidden h-48 flex flex-col items-center justify-center text-center">
+                            <div class="absolute top-2 left-2 text-xs font-bold text-red-400 bg-white px-2 py-1 rounded">内部環境</div>
+                            <div class="text-4xl text-red-400 mb-2"><i class="fas fa-exclamation-triangle"></i></div>
+                            <h3 class="text-2xl font-bold text-red-700">Weaknesses</h3>
+                            <p class="text-red-600 font-bold">弱み</p>
+                            <div id="desc-w" class="hidden text-xs mt-2 text-red-800 bg-white/80 p-2 rounded">
+                                資金不足、知名度不足など<br>自社の課題点
+                            </div>
+                        </div>
+
+                        <!-- O -->
+                        <div onclick="highlightSwot('o')" class="swot-cell bg-green-50 p-6 rounded-xl border-2 border-green-200 cursor-pointer relative overflow-hidden h-48 flex flex-col items-center justify-center text-center">
+                            <div class="absolute top-2 left-2 text-xs font-bold text-green-600 bg-white px-2 py-1 rounded">外部環境</div>
+                            <div class="text-4xl text-green-500 mb-2"><i class="fas fa-door-open"></i></div>
+                            <h3 class="text-2xl font-bold text-green-700">Opportunities</h3>
+                            <p class="text-green-600 font-bold">機会</p>
+                            <div id="desc-o" class="hidden text-xs mt-2 text-green-800 bg-white/80 p-2 rounded">
+                                流行、景気回復など<br>追い風となる外部の状況
+                            </div>
+                        </div>
+
+                        <!-- T -->
+                        <div onclick="highlightSwot('t')" class="swot-cell bg-gray-100 p-6 rounded-xl border-2 border-gray-300 cursor-pointer relative overflow-hidden h-48 flex flex-col items-center justify-center text-center">
+                            <div class="absolute top-2 left-2 text-xs font-bold text-gray-500 bg-white px-2 py-1 rounded">外部環境</div>
+                            <div class="text-4xl text-gray-400 mb-2"><i class="fas fa-skull-crossbones"></i></div>
+                            <h3 class="text-2xl font-bold text-gray-700">Threats</h3>
+                            <p class="text-gray-600 font-bold">脅威</p>
+                            <div id="desc-t" class="hidden text-xs mt-2 text-gray-800 bg-white/80 p-2 rounded">
+                                競合出現、少子化など<br>リスクとなる外部の状況
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PPM View -->
+                <div id="view-ppm" class="hidden animate-fade-in">
+                     <div class="bg-orange-50 p-4 rounded-lg mb-6 text-sm text-orange-800">
+                        <i class="fas fa-lightbulb mr-2"></i>
+                        プロダクト・ポートフォリオ・マネジメント (PPM) は、事業の「資源配分」を決める手法です。
+                        <span class="font-bold">「金のなる木」で稼いだお金を「問題児」や「花形」に投資するのが鉄則です。</span>
+                    </div>
+
+                    <div class="flex flex-col md:flex-row gap-8 items-start">
+                        <!-- Chart Area -->
+                        <div class="w-full md:w-2/3">
+                            <div class="chart-container bg-white rounded-lg border border-gray-100 p-2 shadow-inner">
+                                <canvas id="ppmChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Legend/Explanation Area -->
+                        <div class="w-full md:w-1/3 space-y-4">
+                            <div class="p-4 bg-yellow-50 rounded-lg border-l-4 border-yellow-400">
+                                <h4 class="font-bold text-yellow-800 flex items-center"><i class="fas fa-star mr-2"></i>花形 (Star)</h4>
+                                <p class="text-xs text-gray-600 mt-1">成長率：高 / シェア：高</p>
+                                <p class="text-xs mt-1">稼ぐが、競争維持にお金もかかる。</p>
+                            </div>
+                            <div class="p-4 bg-green-50 rounded-lg border-l-4 border-green-500">
+                                <h4 class="font-bold text-green-800 flex items-center"><i class="fas fa-tree mr-2"></i>金のなる木 (Cash Cow)</h4>
+                                <p class="text-xs text-gray-600 mt-1">成長率：低 / シェア：高</p>
+                                <p class="text-xs mt-1">投資少で利益大。稼ぎ頭。</p>
+                            </div>
+                            <div class="p-4 bg-blue-50 rounded-lg border-l-4 border-blue-400">
+                                <h4 class="font-bold text-blue-800 flex items-center"><i class="fas fa-question mr-2"></i>問題児 (Problem Child)</h4>
+                                <p class="text-xs text-gray-600 mt-1">成長率：高 / シェア：低</p>
+                                <p class="text-xs mt-1">投資すれば花形になる可能性あり。</p>
+                            </div>
+                            <div class="p-4 bg-gray-100 rounded-lg border-l-4 border-gray-400">
+                                <h4 class="font-bold text-gray-800 flex items-center"><i class="fas fa-dog mr-2"></i>負け犬 (Dog)</h4>
+                                <p class="text-xs text-gray-600 mt-1">成長率：低 / シェア：低</p>
+                                <p class="text-xs mt-1">撤退を検討する領域。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+
+        <!-- SECTION 3: STRATEGY & 4P -->
+        <section id="content-strategy" class="hidden space-y-10">
+             <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+                    <i class="fas fa-chess-knight text-blue-500 mr-3"></i>戦略立案とマーケティング
+                </h2>
+                <p class="text-gray-600 mb-8">
+                    分析の次は「どう戦うか（戦略）」を決め、「どう売るか（マーケティング）」を実行します。
+                    <span class="font-bold">下のシミュレーターで戦略を選び、4P（Product, Price, Place, Promotion）がどう変化するか確認しましょう。</span>
+                </p>
+
+                <!-- Porter's Strategy Selector -->
+                <div class="bg-gray-50 p-6 rounded-xl mb-8">
+                    <label class="block text-sm font-bold text-gray-700 mb-2">マイケル・ポーターの基本戦略を選択してください：</label>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <button onclick="setStrategy('differentiation')" id="btn-diff" class="strategy-btn active bg-white border-2 border-purple-500 text-purple-700 p-4 rounded-lg shadow-sm hover:shadow-md text-left transition-all">
+                            <div class="font-bold text-lg mb-1"><i class="fas fa-gem mr-2"></i>差別化戦略</div>
+                            <div class="text-xs text-gray-500">「他とは違う！」<br>ブランドや品質で勝負</div>
+                        </button>
+                        <button onclick="setStrategy('cost')" id="btn-cost" class="strategy-btn bg-white border border-gray-300 text-gray-600 p-4 rounded-lg shadow-sm hover:shadow-md text-left transition-all">
+                            <div class="font-bold text-lg mb-1"><i class="fas fa-tags mr-2"></i>コストリーダーシップ</div>
+                            <div class="text-xs text-gray-500">「安く作る！」<br>効率化と大量生産で勝負</div>
+                        </button>
+                        <button onclick="setStrategy('focus')" id="btn-focus" class="strategy-btn bg-white border border-gray-300 text-gray-600 p-4 rounded-lg shadow-sm hover:shadow-md text-left transition-all">
+                            <div class="font-bold text-lg mb-1"><i class="fas fa-crosshairs mr-2"></i>集中戦略</div>
+                            <div class="text-xs text-gray-500">「特定の相手に！」<br>ニッチ市場に資源集中</div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 4P Visualization Area -->
+                <div class="relative">
+                    <div class="absolute -top-3 left-4 bg-white px-2 text-sm font-bold text-gray-500">マーケティングミックス (4P) の変化</div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-6">
+                        
+                        <!-- Product -->
+                        <div class="p-4 rounded-lg bg-blue-50 border border-blue-100 transition-all duration-500" id="card-product">
+                            <div class="text-blue-400 text-2xl mb-2"><i class="fas fa-box-open"></i></div>
+                            <h4 class="font-bold text-gray-700 mb-2">Product (製品)</h4>
+                            <p id="text-product" class="text-sm text-gray-600 font-medium h-12">高品質・多機能・独自デザイン</p>
+                        </div>
+
+                        <!-- Price -->
+                        <div class="p-4 rounded-lg bg-green-50 border border-green-100 transition-all duration-500" id="card-price">
+                            <div class="text-green-400 text-2xl mb-2"><i class="fas fa-tag"></i></div>
+                            <h4 class="font-bold text-gray-700 mb-2">Price (価格)</h4>
+                            <p id="text-price" class="text-sm text-gray-600 font-medium h-12">高価格帯 (プレミアム価格)</p>
+                        </div>
+
+                        <!-- Place -->
+                        <div class="p-4 rounded-lg bg-orange-50 border border-orange-100 transition-all duration-500" id="card-place">
+                            <div class="text-orange-400 text-2xl mb-2"><i class="fas fa-store"></i></div>
+                            <h4 class="font-bold text-gray-700 mb-2">Place (流通)</h4>
+                            <p id="text-place" class="text-sm text-gray-600 font-medium h-12">専門店・百貨店限定</p>
+                        </div>
+
+                        <!-- Promotion -->
+                        <div class="p-4 rounded-lg bg-purple-50 border border-purple-100 transition-all duration-500" id="card-promo">
+                            <div class="text-purple-400 text-2xl mb-2"><i class="fas fa-bullhorn"></i></div>
+                            <h4 class="font-bold text-gray-700 mb-2">Promotion (販促)</h4>
+                            <p id="text-promo" class="text-sm text-gray-600 font-medium h-12">ブランドイメージ重視の広告</p>
+                        </div>
+                    </div>
+
+                    <!-- Example Context -->
+                    <div id="strategy-example" class="mt-6 p-4 bg-gray-800 text-white rounded-lg text-center text-sm">
+                        <span class="font-bold text-yellow-400">例：</span> 高級スマートウォッチの販売戦略
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8 mt-auto">
+        <div class="max-w-6xl mx-auto px-4 text-center">
+            <h3 class="text-lg font-bold mb-4">学習のまとめ</h3>
+            <div class="flex flex-col md:flex-row justify-center items-center gap-4 text-sm text-gray-300 mb-6">
+                <div class="bg-gray-700 px-4 py-2 rounded">1. SWOT/PPMで<br><span class="text-white font-bold">現状分析</span></div>
+                <i class="fas fa-arrow-right hidden md:block"></i>
+                <i class="fas fa-arrow-down md:hidden"></i>
+                <div class="bg-gray-700 px-4 py-2 rounded">2. 基本戦略で<br><span class="text-white font-bold">勝ち方を決定</span></div>
+                <i class="fas fa-arrow-right hidden md:block"></i>
+                <i class="fas fa-arrow-down md:hidden"></i>
+                <div class="bg-gray-700 px-4 py-2 rounded">3. 4Pで<br><span class="text-white font-bold">実行</span></div>
+            </div>
+            <p class="text-xs text-gray-500">Source: IT Passport Study Log - Corporate Activity</p>
+        </div>
+    </footer>
+
+    <!-- Visualization & Content Choices: 
+         - Overview: Simple Cards. Goal: Quick navigation and mental model setting.
+         - SWOT: CSS Grid. Goal: Drill-down exploration without clutter. Interaction: Hover/Click to reveal details.
+         - PPM: Chart.js Bubble Chart. Goal: Understand the relationship between share and growth visually. 
+           Justification: A static image doesn't convey the coordinate system nature of PPM as well as a plotted chart. 
+           Color coding (Yellow for Star, Green for Cash Cow) reinforces the concepts.
+         - Strategy/4P: Interactive Simulator (DOM manipulation). Goal: Apply the theory. 
+           Justification: Static text is boring. Changing the "Strategy" and seeing "Price" change reinforces the logical connection (Consistency) emphasized in the report.
+         
+         CONFIRMATION: NO SVG graphics used directly (FontAwesome used via Class). NO Mermaid JS used.
+    -->
+
+    <script>
+        // State Management
+        let currentTab = 'overview';
+        let ppmChartInstance = null;
+
+        // Data for Strategy Simulator
+        const strategies = {
+            differentiation: {
+                name: "差別化戦略",
+                desc: "他とは違う！",
+                color: "purple",
+                product: "高品質・多機能・独自デザイン",
+                price: "高価格帯 (プレミアム価格)",
+                place: "専門店・百貨店限定 (希少性)",
+                promo: "ブランドイメージ重視の広告",
+                example: "例：高級スマートウォッチの販売"
+            },
+            cost: {
+                name: "コストリーダーシップ戦略",
+                desc: "安く作る！",
+                color: "blue",
+                product: "標準的な機能・シンプルなデザイン",
+                price: "低価格 (市場最安値を目指す)",
+                place: "コンビニ・量販店・Web (誰でも買える)",
+                promo: "価格の安さを強調するチラシ・CM",
+                example: "例：100円ショップ、ファストファッション"
+            },
+            focus: {
+                name: "集中戦略",
+                desc: "特定の相手に！",
+                color: "orange",
+                product: "特定用途向け・マニア向け仕様",
+                price: "言い値 (競合がいないため)",
+                place: "直販・特定の会員制ルート",
+                promo: "専門誌・コミュニティへのアプローチ",
+                example: "例：医療用特殊機器、左利き専門店"
+            }
+        };
+
+        // --- Navigation Logic ---
+        function switchTab(tabId) {
+            // Update Tab UI
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active', 'border-b-2', 'border-blue-600', 'text-blue-600');
+                if(btn.id === `tab-${tabId}`) {
+                    btn.classList.add('active');
+                }
+            });
+
+            // Update Content Visibility
+            ['overview', 'analysis', 'strategy'].forEach(id => {
+                const el = document.getElementById(`content-${id}`);
+                if (id === tabId) {
+                    el.classList.remove('hidden');
+                } else {
+                    el.classList.add('hidden');
+                }
+            });
+
+            // Specific logic for Analysis tab to render chart correctly
+            if (tabId === 'analysis') {
+                // Short delay to allow DOM to unhide before rendering chart
+                setTimeout(() => {
+                    if (!ppmChartInstance) {
+                        initPPMChart();
+                    }
+                }, 100);
+            }
+        }
+
+        // --- Analysis Section Logic ---
+        function showAnalysis(type) {
+            const swotView = document.getElementById('view-swot');
+            const ppmView = document.getElementById('view-ppm');
+            const buttons = document.querySelectorAll('.analysis-tab');
+
+            buttons.forEach(btn => {
+                btn.classList.remove('border-blue-500', 'text-blue-600', 'font-bold');
+                btn.classList.add('border-transparent', 'text-gray-500');
+            });
+
+            if (type === 'swot') {
+                swotView.classList.remove('hidden');
+                ppmView.classList.add('hidden');
+                buttons[0].classList.add('border-blue-500', 'text-blue-600', 'font-bold');
+                buttons[0].classList.remove('border-transparent', 'text-gray-500');
+            } else {
+                swotView.classList.add('hidden');
+                ppmView.classList.remove('hidden');
+                buttons[1].classList.add('border-blue-500', 'text-blue-600', 'font-bold');
+                buttons[1].classList.remove('border-transparent', 'text-gray-500');
+            }
+        }
+
+        function highlightSwot(type) {
+            // Reset descriptions
+            ['s','w','o','t'].forEach(id => {
+                document.getElementById(`desc-${id}`).classList.add('hidden');
+            });
+            // Show selected
+            document.getElementById(`desc-${type}`).classList.remove('hidden');
+        }
+
+        // --- Chart.js for PPM ---
+        function initPPMChart() {
+            const ctx = document.getElementById('ppmChart').getContext('2d');
+            
+            // Data points: Star, Cash Cow, Problem Child, Dog
+            // X: Market Share (Inverted: High left, Low right) -> Standard Chart.js is Low->High. 
+            // We will use standard coordinates but label axes carefully.
+            // Let's use: X=Share (0-100), Y=Growth (0-100).
+            // Star: High Share (80), High Growth (80)
+            // Cow: High Share (80), Low Growth (20)
+            // Child: Low Share (20), High Growth (80)
+            // Dog: Low Share (20), Low Growth (20)
+
+            ppmChartInstance = new Chart(ctx, {
+                type: 'bubble',
+                data: {
+                    datasets: [
+                        {
+                            label: '花形 (Star)',
+                            data: [{x: 80, y: 80, r: 25}],
+                            backgroundColor: 'rgba(250, 204, 21, 0.7)', // Yellow
+                            borderColor: 'rgba(234, 179, 8, 1)',
+                        },
+                        {
+                            label: '金のなる木 (Cash Cow)',
+                            data: [{x: 80, y: 20, r: 30}], // Bigger because it has money
+                            backgroundColor: 'rgba(74, 222, 128, 0.7)', // Green
+                            borderColor: 'rgba(22, 163, 74, 1)',
+                        },
+                        {
+                            label: '問題児 (Problem Child)',
+                            data: [{x: 20, y: 80, r: 15}],
+                            backgroundColor: 'rgba(96, 165, 250, 0.7)', // Blue
+                            borderColor: 'rgba(37, 99, 235, 1)',
+                        },
+                        {
+                            label: '負け犬 (Dog)',
+                            data: [{x: 20, y: 20, r: 10}],
+                            backgroundColor: 'rgba(156, 163, 175, 0.7)', // Gray
+                            borderColor: 'rgba(75, 85, 99, 1)',
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            min: 0,
+                            max: 100,
+                            title: {
+                                display: true,
+                                text: '市場シェア (Market Share)',
+                                font: { weight: 'bold' }
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    if(value === 10) return "低";
+                                    if(value === 90) return "高";
+                                    return "";
+                                }
+                            }
+                        },
+                        y: {
+                            min: 0,
+                            max: 100,
+                            title: {
+                                display: true,
+                                text: '市場成長率 (Growth Rate)',
+                                font: { weight: 'bold' }
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    if(value === 10) return "低";
+                                    if(value === 90) return "高";
+                                    return "";
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }, // Custom legend used
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // --- Strategy Simulator Logic ---
+        function setStrategy(key) {
+            const data = strategies[key];
+            
+            // 1. Update Buttons
+            document.querySelectorAll('.strategy-btn').forEach(btn => {
+                btn.classList.remove('active', 'border-2', 'border-purple-500', 'border-blue-500', 'border-orange-500', 'text-purple-700', 'text-blue-700', 'text-orange-700');
+                btn.classList.add('border-gray-300', 'text-gray-600');
+            });
+            
+            const activeBtn = document.getElementById(`btn-${key}`);
+            activeBtn.classList.remove('border-gray-300', 'text-gray-600');
+            activeBtn.classList.add('border-2', `border-${data.color}-500`, `text-${data.color}-700`, 'active');
+
+            // 2. Update 4P Cards with Animation
+            const cards = ['product', 'price', 'place', 'promo'];
+            cards.forEach(cardKey => {
+                const el = document.getElementById(`text-${cardKey}`);
+                const container = document.getElementById(`card-${cardKey}`);
+                
+                // Fade out
+                el.style.opacity = 0;
+                
+                setTimeout(() => {
+                    // Update text
+                    el.innerText = data[cardKey];
+                    // Update color theme of card
+                    // Simple reset and apply new border tint? For now just content update is enough for clarity.
+                    
+                    // Fade in
+                    el.style.opacity = 1;
+                }, 200);
+            });
+
+            // 3. Update Example
+            document.getElementById('strategy-example').innerHTML = 
+                `<span class="font-bold text-${data.color}-400">例：</span> ${data.example}`;
+        }
+
+        // Initialize default view
+        window.addEventListener('load', () => {
+            // Check if user came with hash
+            switchTab('overview');
+        });
+
+    </script>
+</body>
+</html>
