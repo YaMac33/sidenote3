@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ITパスポート：組織と戦略の完全図解</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Noto Sans JP', sans-serif; }
+        
+        /* Chart Container Styling - MANDATORY */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px; /* Tailwind max-w-xl is approx 576px */
+            margin-left: auto;
+            margin-right: auto;
+            height: 40vh;
+            max-height: 400px;
+        }
+        @media (max-width: 640px) {
+            .chart-container {
+                height: 300px;
+            }
+        }
+
+        /* Custom Org Chart Tree Lines using CSS Borders (NO SVG) */
+        .tree-connector-vertical {
+            width: 2px;
+            background-color: #cbd5e1; /* slate-300 */
+            margin: 0 auto;
+        }
+        .tree-connector-horizontal {
+            height: 2px;
+            background-color: #cbd5e1;
+            width: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        /* Palette: Vibrant & Energetic */
+        /* Primary: #4F46E5 (Indigo 600) */
+        /* Secondary: #06B6D4 (Cyan 500) */
+        /* Accent: #F59E0B (Amber 500) */
+        /* Background: #F8FAFC (Slate 50) */
+    </style>
+    <!-- Chosen Palette: "Vibrant Indigo & Cyan" - Focusing on high contrast and energetic feel suitable for exam prep. -->
+    <!-- Application Structure Plan: 
+         1. Hero Section: Hook based on the presentation intro.
+         2. HR Section: "Talent Development Matrix" using a Radar Chart to compare OJT vs Off-JT characteristics.
+         3. HR Tech Spotlight: A card highlighting the definition using icons.
+         4. Org Structure Hub: An interactive tabbed section. 
+            - Users click tabs (Functional, Divisional, etc.) to see a CSS-constructed diagram and key traits.
+            - A "Comparative Analysis" Bubble Chart summarizes the trade-offs (Speed vs. Cost).
+         5. Leadership Tier: A Bar/Radar chart comparing CxO responsibilities.
+         6. Conclusion: Summary based on the script's wrap-up.
+    -->
+    <!-- Visualization & Content Choices:
+         - OJT/Off-JT: Radar Chart. Goal: Compare attributes (Cost, Practicality, Systemization). 
+         - Org Structures: CSS Grid/Flex Diagrams. Goal: Inform/Organize. Shows hierarchy without SVG.
+         - Org Trade-offs: Bubble Chart. Goal: Relationships. Visualizes "Speed vs Cost" trade-offs mentioned in script.
+         - CxO Roles: Stacked Bar/Radar. Goal: Compare focus areas (Management vs Tech vs Info).
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <!-- Navigation / Progress -->
+    <nav class="sticky top-0 z-50 bg-white/90 backdrop-blur shadow-sm border-b border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex-shrink-0 flex items-center">
+                    <span class="font-black text-2xl tracking-tighter text-indigo-600">IT<span class="text-cyan-500">パス</span></span>
+                </div>
+                <div class="hidden sm:flex space-x-8">
+                    <a href="#section-hr" class="text-slate-600 hover:text-indigo-600 font-bold transition">人材育成</a>
+                    <a href="#section-org" class="text-slate-600 hover:text-indigo-600 font-bold transition">組織構造</a>
+                    <a href="#section-cxo" class="text-slate-600 hover:text-indigo-600 font-bold transition">Cレベル役職</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="bg-white shadow-sm pb-10 pt-10 px-4 sm:px-6 lg:px-8 text-center">
+        <h1 class="text-4xl sm:text-5xl font-extrabold text-slate-900 tracking-tight mb-4">
+            <span class="block">企業戦略の要点攻略</span>
+            <span class="block text-indigo-600">組織・人材・役職</span>
+        </h1>
+        <p class="mt-4 max-w-2xl mx-auto text-xl text-slate-500">
+            会社が動く「仕組み」と、それを動かす「人」。ITパスポート試験（ストラテジ系）の頻出ポイントを、データと図解で直感的にマスターしましょう。
+        </p>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-24">
+
+        <!-- SECTION 1: HR & Talent Development -->
+        <section id="section-hr" class="scroll-mt-20">
+            <div class="text-center mb-10">
+                <span class="inline-block py-1 px-3 rounded-full bg-cyan-100 text-cyan-800 font-bold text-sm tracking-wide uppercase mb-2">Human Resources</span>
+                <h2 class="text-3xl font-bold text-slate-900">人材育成の方程式：OJTとOff-JT</h2>
+                <p class="mt-4 text-lg text-slate-600 max-w-3xl mx-auto">
+                    企業が人を育てる方法は大きく2つ。「現場」で学ぶか、「外」で学ぶか。それぞれの特徴を理解し、使い分けることが重要です。
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+                <!-- Text Content -->
+                <div class="space-y-6">
+                    <div class="bg-white p-6 rounded-xl shadow-md border-l-4 border-indigo-500 hover:shadow-lg transition">
+                        <h3 class="text-xl font-bold text-indigo-700 flex items-center gap-2">
+                            <span class="text-2xl">🏢</span> OJT (On-the-Job Training)
+                        </h3>
+                        <p class="mt-2 text-slate-600"><strong>「職場内訓練」</strong>。先輩社員についてもらい、実務を通じて即戦力を養います。現場の空気を吸いながら学ぶスタイル。</p>
+                        <ul class="mt-3 text-sm text-slate-500 space-y-1">
+                            <li>✅ 即戦力になりやすい</li>
+                            <li>✅ 個別の指導が可能</li>
+                            <li>⚠️ 指導者のレベルに左右される</li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-xl shadow-md border-l-4 border-cyan-500 hover:shadow-lg transition">
+                        <h3 class="text-xl font-bold text-cyan-700 flex items-center gap-2">
+                            <span class="text-2xl">🏫</span> Off-JT (Off-the-Job Training)
+                        </h3>
+                        <p class="mt-2 text-slate-600"><strong>「職場外訓練」</strong>。現場を離れてセミナーや研修に参加します。体系的な知識をまとめて学ぶのに最適。</p>
+                        <ul class="mt-3 text-sm text-slate-500 space-y-1">
+                            <li>✅ 知識を体系的に整理できる</li>
+                            <li>✅ 業務から離れて集中できる</li>
+                            <li>⚠️ 現場ですぐ使えるとは限らない</li>
+                        </ul>
+                    </div>
+
+                    <!-- HR Tech Card -->
+                    <div class="bg-indigo-900 text-white p-6 rounded-xl shadow-xl transform rotate-1 hover:rotate-0 transition duration-300">
+                        <h3 class="text-lg font-bold text-cyan-300 mb-2">🚀 HRテック (Human Resources Technology)</h3>
+                        <p class="text-indigo-100 text-sm mb-3">
+                            「勘と経験」から「データ駆動」へ。AIやビッグデータを活用して、採用・評価・配置を最適化する技術です。
+                        </p>
+                        <div class="flex justify-around text-3xl mt-4">
+                            <span title="AI Analysis">🤖</span>
+                            <span title="Big Data">📊</span>
+                            <span title="Optimization">🎯</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Visualization: Radar Chart -->
+                <div class="bg-white p-6 rounded-2xl shadow-lg">
+                    <h3 class="text-lg font-bold text-slate-700 mb-4 text-center">学習特性の比較分析</h3>
+                    <div class="chart-container">
+                        <canvas id="chartHrRadar"></canvas>
+                    </div>
+                    <p class="text-xs text-center text-slate-400 mt-2">データは特性の傾向を示す概念値です</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: Organizational Structures -->
+        <section id="section-org" class="scroll-mt-20">
+            <div class="text-center mb-10">
+                <span class="inline-block py-1 px-3 rounded-full bg-amber-100 text-amber-800 font-bold text-sm tracking-wide uppercase mb-2">Organization</span>
+                <h2 class="text-3xl font-bold text-slate-900">組織構造の5大パターン</h2>
+                <p class="mt-4 text-lg text-slate-600 max-w-3xl mx-auto">
+                    会社の「形」にはそれぞれ強みと弱みがあります。試験で頻出のメリット・デメリットを、構造図とともに比較しましょう。
+                </p>
+            </div>
+
+            <!-- Interactive Tabs -->
+            <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200">
+                <!-- Tab Headers -->
+                <div class="flex flex-wrap border-b border-slate-200 bg-slate-50">
+                    <button onclick="switchTab('functional')" class="tab-btn flex-1 py-4 px-2 text-sm sm:text-base font-bold text-slate-500 hover:text-indigo-600 hover:bg-white focus:outline-none transition active-tab" id="tab-functional">職能別</button>
+                    <button onclick="switchTab('divisional')" class="tab-btn flex-1 py-4 px-2 text-sm sm:text-base font-bold text-slate-500 hover:text-indigo-600 hover:bg-white focus:outline-none transition" id="tab-divisional">事業部制</button>
+                    <button onclick="switchTab('matrix')" class="tab-btn flex-1 py-4 px-2 text-sm sm:text-base font-bold text-slate-500 hover:text-indigo-600 hover:bg-white focus:outline-none transition" id="tab-matrix">マトリックス</button>
+                    <button onclick="switchTab('project')" class="tab-btn flex-1 py-4 px-2 text-sm sm:text-base font-bold text-slate-500 hover:text-indigo-600 hover:bg-white focus:outline-none transition" id="tab-project">プロジェクト</button>
+                    <button onclick="switchTab('holding')" class="tab-btn flex-1 py-4 px-2 text-sm sm:text-base font-bold text-slate-500 hover:text-indigo-600 hover:bg-white focus:outline-none transition" id="tab-holding">持株会社</button>
+                </div>
+
+                <!-- Tab Content: Functional -->
+                <div id="content-functional" class="tab-content p-6 sm:p-10 block animate-fade-in">
+                    <div class="grid md:grid-cols-2 gap-8 items-center">
+                        <div>
+                            <h3 class="text-2xl font-bold text-indigo-700 mb-2">職能別組織 (Functional)</h3>
+                            <p class="text-slate-600 mb-4">業務の内容（職能）ごとに部署を分ける、最も一般的な形。</p>
+                            <ul class="space-y-2">
+                                <li class="flex items-start"><span class="text-green-500 mr-2">●</span> <span class="font-bold">メリット：</span>専門性が高まる。業務効率が良い。</li>
+                                <li class="flex items-start"><span class="text-red-500 mr-2">●</span> <span class="font-bold">デメリット：</span><span class="bg-yellow-100 px-1">セクショナリズム</span>（部署間の壁）ができやすい。</li>
+                            </ul>
+                        </div>
+                        <!-- HTML Diagram: Functional -->
+                        <div class="bg-slate-50 p-6 rounded-lg border border-slate-200 flex flex-col items-center">
+                            <div class="border-2 border-slate-800 bg-white px-4 py-2 rounded font-bold mb-4">社長</div>
+                            <div class="tree-connector-vertical h-4 bg-slate-400 w-0.5"></div>
+                            <div class="relative w-full max-w-xs h-4">
+                                <div class="absolute top-0 left-0 w-full h-0.5 bg-slate-400"></div> <!-- Horizontal Line -->
+                                <div class="absolute top-0 left-0 h-4 w-0.5 bg-slate-400"></div>
+                                <div class="absolute top-0 left-1/2 h-4 w-0.5 bg-slate-400"></div>
+                                <div class="absolute top-0 right-0 h-4 w-0.5 bg-slate-400"></div>
+                            </div>
+                            <div class="grid grid-cols-3 gap-2 w-full max-w-xs mt-0">
+                                <div class="border border-indigo-500 bg-indigo-50 text-indigo-700 px-2 py-2 rounded text-center text-sm font-bold">営業部</div>
+                                <div class="border border-indigo-500 bg-indigo-50 text-indigo-700 px-2 py-2 rounded text-center text-sm font-bold">開発部</div>
+                                <div class="border border-indigo-500 bg-indigo-50 text-indigo-700 px-2 py-2 rounded text-center text-sm font-bold">経理部</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Content: Divisional -->
+                <div id="content-divisional" class="tab-content p-6 sm:p-10 hidden animate-fade-in">
+                    <div class="grid md:grid-cols-2 gap-8 items-center">
+                        <div>
+                            <h3 class="text-2xl font-bold text-cyan-700 mb-2">事業部制組織 (Divisional)</h3>
+                            <p class="text-slate-600 mb-4">製品や地域ごとに「事業部」を作り、権限を委譲する形。</p>
+                            <ul class="space-y-2">
+                                <li class="flex items-start"><span class="text-green-500 mr-2">●</span> <span class="font-bold">メリット：</span>意思決定が早い。利益責任が明確。</li>
+                                <li class="flex items-start"><span class="text-red-500 mr-2">●</span> <span class="font-bold">デメリット：</span>各事業部に機能が必要で、<span class="bg-yellow-100 px-1">経営資源が重複</span>しコスト増。</li>
+                            </ul>
+                        </div>
+                        <!-- HTML Diagram: Divisional -->
+                        <div class="bg-slate-50 p-6 rounded-lg border border-slate-200 flex flex-col items-center">
+                            <div class="border-2 border-slate-800 bg-white px-4 py-2 rounded font-bold mb-4">社長</div>
+                            <div class="tree-connector-vertical h-4 bg-slate-400 w-0.5"></div>
+                            <div class="relative w-full max-w-xs h-4">
+                                <div class="absolute top-0 left-10 w-[calc(100%-5rem)] h-0.5 bg-slate-400 ml-auto mr-auto right-0 left-0"></div>
+                                <div class="absolute top-0 left-10 h-4 w-0.5 bg-slate-400"></div>
+                                <div class="absolute top-0 right-10 h-4 w-0.5 bg-slate-400"></div>
+                            </div>
+                            <div class="flex justify-center gap-4 w-full mt-0">
+                                <div class="flex flex-col items-center">
+                                    <div class="border border-cyan-500 bg-cyan-50 text-cyan-700 px-3 py-2 rounded text-center text-sm font-bold mb-1">家電事業部</div>
+                                    <div class="flex gap-1">
+                                        <div class="text-[10px] bg-white border px-1 rounded">営業</div>
+                                        <div class="text-[10px] bg-white border px-1 rounded">製造</div>
+                                    </div>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <div class="border border-cyan-500 bg-cyan-50 text-cyan-700 px-3 py-2 rounded text-center text-sm font-bold mb-1">車事業部</div>
+                                    <div class="flex gap-1">
+                                        <div class="text-[10px] bg-white border px-1 rounded">営業</div>
+                                        <div class="text-[10px] bg-white border px-1 rounded">製造</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Content: Matrix -->
+                <div id="content-matrix" class="tab-content p-6 sm:p-10 hidden animate-fade-in">
+                    <div class="grid md:grid-cols-2 gap-8 items-center">
+                        <div>
+                            <h3 class="text-2xl font-bold text-amber-600 mb-2">マトリックス組織 (Matrix)</h3>
+                            <p class="text-slate-600 mb-4">職能別と事業部別を組み合わせた、網の目状の組織。</p>
+                            <ul class="space-y-2">
+                                <li class="flex items-start"><span class="text-green-500 mr-2">●</span> <span class="font-bold">メリット：</span>人材を柔軟に活用できる。</li>
+                                <li class="flex items-start"><span class="text-red-500 mr-2">●</span> <span class="font-bold">デメリット：</span><span class="bg-red-100 text-red-800 font-bold px-1">ワンマン・ツーボス</span>（上司が2人）になり、命令系統が混乱する。</li>
+                            </ul>
+                        </div>
+                        <!-- HTML Diagram: Matrix -->
+                        <div class="bg-slate-50 p-6 rounded-lg border border-slate-200 flex flex-col items-center">
+                            <div class="grid grid-cols-3 gap-2 text-xs">
+                                <div></div>
+                                <div class="bg-indigo-100 text-indigo-800 p-1 font-bold text-center rounded">製品A</div>
+                                <div class="bg-indigo-100 text-indigo-800 p-1 font-bold text-center rounded">製品B</div>
+                                
+                                <div class="bg-cyan-100 text-cyan-800 p-2 font-bold flex items-center justify-center rounded">営業部</div>
+                                <div class="border-2 border-amber-400 bg-white p-2 text-center rounded relative">
+                                    <span class="text-xl">👤</span>
+                                    <div class="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] px-1 rounded-full animate-pulse">!</div>
+                                </div>
+                                <div class="border border-slate-300 bg-white p-2 text-center rounded opacity-50"><span class="text-xl">👤</span></div>
+                                
+                                <div class="bg-cyan-100 text-cyan-800 p-2 font-bold flex items-center justify-center rounded">開発部</div>
+                                <div class="border border-slate-300 bg-white p-2 text-center rounded opacity-50"><span class="text-xl">👤</span></div>
+                                <div class="border border-slate-300 bg-white p-2 text-center rounded opacity-50"><span class="text-xl">👤</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Content: Project -->
+                <div id="content-project" class="tab-content p-6 sm:p-10 hidden animate-fade-in">
+                    <div class="grid md:grid-cols-2 gap-8 items-center">
+                        <div>
+                            <h3 class="text-2xl font-bold text-purple-600 mb-2">プロジェクト組織 (Project)</h3>
+                            <p class="text-slate-600 mb-4">特定の目的のために、各部署から専門家を集めた臨時チーム。</p>
+                            <ul class="space-y-2">
+                                <li class="flex items-start"><span class="text-green-500 mr-2">●</span> <span class="font-bold">メリット：</span>環境変化に強い。目的に集中できる。</li>
+                                <li class="flex items-start"><span class="text-slate-500 mr-2">●</span> <span class="font-bold">特徴：</span>目的達成後は解散する（期間限定）。</li>
+                            </ul>
+                        </div>
+                        <!-- HTML Diagram: Project -->
+                        <div class="bg-slate-50 p-6 rounded-lg border border-slate-200 flex items-center justify-center h-48">
+                            <div class="relative w-40 h-40">
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <div class="w-24 h-24 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold text-center shadow-lg z-10 text-sm">
+                                        Project<br>Team
+                                    </div>
+                                </div>
+                                <!-- Satellites -->
+                                <div class="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-2 bg-white border border-slate-300 px-2 py-1 text-xs rounded shadow">営業</div>
+                                <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-2 bg-white border border-slate-300 px-2 py-1 text-xs rounded shadow">開発</div>
+                                <div class="absolute left-0 top-1/2 transform -translate-x-2 -translate-y-1/2 bg-white border border-slate-300 px-2 py-1 text-xs rounded shadow">経理</div>
+                                <div class="absolute right-0 top-1/2 transform translate-x-2 -translate-y-1/2 bg-white border border-slate-300 px-2 py-1 text-xs rounded shadow">広報</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Content: Holding -->
+                <div id="content-holding" class="tab-content p-6 sm:p-10 hidden animate-fade-in">
+                    <div class="grid md:grid-cols-2 gap-8 items-center">
+                        <div>
+                            <h3 class="text-2xl font-bold text-slate-700 mb-2">持株会社 (Holding Company)</h3>
+                            <p class="text-slate-600 mb-4">他社の株を保有し、グループ全体を管理する会社。</p>
+                            <ul class="space-y-2">
+                                <li class="flex items-start"><span class="text-green-500 mr-2">●</span> <span class="font-bold">親会社：</span>グループ全体の戦略を立てる。</li>
+                                <li class="flex items-start"><span class="text-blue-500 mr-2">●</span> <span class="font-bold">子会社：</span>実際のビジネス（事業執行）を行う。</li>
+                                <li class="flex items-start"><span class="text-amber-500 mr-2">●</span> <span class="font-bold">メリット：</span>M&Aや事業再編がしやすい。</li>
+                            </ul>
+                        </div>
+                        <!-- HTML Diagram: Holding -->
+                        <div class="bg-slate-50 p-6 rounded-lg border border-slate-200 flex flex-col items-center">
+                            <div class="border-2 border-slate-700 bg-slate-800 text-white px-4 py-2 rounded font-bold mb-4 shadow-lg">〇〇ホールディングス</div>
+                            <div class="tree-connector-vertical h-4 bg-slate-400 w-0.5"></div>
+                            <div class="relative w-full max-w-xs h-4">
+                                <div class="absolute top-0 left-10 w-[calc(100%-5rem)] h-0.5 bg-slate-400 ml-auto mr-auto right-0 left-0"></div>
+                                <div class="absolute top-0 left-10 h-4 w-0.5 bg-slate-400"></div>
+                                <div class="absolute top-0 right-10 h-4 w-0.5 bg-slate-400"></div>
+                            </div>
+                            <div class="flex justify-center gap-6 w-full mt-0">
+                                <div class="border border-slate-400 bg-white text-slate-700 px-3 py-2 rounded text-center text-sm font-bold shadow-sm">A社<br><span class="text-[10px] font-normal text-slate-500">事業執行</span></div>
+                                <div class="border border-slate-400 bg-white text-slate-700 px-3 py-2 rounded text-center text-sm font-bold shadow-sm">B社<br><span class="text-[10px] font-normal text-slate-500">事業執行</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analysis Chart -->
+            <div class="mt-12 bg-white p-6 rounded-2xl shadow-lg border border-slate-100">
+                <h3 class="text-lg font-bold text-slate-700 mb-4 text-center">組織構造のトレードオフ分析</h3>
+                <p class="text-center text-sm text-slate-500 mb-6">各組織形態の「意思決定スピード」と「コスト効率」の関係性</p>
+                <div class="chart-container">
+                    <canvas id="chartOrgBubble"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: Executive Roles (CxO) -->
+        <section id="section-cxo" class="scroll-mt-20">
+            <div class="text-center mb-10">
+                <span class="inline-block py-1 px-3 rounded-full bg-indigo-100 text-indigo-800 font-bold text-sm tracking-wide uppercase mb-2">Leadership</span>
+                <h2 class="text-3xl font-bold text-slate-900">Cレベル役職 (CxO) の解剖</h2>
+                <p class="mt-4 text-lg text-slate-600 max-w-3xl mx-auto">
+                    Chief [?] Officer の真ん中の文字が鍵です。「I」と「T」の違いを明確にしましょう。
+                </p>
+            </div>
+
+            <div class="grid lg:grid-cols-3 gap-6 mb-8">
+                <!-- CEO Card -->
+                <div class="bg-white rounded-xl shadow-md p-6 border-t-4 border-indigo-600 hover:-translate-y-1 transition duration-300">
+                    <h3 class="text-4xl font-black text-indigo-100 absolute right-6">E</h3>
+                    <h3 class="text-2xl font-bold text-indigo-800 relative z-10">CEO</h3>
+                    <p class="text-xs font-bold text-slate-400 uppercase mb-2">Chief Executive Officer</p>
+                    <p class="text-slate-700 font-bold mb-2">最高経営責任者</p>
+                    <p class="text-sm text-slate-500">会社のトップ。経営方針や事業計画の最終責任を負う。</p>
+                </div>
+
+                <!-- CIO Card -->
+                <div class="bg-white rounded-xl shadow-md p-6 border-t-4 border-cyan-500 hover:-translate-y-1 transition duration-300">
+                    <h3 class="text-4xl font-black text-cyan-100 absolute right-6">I</h3>
+                    <h3 class="text-2xl font-bold text-cyan-700 relative z-10">CIO</h3>
+                    <p class="text-xs font-bold text-slate-400 uppercase mb-2">Chief Information Officer</p>
+                    <p class="text-slate-700 font-bold mb-2">最高情報責任者</p>
+                    <p class="text-sm text-slate-500">社内の<span class="bg-cyan-100 px-1">情報システム戦略</span>のトップ。効率化やデータ活用を推進。</p>
+                </div>
+
+                <!-- CTO Card -->
+                <div class="bg-white rounded-xl shadow-md p-6 border-t-4 border-amber-500 hover:-translate-y-1 transition duration-300">
+                    <h3 class="text-4xl font-black text-amber-100 absolute right-6">T</h3>
+                    <h3 class="text-2xl font-bold text-amber-700 relative z-10">CTO</h3>
+                    <p class="text-xs font-bold text-slate-400 uppercase mb-2">Chief Technology Officer</p>
+                    <p class="text-slate-700 font-bold mb-2">最高技術責任者</p>
+                    <p class="text-sm text-slate-500"><span class="bg-amber-100 px-1">技術戦略</span>や研究開発(R&D)のトップ。新技術のビジネス活用を考える。</p>
+                </div>
+            </div>
+
+            <!-- Visualization: CxO Focus Radar -->
+            <div class="bg-white p-6 rounded-2xl shadow-lg">
+                <h3 class="text-lg font-bold text-slate-700 mb-4 text-center">責任領域の重点マップ</h3>
+                <div class="chart-container">
+                    <canvas id="chartCxoRadar"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Conclusion -->
+        <section class="bg-slate-800 rounded-3xl p-8 sm:p-12 text-center text-white">
+            <h2 class="text-2xl font-bold mb-4">まとめ：試験直前チェック</h2>
+            <div class="grid sm:grid-cols-3 gap-6 text-left max-w-4xl mx-auto mt-8">
+                <div class="bg-slate-700 p-4 rounded-lg">
+                    <p class="font-bold text-cyan-400 mb-2">組織構造</p>
+                    <p class="text-sm text-slate-300">「マトリックス＝ワンマンツーボス（混乱）」は鉄板の出題パターン。</p>
+                </div>
+                <div class="bg-slate-700 p-4 rounded-lg">
+                    <p class="font-bold text-indigo-400 mb-2">役職 (CxO)</p>
+                    <p class="text-sm text-slate-300">CIOは「情報(Info)」、CTOは「技術(Tech)」。アルファベットの意味で区別。</p>
+                </div>
+                <div class="bg-slate-700 p-4 rounded-lg">
+                    <p class="font-bold text-amber-400 mb-2">人材育成</p>
+                    <p class="text-sm text-slate-300">OJTは現場、Off-JTは研修。セットで覚える。</p>
+                </div>
+            </div>
+            <p class="mt-8 text-slate-400 text-sm">© IT Passport Study Guide</p>
+        </section>
+
+    </main>
+
+    <script>
+        // Label Wrapping Utility for Chart.js
+        const wrapLabel = (str, limit = 16) => {
+            if (str.length <= limit) return str;
+            const words = str.split(' ');
+            const lines = [];
+            let currentLine = words[0];
+
+            for (let i = 1; i < words.length; i++) {
+                if (currentLine.length + 1 + words[i].length <= limit) {
+                    currentLine += ' ' + words[i];
+                } else {
+                    lines.push(currentLine);
+                    currentLine = words[i];
+                }
+            }
+            lines.push(currentLine);
+            return lines;
+        };
+
+        // Common Tooltip Configuration
+        const commonTooltip = {
+            callbacks: {
+                title: function(tooltipItems) {
+                    const item = tooltipItems[0];
+                    let label = item.chart.data.labels[item.dataIndex];
+                    if (Array.isArray(label)) {
+                        return label.join(' ');
+                    } else {
+                        return label;
+                    }
+                }
+            }
+        };
+
+        // --- Chart 1: HR Radar Chart (OJT vs Off-JT) ---
+        const ctxHr = document.getElementById('chartHrRadar').getContext('2d');
+        new Chart(ctxHr, {
+            type: 'radar',
+            data: {
+                labels: ['即戦力性 (Practicality)', '体系的知識 (Systematic)', '低コスト (Low Cost)', '現場適応 (Adaptability)', '統一性 (Uniformity)'],
+                datasets: [{
+                    label: 'OJT (現場)',
+                    data: [90, 40, 80, 95, 30],
+                    backgroundColor: 'rgba(79, 70, 229, 0.2)', // Indigo
+                    borderColor: 'rgba(79, 70, 229, 1)',
+                    pointBackgroundColor: 'rgba(79, 70, 229, 1)',
+                }, {
+                    label: 'Off-JT (研修)',
+                    data: [30, 95, 20, 40, 90],
+                    backgroundColor: 'rgba(6, 182, 212, 0.2)', // Cyan
+                    borderColor: 'rgba(6, 182, 212, 1)',
+                    pointBackgroundColor: 'rgba(6, 182, 212, 1)',
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                responsive: true,
+                scales: {
+                    r: {
+                        angleLines: { color: '#e2e8f0' },
+                        grid: { color: '#e2e8f0' },
+                        pointLabels: {
+                            font: { size: 11, family: "'Noto Sans JP', sans-serif" },
+                            color: '#475569'
+                        },
+                        ticks: { display: false } // Hide numbers for cleaner look
+                    }
+                },
+                plugins: {
+                    legend: { position: 'bottom' },
+                    tooltip: commonTooltip
+                }
+            }
+        });
+
+        // --- Chart 2: Org Structure Bubble Chart (Analysis) ---
+        const ctxOrg = document.getElementById('chartOrgBubble').getContext('2d');
+        new Chart(ctxOrg, {
+            type: 'bubble',
+            data: {
+                datasets: [{
+                    label: '職能別',
+                    data: [{x: 4, y: 8, r: 10}], // Low Speed, High Efficiency
+                    backgroundColor: 'rgba(79, 70, 229, 0.7)'
+                }, {
+                    label: '事業部制',
+                    data: [{x: 9, y: 4, r: 15}], // High Speed, Low Efficiency (High Cost)
+                    backgroundColor: 'rgba(6, 182, 212, 0.7)'
+                }, {
+                    label: 'マトリックス',
+                    data: [{x: 7, y: 7, r: 12}], // Med Speed, Med Efficiency
+                    backgroundColor: 'rgba(245, 158, 11, 0.7)'
+                }, {
+                    label: 'プロジェクト',
+                    data: [{x: 8, y: 6, r: 8}], // High Speed, Special
+                    backgroundColor: 'rgba(147, 51, 234, 0.7)'
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                responsive: true,
+                scales: {
+                    x: {
+                        title: { display: true, text: '意思決定スピード (Slow → Fast)' },
+                        min: 0, max: 10,
+                        grid: { display: false }
+                    },
+                    y: {
+                        title: { display: true, text: 'コスト効率・専門性 (Low → High)' },
+                        min: 0, max: 10,
+                        grid: { color: '#f1f5f9' }
+                    }
+                },
+                plugins: {
+                    legend: { position: 'bottom' },
+                    tooltip: commonTooltip
+                }
+            }
+        });
+
+        // --- Chart 3: CxO Radar Chart ---
+        const ctxCxo = document.getElementById('chartCxoRadar').getContext('2d');
+        new Chart(ctxCxo, {
+            type: 'bar',
+            data: {
+                labels: ['経営戦略 (Strategy)', '技術・R&D (Tech)', '社内システム (IT Info)'],
+                datasets: [{
+                    label: 'CEO',
+                    data: [100, 20, 20],
+                    backgroundColor: 'rgba(79, 70, 229, 0.8)' // Indigo
+                }, {
+                    label: 'CIO',
+                    data: [40, 30, 100],
+                    backgroundColor: 'rgba(6, 182, 212, 0.8)' // Cyan
+                }, {
+                    label: 'CTO',
+                    data: [40, 100, 30],
+                    backgroundColor: 'rgba(245, 158, 11, 0.8)' // Amber
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                responsive: true,
+                scales: {
+                    y: { beginAtZero: true, max: 100 }
+                },
+                plugins: {
+                    legend: { position: 'bottom' },
+                    tooltip: commonTooltip
+                }
+            }
+        });
+
+        // --- Interaction Logic: Org Structure Tabs ---
+        function switchTab(tabId) {
+            // Hide all content
+            document.querySelectorAll('.tab-content').forEach(el => {
+                el.classList.add('hidden');
+                el.classList.remove('block');
+            });
+            // Reset all buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('text-indigo-600', 'bg-white', 'border-b-2', 'border-indigo-600', 'active-tab');
+                btn.classList.add('text-slate-500');
+            });
+
+            // Show selected content
+            document.getElementById('content-' + tabId).classList.remove('hidden');
+            document.getElementById('content-' + tabId).classList.add('block');
+            
+            // Highlight selected button
+            const activeBtn = document.getElementById('tab-' + tabId);
+            activeBtn.classList.remove('text-slate-500');
+            activeBtn.classList.add('text-indigo-600', 'bg-white', 'border-b-2', 'border-indigo-600', 'active-tab');
+        }
+    </script>
+    <style>
+        .active-tab {
+            color: #4f46e5; /* indigo-600 */
+            background-color: white;
+            border-bottom-width: 2px;
+            border-color: #4f46e5;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+    </style>
+</body>
+</html>
