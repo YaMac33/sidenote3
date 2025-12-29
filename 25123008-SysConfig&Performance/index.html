@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chapter 10: System Configuration & Performance Evaluation Infographic</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Font Awesome for Icons (using CDN as requested standard icons) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Color Palette: Tech Vibrant (Blue/Cyan/Magenta) -->
+    <!-- 
+        Palette Name: "Digital Future"
+        Primary: #00D4FF (Cyan)
+        Secondary: #0055FF (Deep Blue)
+        Accent: #FF0099 (Magenta)
+        Background: #F0F4F8
+        Text: #1E293B
+    -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        tech: {
+                            cyan: '#00D4FF',
+                            blue: '#0055FF',
+                            magenta: '#FF0099',
+                            dark: '#0F172A',
+                            light: '#F0F4F8'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Helvetica Neue', 'Arial', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #F0F4F8;
+            color: #1E293B;
+        }
+        
+        /* Chart Container Styling - Mandatory Requirements */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px; /* Max width to prevent excessive stretching */
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px; /* Base height */
+            max-height: 400px;
+        }
+
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+
+        /* Custom Utilities for Diagram Elements */
+        .flow-box {
+            transition: transform 0.2s;
+        }
+        .flow-box:hover {
+            transform: translateY(-5px);
+        }
+        
+        .connector-line {
+            width: 2px;
+            background-color: #CBD5E1;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body class="bg-tech-light">
+
+    <!-- Header Section -->
+    <header class="bg-gradient-to-r from-tech-blue to-tech-cyan text-white p-8 shadow-lg mb-8">
+        <div class="max-w-6xl mx-auto text-center">
+            <h1 class="text-4xl md:text-6xl font-bold mb-4">System Configuration & Performance</h1>
+            <p class="text-xl md:text-2xl font-light opacity-90">IT Passport / FE Exam Preparation - Chapter 10</p>
+        </div>
+    </header>
+
+    <!-- Main Content Grid -->
+    <main class="max-w-7xl mx-auto px-4 pb-12 grid grid-cols-1 md:grid-cols-2 gap-8">
+
+        <!-- Introduction -->
+        <div class="col-span-1 md:col-span-2 bg-white rounded-lg shadow-md p-8">
+            <h2 class="text-2xl font-bold text-tech-blue mb-4"><i class="fas fa-info-circle mr-2"></i>Overview</h2>
+            <p class="text-gray-700 leading-relaxed text-lg">
+                信頼性の高いITシステムを構築するためには、適切な「システム構成」と、その状態を測る「性能評価」が不可欠です。
+                本インフォグラフィックでは、シンクライアントやRAIDなどの構成技術から、稼働率やバスタブ曲線といった評価指標まで、
+                システムの安定稼働を支える核心的な概念を可視化して解説します。
+            </p>
+        </div>
+
+        <!-- Section 1: System Architectures -->
+        <div class="col-span-1 bg-white rounded-lg shadow-md p-6 border-t-4 border-tech-cyan">
+            <h3 class="text-xl font-bold text-tech-dark mb-4">1. Efficiency Architectures</h3>
+            <p class="text-sm text-gray-600 mb-6">
+                ハードウェア資源を効率化し、セキュリティを高める現代的な構成です。
+            </p>
+
+            <!-- Comparison Cards -->
+            <div class="space-y-4">
+                <div class="flex items-start p-4 bg-blue-50 rounded-lg flow-box">
+                    <div class="bg-tech-blue text-white p-3 rounded-full mr-4">
+                        <i class="fas fa-desktop"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-tech-blue">Thin Client (シンクライアント)</h4>
+                        <p class="text-xs text-gray-600 mt-1">
+                            端末にデータを持たず、サーバー側で処理・保存。
+                            <span class="font-bold text-tech-magenta">情報漏洩対策</span>に最適。
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex items-start p-4 bg-cyan-50 rounded-lg flow-box">
+                    <div class="bg-tech-cyan text-white p-3 rounded-full mr-4">
+                        <i class="fas fa-server"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-tech-blue">Server Virtualization (仮想化)</h4>
+                        <p class="text-xs text-gray-600 mt-1">
+                            1台の物理サーバー上で複数の仮想サーバーを稼働。
+                            <span class="font-bold text-tech-magenta">コスト削減</span>と資源の有効活用。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2: High Availability Diagrams (HTML/CSS) -->
+        <div class="col-span-1 bg-white rounded-lg shadow-md p-6 border-t-4 border-tech-magenta">
+            <h3 class="text-xl font-bold text-tech-dark mb-4">2. High Reliability Systems</h3>
+            <p class="text-sm text-gray-600 mb-6">
+                システムを止めないための冗長構成の違いを理解しましょう。
+            </p>
+
+            <div class="grid grid-cols-2 gap-4">
+                <!-- Duplex System -->
+                <div class="border border-gray-200 rounded p-3 text-center bg-gray-50">
+                    <h5 class="font-bold text-tech-blue mb-2 text-sm">Duplex System</h5>
+                    <div class="flex justify-center space-x-2 mb-2">
+                        <div class="bg-green-100 border border-green-400 p-2 rounded w-16 text-xs">
+                            <i class="fas fa-play text-green-500 block mb-1"></i>Main
+                        </div>
+                        <div class="bg-yellow-100 border border-yellow-400 p-2 rounded w-16 text-xs opacity-70">
+                            <i class="fas fa-pause text-yellow-500 block mb-1"></i>Standby
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-left text-gray-500 leading-tight">
+                        主系が故障したら待機系に切り替え。待機系は普段バッチ処理などに利用可能。
+                    </p>
+                </div>
+
+                <!-- Dual System -->
+                <div class="border border-gray-200 rounded p-3 text-center bg-gray-50">
+                    <h5 class="font-bold text-tech-magenta mb-2 text-sm">Dual System</h5>
+                    <div class="flex justify-center space-x-2 mb-2">
+                        <div class="bg-green-100 border border-green-400 p-2 rounded w-16 text-xs">
+                            <i class="fas fa-check-double text-green-500 block mb-1"></i>CPU A
+                        </div>
+                        <div class="bg-green-100 border border-green-400 p-2 rounded w-16 text-xs">
+                            <i class="fas fa-check-double text-green-500 block mb-1"></i>CPU B
+                        </div>
+                    </div>
+                    <div class="text-xs font-bold text-tech-blue mb-1">Results Compared</div>
+                    <p class="text-[10px] text-left text-gray-500 leading-tight">
+                        2台で常に同じ処理を行い、結果を照合。信頼性が非常に高い。
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 3: RAID Comparison (Radar Chart) -->
+        <div class="col-span-1 md:col-span-2 bg-white rounded-lg shadow-md p-6 border-t-4 border-tech-blue">
+            <div class="flex flex-col md:flex-row items-center">
+                <div class="w-full md:w-1/3 pr-0 md:pr-8 mb-6 md:mb-0">
+                    <h3 class="text-xl font-bold text-tech-dark mb-4">3. Storage Technologies (RAID)</h3>
+                    <p class="text-sm text-gray-600 mb-4">
+                        複数のディスクを組み合わせて性能や信頼性を向上させる技術です。
+                    </p>
+                    <ul class="text-sm space-y-2">
+                        <li class="flex items-center"><span class="w-3 h-3 bg-tech-cyan rounded-full mr-2"></span><strong>RAID 0 (Striping):</strong> データ分散による高速化。耐障害性なし。</li>
+                        <li class="flex items-center"><span class="w-3 h-3 bg-tech-magenta rounded-full mr-2"></span><strong>RAID 1 (Mirroring):</strong> 同じデータを複製。信頼性が高い。</li>
+                    </ul>
+                </div>
+                <div class="w-full md:w-2/3 flex justify-center">
+                    <div class="chart-container">
+                        <canvas id="raidChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 4: TCO Analysis (Pie Chart) -->
+        <div class="col-span-1 bg-white rounded-lg shadow-md p-6 border-t-4 border-tech-cyan">
+            <h3 class="text-xl font-bold text-tech-dark mb-4">4. TCO (Total Cost of Ownership)</h3>
+            <p class="text-sm text-gray-600 mb-4">
+                システム導入は、初期費用だけでなく、運用後の維持管理費を含めた総額で判断します。
+            </p>
+            <div class="chart-container">
+                <canvas id="tcoChart"></canvas>
+            </div>
+            <p class="text-center text-xs text-gray-500 mt-2">
+                ※ Running Cost (保守・管理・教育・電気代) が大部分を占めることが多い
+            </p>
+        </div>
+
+        <!-- Section 5: Reliability Metrics - Bathtub Curve (Line Chart) -->
+        <div class="col-span-1 bg-white rounded-lg shadow-md p-6 border-t-4 border-tech-magenta">
+            <h3 class="text-xl font-bold text-tech-dark mb-4">5. Reliability Lifecycle</h3>
+            <p class="text-sm text-gray-600 mb-4">
+                <strong>バスタブ曲線:</strong> 故障率は時間の経過とともに変化します。
+            </p>
+            <div class="chart-container">
+                <canvas id="bathtubChart"></canvas>
+            </div>
+            <div class="flex justify-between text-xs text-gray-500 mt-2 px-4">
+                <span>初期故障期</span>
+                <span>偶発故障期 (安定)</span>
+                <span>摩耗故障期</span>
+            </div>
+        </div>
+
+        <!-- Section 6: Availability Calculation (Bar Chart) -->
+        <div class="col-span-1 md:col-span-2 bg-white rounded-lg shadow-md p-6 border-t-4 border-tech-blue">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold text-tech-dark mb-4">6. System Availability Math</h3>
+                    <p class="text-sm text-gray-600 mb-4">
+                        稼働率 (Availability) の計算は試験の頻出ポイントです。
+                        <br>構成によってシステム全体の稼働率が劇的に変化します。
+                    </p>
+                    <div class="bg-blue-50 p-4 rounded-lg mb-4">
+                        <h4 class="font-bold text-tech-blue text-sm mb-2">Formulas:</h4>
+                        <div class="text-xs font-mono space-y-2">
+                            <p><span class="font-bold">稼働率:</span> MTBF / (MTBF + MTTR)</p>
+                            <p><span class="font-bold">直列 (Series):</span> A × B</p>
+                            <p><span class="font-bold">並列 (Parallel):</span> 1 - (1-A)(1-B)</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex justify-center items-center">
+                    <div class="chart-container" style="max-height: 250px;">
+                        <canvas id="availabilityChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="bg-tech-dark text-white text-center p-8 mt-8">
+        <p class="text-sm opacity-70">Generated for IT Passport / FE Exam Prep</p>
+        <p class="text-xs opacity-50 mt-2">No SVG or Mermaid JS used. Data visualized via Chart.js.</p>
+    </footer>
+
+    <!-- Chart Scripts -->
+    <script>
+        // ---------------------------------------------------------
+        // Utility: 16-Char Label Wrapping Logic
+        // ---------------------------------------------------------
+        function processLabels(labels) {
+            return labels.map(label => {
+                if (label.length > 16) {
+                    const words = label.split(' ');
+                    const lines = [];
+                    let currentLine = words[0];
+
+                    for (let i = 1; i < words.length; i++) {
+                        if ((currentLine + " " + words[i]).length <= 16) {
+                            currentLine += " " + words[i];
+                        } else {
+                            lines.push(currentLine);
+                            currentLine = words[i];
+                        }
+                    }
+                    lines.push(currentLine);
+                    return lines;
+                }
+                return label;
+            });
+        }
+
+        // Shared Tooltip Configuration for Multiline Support
+        const sharedTooltipConfig = {
+            callbacks: {
+                title: function(tooltipItems) {
+                    const item = tooltipItems[0];
+                    let label = item.chart.data.labels[item.dataIndex];
+                    if (Array.isArray(label)) {
+                        return label.join(' ');
+                    } else {
+                        return label;
+                    }
+                }
+            }
+        };
+
+        // ---------------------------------------------------------
+        // Chart 1: RAID Comparison (Radar)
+        // ---------------------------------------------------------
+        const raidCtx = document.getElementById('raidChart').getContext('2d');
+        new Chart(raidCtx, {
+            type: 'radar',
+            data: {
+                labels: processLabels(['Access Speed', 'Redundancy (Reliability)', 'Capacity Efficiency', 'Cost Efficiency']),
+                datasets: [{
+                    label: 'RAID 0 (Striping)',
+                    data: [5, 1, 5, 5],
+                    backgroundColor: 'rgba(0, 212, 255, 0.2)',
+                    borderColor: '#00D4FF',
+                    pointBackgroundColor: '#00D4FF',
+                    borderWidth: 2
+                }, {
+                    label: 'RAID 1 (Mirroring)',
+                    data: [3, 5, 3, 3],
+                    backgroundColor: 'rgba(255, 0, 153, 0.2)',
+                    borderColor: '#FF0099',
+                    pointBackgroundColor: '#FF0099',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        angleLines: { color: '#E2E8F0' },
+                        grid: { color: '#E2E8F0' },
+                        pointLabels: {
+                            font: { size: 12, weight: 'bold' },
+                            color: '#1E293B'
+                        },
+                        suggestedMin: 0,
+                        suggestedMax: 5
+                    }
+                },
+                plugins: {
+                    tooltip: sharedTooltipConfig,
+                    legend: { position: 'top' }
+                }
+            }
+        });
+
+        // ---------------------------------------------------------
+        // Chart 2: TCO Analysis (Pie)
+        // ---------------------------------------------------------
+        const tcoCtx = document.getElementById('tcoChart').getContext('2d');
+        new Chart(tcoCtx, {
+            type: 'doughnut',
+            data: {
+                labels: processLabels(['Initial Cost (Hardware/Software)', 'Running Cost (Maintenance/Ops)']),
+                datasets: [{
+                    data: [30, 70],
+                    backgroundColor: ['#00D4FF', '#0055FF'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    tooltip: sharedTooltipConfig,
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+
+        // ---------------------------------------------------------
+        // Chart 3: Bathtub Curve (Line)
+        // ---------------------------------------------------------
+        const bathtubCtx = document.getElementById('bathtubChart').getContext('2d');
+        new Chart(bathtubCtx, {
+            type: 'line',
+            data: {
+                labels: processLabels(['Install', 'Early Phase', 'Stable Phase', 'Late Stable', 'End of Life']),
+                datasets: [{
+                    label: 'Failure Rate',
+                    data: [90, 20, 10, 15, 80],
+                    borderColor: '#FF0099',
+                    backgroundColor: 'rgba(255, 0, 153, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: { display: true, text: 'Failure Rate' },
+                        grid: { borderDash: [5, 5] }
+                    },
+                    x: { grid: { display: false } }
+                },
+                plugins: {
+                    tooltip: sharedTooltipConfig,
+                    legend: { display: false }
+                }
+            }
+        });
+
+        // ---------------------------------------------------------
+        // Chart 4: Availability Calculation (Bar)
+        // ---------------------------------------------------------
+        const availCtx = document.getElementById('availabilityChart').getContext('2d');
+        new Chart(availCtx, {
+            type: 'bar',
+            data: {
+                labels: processLabels(['Single Unit (90%)', 'Series System (A×B)', 'Parallel System (1-(1-A)(1-B))']),
+                datasets: [{
+                    label: 'System Availability',
+                    data: [0.90, 0.81, 0.99],
+                    backgroundColor: ['#CBD5E1', '#00D4FF', '#FF0099'],
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                indexAxis: 'y', // Horizontal Bar Chart
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        min: 0.7,
+                        max: 1.0,
+                        title: { display: true, text: 'Availability Probability (0.0 - 1.0)' }
+                    }
+                },
+                plugins: {
+                    tooltip: sharedTooltipConfig,
+                    legend: { display: false }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
