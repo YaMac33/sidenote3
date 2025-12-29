@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ITパスポート 第4章：技術戦略と先端技術 完全図解</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Noto Sans JP', sans-serif; }
+
+        /* Chart Container Styling - MANDATORY */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+
+        /* Palette: Future Tech (Deep Blue, Cyan, Neon Green) */
+        /* Primary: #3B82F6 (Blue 500) */
+        /* Secondary: #06B6D4 (Cyan 500) */
+        /* Accent: #10B981 (Emerald 500) */
+        /* Danger: #EF4444 (Red 500) */
+        /* Background: #F0F9FF (Sky 50) */
+
+        /* Custom Diagram CSS (No SVG) */
+        .hurdle-step {
+            background: white;
+            border: 2px solid #3b82f6;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+            color: #1e3a8a;
+            position: relative;
+            z-index: 2;
+            width: 80px;
+        }
+        .hurdle-gap {
+            flex-grow: 1;
+            height: 60px;
+            border-bottom: 4px dashed #ef4444;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .hurdle-label {
+            background: #fee2e2;
+            color: #b91c1c;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+            position: absolute;
+            top: -15px;
+        }
+        
+        .iot-box {
+            border: 2px solid #06b6d4;
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            position: relative;
+        }
+        .iot-arrow {
+            font-size: 24px;
+            color: #cbd5e1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+    </style>
+    <!-- Chosen Palette: Future Tech Blue & Cyan -->
+    <!-- Application Structure Plan:
+         1. Header: Title and intro to Technology Strategy & Advanced Tech.
+         2. Innovation & Barriers:
+            - "3 Hurdles" Flow Diagram (CSS Flex) showing Research -> Industry.
+            - Innovator Theory Bar Chart (Chart.js) highlighting the Chasm.
+         3. AI & Advanced Tech:
+            - AI Learning Types Comparison Cards.
+            - Generative AI & Deep Learning summary.
+         4. Engineering & Production:
+            - Production Methods Grid (JIT, Cell, etc.).
+            - Engineering Systems (CAD/CAM/Concurrent) flow.
+         5. Business Models & IoT:
+            - Long Tail Line Chart (Chart.js).
+            - IoT Architecture Diagram (CSS Grid).
+    -->
+    <!-- Visualization & Content Choices:
+         - Development Hurdles: CSS Flow. Goal: Process/Timeline. Justification: Shows the gaps (River/Valley/Sea) clearly.
+         - Innovator Theory: Bar Chart. Goal: Distribution. Justification: Standard bell-curve representation.
+         - Long Tail: Line Chart. Goal: Relationship (Rank vs Sales). Justification: Visualizes the "tail" concept perfectly.
+         - IoT: Connected Boxes. Goal: Structure/Flow. Justification: Shows data movement from Sensor to Actuator.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+<body class="bg-sky-50 text-slate-800">
+
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 bg-white/90 backdrop-blur shadow-sm border-b border-sky-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex-shrink-0 flex items-center">
+                    <span class="font-black text-2xl tracking-tighter text-blue-600">IT<span class="text-cyan-500">Tech</span></span>
+                </div>
+                <div class="hidden sm:flex space-x-8">
+                    <a href="#sec-innovation" class="text-slate-600 hover:text-blue-600 font-bold transition">イノベーション</a>
+                    <a href="#sec-ai" class="text-slate-600 hover:text-blue-600 font-bold transition">AI・先端技術</a>
+                    <a href="#sec-production" class="text-slate-600 hover:text-blue-600 font-bold transition">生産・開発</a>
+                    <a href="#sec-business" class="text-slate-600 hover:text-blue-600 font-bold transition">IoT・ビジネス</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <header class="bg-white shadow-sm py-12 px-4 text-center">
+        <h1 class="text-4xl sm:text-5xl font-extrabold text-slate-900 tracking-tight mb-4">
+            <span class="block text-blue-600">第4章：技術戦略と先端技術</span>
+            <span class="block">テクノロジーとマネジメントの融合</span>
+        </h1>
+        <p class="mt-4 max-w-2xl mx-auto text-xl text-slate-500">
+            AI、IoT、ロボティクスなどの最新技術から、それを生み出す開発・生産の現場管理まで。<br>
+            カタカナ用語を体系的に理解し、ビジネスへの応用力を身につけましょう。
+        </p>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-24">
+
+        <!-- SECTION 1: Innovation & Barriers -->
+        <section id="sec-innovation" class="scroll-mt-20">
+            <div class="text-center mb-10">
+                <span class="inline-block py-1 px-3 rounded-full bg-blue-100 text-blue-800 font-bold text-sm tracking-wide uppercase mb-2">Strategy</span>
+                <h2 class="text-3xl font-bold text-slate-900">技術開発の壁と普及の波</h2>
+                <p class="mt-2 text-slate-600">良い技術を作っても、製品化し普及させるまでには多くの難関（川・谷・海）と溝（キャズム）があります。</p>
+            </div>
+
+            <div class="grid lg:grid-cols-2 gap-12">
+                <!-- Development Hurdles Visual -->
+                <div class="bg-white p-6 rounded-3xl shadow-lg border border-blue-100">
+                    <h3 class="text-xl font-bold text-slate-800 mb-6 flex items-center">
+                        <span class="bg-blue-500 text-white w-8 h-8 rounded-full flex items-center justify-center mr-2">1</span>
+                        技術開発の3つの難関
+                    </h3>
+                    
+                    <div class="flex items-center justify-between w-full relative pt-4 pb-8">
+                        <div class="hurdle-step">研究</div>
+                        <div class="hurdle-gap">
+                            <span class="hurdle-label">魔の川</span>
+                            <div class="absolute bottom-0 text-2xl text-red-400">🌊</div>
+                        </div>
+                        <div class="hurdle-step">開発</div>
+                        <div class="hurdle-gap">
+                            <span class="hurdle-label">死の谷</span>
+                            <div class="absolute bottom-0 text-2xl text-red-500">☠️</div>
+                        </div>
+                        <div class="hurdle-step">事業化</div>
+                        <div class="hurdle-gap">
+                            <span class="hurdle-label">ダーウィンの海</span>
+                            <div class="absolute bottom-0 text-2xl text-blue-400">🦈</div>
+                        </div>
+                        <div class="hurdle-step">産業化</div>
+                    </div>
+                    
+                    <div class="mt-4 bg-slate-50 p-4 rounded-xl text-sm text-slate-600">
+                        <p><strong>死の谷 (Valley of Death):</strong> 開発と事業化の間にある最も深い溝。ここを越えられず消えるプロジェクトが多い。</p>
+                    </div>
+                </div>
+
+                <!-- Innovator Theory Chart -->
+                <div class="bg-white p-6 rounded-3xl shadow-lg border border-cyan-100">
+                    <h3 class="text-xl font-bold text-slate-800 mb-2 flex items-center">
+                        <span class="bg-cyan-500 text-white w-8 h-8 rounded-full flex items-center justify-center mr-2">2</span>
+                        イノベーター理論とキャズム
+                    </h3>
+                    <p class="text-sm text-slate-500 mb-4 text-center">新商品が普及する5つの段階</p>
+                    <div class="chart-container">
+                        <canvas id="chartInnovator"></canvas>
+                    </div>
+                    <div class="mt-4 text-center">
+                        <span class="inline-block bg-red-100 text-red-600 px-3 py-1 rounded-full text-xs font-bold border border-red-200">
+                            ⚠️ キャズム (Chasm) : 初期市場とメインストリームの間の深い溝
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Innovation Keywords -->
+            <div class="grid md:grid-cols-3 gap-6 mt-8">
+                <div class="bg-white p-5 rounded-xl border-l-4 border-blue-500 shadow-sm">
+                    <h4 class="font-bold text-blue-700">オープンイノベーション</h4>
+                    <p class="text-sm text-slate-600 mt-1">自社だけでなく、組織外の技術や知識を積極的に取り込む。</p>
+                </div>
+                <div class="bg-white p-5 rounded-xl border-l-4 border-cyan-500 shadow-sm">
+                    <h4 class="font-bold text-cyan-700">ハッカソン</h4>
+                    <p class="text-sm text-slate-600 mt-1">Hack + Marathon。開発者が集まり短期間で開発を競うイベント。</p>
+                </div>
+                <div class="bg-white p-5 rounded-xl border-l-4 border-emerald-500 shadow-sm">
+                    <h4 class="font-bold text-emerald-700">APIエコノミー</h4>
+                    <p class="text-sm text-slate-600 mt-1">他社の公開APIを利用して、新しい価値圏（経済圏）を作ること。</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: AI & Advanced Tech -->
+        <section id="sec-ai" class="scroll-mt-20">
+            <div class="bg-slate-900 rounded-3xl p-8 sm:p-12 text-white">
+                <div class="text-center mb-10">
+                    <span class="inline-block py-1 px-3 rounded-full bg-indigo-500 text-white font-bold text-sm tracking-wide uppercase mb-2">Artificial Intelligence</span>
+                    <h2 class="text-3xl font-bold">AIと学習の仕組み</h2>
+                    <p class="text-slate-400 mt-2">機械学習の3タイプと、最新の生成AIトレンドを理解しましょう。</p>
+                </div>
+
+                <!-- Learning Types -->
+                <div class="grid md:grid-cols-3 gap-6 mb-12">
+                    <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 hover:border-blue-500 transition">
+                        <div class="text-4xl mb-4">👩‍🏫</div>
+                        <h3 class="text-xl font-bold text-blue-400 mb-2">教師あり学習</h3>
+                        <p class="text-slate-300 text-sm">
+                            <strong>正解データを与える。</strong><br>
+                            例：この画像は猫、これは犬と教える。売上予測やスパム判定に利用。
+                        </p>
+                    </div>
+                    <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 hover:border-cyan-500 transition">
+                        <div class="text-4xl mb-4">🔍</div>
+                        <h3 class="text-xl font-bold text-cyan-400 mb-2">教師なし学習</h3>
+                        <p class="text-slate-300 text-sm">
+                            <strong>正解を与えない。</strong><br>
+                            データの特徴や構造をAI自身が見つける。顧客のグループ分けなどに利用。
+                        </p>
+                    </div>
+                    <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 hover:border-emerald-500 transition">
+                        <div class="text-4xl mb-4">🎮</div>
+                        <h3 class="text-xl font-bold text-emerald-400 mb-2">強化学習</h3>
+                        <p class="text-slate-300 text-sm">
+                            <strong>報酬を与える。</strong><br>
+                            試行錯誤を通じて、最も報酬が得られる行動を学ぶ。将棋AIやロボット制御。
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Advanced AI Concepts -->
+                <div class="grid md:grid-cols-2 gap-8 items-start border-t border-slate-700 pt-8">
+                    <div>
+                        <h3 class="text-2xl font-bold mb-4 flex items-center">
+                            <span class="mr-2">🧠</span> ディープラーニング
+                        </h3>
+                        <p class="text-slate-300 mb-4">
+                            人間の脳神経回路を模した<strong>ニューラルネットワーク</strong>を多層にして、AI自身が特徴量を学習する技術。
+                        </p>
+                        <div class="flex gap-2">
+                            <span class="px-3 py-1 bg-slate-700 rounded-full text-xs">活性化関数</span>
+                            <span class="px-3 py-1 bg-slate-700 rounded-full text-xs">隠れ層</span>
+                            <span class="px-3 py-1 bg-slate-700 rounded-full text-xs">バックプロパゲーション</span>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-bold mb-4 flex items-center">
+                            <span class="mr-2">🎨</span> 生成AI (Generative AI)
+                        </h3>
+                        <p class="text-slate-300 mb-4">文章、画像、動画などのオリジナルコンテンツを生成。</p>
+                        <ul class="space-y-2 text-sm text-slate-400">
+                            <li class="flex items-start"><span class="text-yellow-500 mr-2">●</span> <strong>プロンプトエンジニアリング：</strong>指示出しの最適化</li>
+                            <li class="flex items-start"><span class="text-red-500 mr-2">●</span> <strong>ハルシネーション：</strong>もっともらしい嘘をつく現象</li>
+                            <li class="flex items-start"><span class="text-red-500 mr-2">●</span> <strong>ディープフェイク：</strong>偽の動画や音声</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: Engineering & Production -->
+        <section id="sec-production" class="scroll-mt-20">
+            <div class="text-center mb-10">
+                <span class="inline-block py-1 px-3 rounded-full bg-emerald-100 text-emerald-800 font-bold text-sm tracking-wide uppercase mb-2">Manufacturing</span>
+                <h2 class="text-3xl font-bold text-slate-900">ものづくりのシステムと管理</h2>
+                <p class="mt-2 text-slate-600">設計(CAD/CAM)から生産(JIT/セル)まで、効率化の仕組みを整理。</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8">
+                <!-- Engineering Systems -->
+                <div class="bg-white p-6 rounded-2xl shadow border border-slate-200">
+                    <h3 class="text-lg font-bold text-slate-700 mb-4 border-b pb-2">エンジニアリングシステム</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center">
+                            <div class="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center text-2xl font-bold text-blue-600 shrink-0">CAD</div>
+                            <div class="ml-4">
+                                <p class="font-bold">Computer Aided Design</p>
+                                <p class="text-sm text-slate-500">コンピュータで設計図を描く。</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-16 h-16 bg-cyan-100 rounded-lg flex items-center justify-center text-2xl font-bold text-cyan-600 shrink-0">CAM</div>
+                            <div class="ml-4">
+                                <p class="font-bold">Computer Aided Manufacturing</p>
+                                <p class="text-sm text-slate-500">設計データを元に工作機械を操作する。</p>
+                            </div>
+                        </div>
+                        <div class="bg-emerald-50 p-4 rounded-lg mt-4">
+                            <p class="font-bold text-emerald-800 mb-1">コンカレントエンジニアリング</p>
+                            <p class="text-sm text-emerald-700">設計と製造の工程を<strong>同時進行</strong>させ、開発期間を短縮する。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Production Methods -->
+                <div class="bg-white p-6 rounded-2xl shadow border border-slate-200">
+                    <h3 class="text-lg font-bold text-slate-700 mb-4 border-b pb-2">生産方式と指標</h3>
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div class="bg-slate-50 p-3 rounded">
+                            <p class="font-bold text-slate-800">JIT</p>
+                            <p class="text-xs text-slate-500">必要な物を必要な時に。在庫削減。</p>
+                        </div>
+                        <div class="bg-slate-50 p-3 rounded">
+                            <p class="font-bold text-slate-800">セル生産</p>
+                            <p class="text-xs text-slate-500">1人またはチームで全工程担当（屋台方式）。</p>
+                        </div>
+                    </div>
+                    <ul class="space-y-2 text-sm text-slate-600">
+                        <li><strong>受注生産：</strong>注文を受けてから作る。</li>
+                        <li><strong>見込生産：</strong>計画に基づいてあらかじめ作る。</li>
+                        <li class="pt-2 border-t mt-2"><strong>リードタイム：</strong>発注から納品までの時間。</li>
+                        <li><strong>歩留まり率：</strong>良品の割合。</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 4: Business Models & IoT -->
+        <section id="sec-business" class="scroll-mt-20">
+            <div class="text-center mb-10">
+                <span class="inline-block py-1 px-3 rounded-full bg-cyan-100 text-cyan-800 font-bold text-sm tracking-wide uppercase mb-2">Future Tech</span>
+                <h2 class="text-3xl font-bold text-slate-900">IoTと新しいビジネスモデル</h2>
+                <p class="mt-2 text-slate-600">「モノのインターネット」と、ネット時代の稼ぎ方（ロングテール等）。</p>
+            </div>
+
+            <div class="grid lg:grid-cols-2 gap-12">
+                <!-- Long Tail Chart -->
+                <div class="bg-white p-6 rounded-3xl shadow-lg border border-slate-200">
+                    <h3 class="text-xl font-bold text-slate-800 mb-2">ロングテール (Long Tail)</h3>
+                    <p class="text-sm text-slate-500 mb-4 text-center">売れ筋以外の商品も積み重ねれば大きな売上に</p>
+                    <div class="chart-container">
+                        <canvas id="chartLongTail"></canvas>
+                    </div>
+                </div>
+
+                <!-- IoT & Society 5.0 -->
+                <div class="space-y-6">
+                    <!-- IoT Diagram -->
+                    <div class="bg-white p-6 rounded-3xl shadow-lg border border-slate-200">
+                        <h3 class="text-xl font-bold text-slate-800 mb-4 text-center">IoTの仕組み</h3>
+                        <div class="grid grid-cols-5 gap-2 items-center text-xs sm:text-sm">
+                            <div class="iot-box border-emerald-400">
+                                <div class="text-xl">🌡️</div>
+                                <strong>センサー</strong>
+                                <div class="text-[10px] text-slate-400">計測</div>
+                            </div>
+                            <div class="iot-arrow">➜</div>
+                            <div class="iot-box border-blue-400 bg-blue-50">
+                                <div class="text-xl">☁️</div>
+                                <strong>ネット</strong>
+                                <div class="text-[10px] text-slate-400">分析</div>
+                            </div>
+                            <div class="iot-arrow">➜</div>
+                            <div class="iot-box border-orange-400">
+                                <div class="text-xl">⚙️</div>
+                                <strong>アクチュエーター</strong>
+                                <div class="text-[10px] text-slate-400">動作</div>
+                            </div>
+                        </div>
+                        <div class="mt-4 text-center text-sm text-slate-500 bg-slate-50 p-2 rounded">
+                            <strong>IoTゲートウェイ：</strong>デバイスとネットの中継役（負荷軽減）
+                        </div>
+                    </div>
+
+                    <!-- Business Keywords -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-white p-4 rounded-xl shadow border border-slate-200">
+                            <h4 class="font-bold text-blue-600">フリーミアム</h4>
+                            <p class="text-xs text-slate-500 mt-1">基本無料＋有料機能。</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-xl shadow border border-slate-200">
+                            <h4 class="font-bold text-blue-600">CGM</h4>
+                            <p class="text-xs text-slate-500 mt-1">消費者が作るメディア（口コミ等）。</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-xl shadow border border-slate-200">
+                            <h4 class="font-bold text-blue-600">エスクロー</h4>
+                            <p class="text-xs text-slate-500 mt-1">決済仲介。詐欺防止。</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-xl shadow border border-slate-200">
+                            <h4 class="font-bold text-blue-600">Society 5.0</h4>
+                            <p class="text-xs text-slate-500 mt-1">サイバーとフィジカルの融合。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="text-center py-10 border-t border-sky-200 text-slate-500">
+            <p class="font-bold text-blue-600 mb-2">第4章 まとめ</p>
+            <p class="text-sm">死の谷は「開発と事業化の間」。キャズムは「普及の溝」。</p>
+            <p class="text-sm mt-1">IoTは「センサーで読み取り、アクチュエーターで動かす」。</p>
+            <p class="text-xs mt-4">© IT Passport Study Guide</p>
+        </footer>
+
+    </main>
+
+    <script>
+        // --- Tooltip Config ---
+        const commonTooltip = {
+            callbacks: {
+                title: function(tooltipItems) {
+                    const item = tooltipItems[0];
+                    let label = item.chart.data.labels[item.dataIndex];
+                    if (Array.isArray(label)) return label.join(' ');
+                    return label;
+                }
+            }
+        };
+
+        // --- Chart 1: Innovator Theory ---
+        const ctxInnovator = document.getElementById('chartInnovator').getContext('2d');
+        new Chart(ctxInnovator, {
+            type: 'bar',
+            data: {
+                labels: ['イノベーター', 'アーリーアダプター', 'アーリーマジョリティ', 'レイトマジョリティ', 'ラガード'],
+                datasets: [{
+                    label: '市場構成比 (%)',
+                    data: [2.5, 13.5, 34, 34, 16],
+                    backgroundColor: [
+                        'rgba(59, 130, 246, 0.5)', // Blue
+                        'rgba(6, 182, 212, 0.8)',  // Cyan (Target)
+                        'rgba(16, 185, 129, 0.5)', // Emerald
+                        'rgba(245, 158, 11, 0.5)', // Amber
+                        'rgba(100, 116, 139, 0.5)' // Slate
+                    ],
+                    borderColor: [
+                        'rgba(59, 130, 246, 1)',
+                        'rgba(6, 182, 212, 1)',
+                        'rgba(16, 185, 129, 1)',
+                        'rgba(245, 158, 11, 1)',
+                        'rgba(100, 116, 139, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                responsive: true,
+                scales: {
+                    y: { beginAtZero: true, max: 40 }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: commonTooltip,
+                    annotation: {
+                        annotations: {
+                            line1: {
+                                type: 'line',
+                                xMin: 1.5,
+                                xMax: 1.5,
+                                borderColor: 'red',
+                                borderWidth: 2,
+                                borderDash: [5, 5],
+                                label: {
+                                    content: 'キャズム',
+                                    enabled: true,
+                                    position: 'top'
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // --- Chart 2: Long Tail (Line Chart) ---
+        const ctxLongTail = document.getElementById('chartLongTail').getContext('2d');
+        const longTailData = [];
+        const labels = [];
+        for (let i = 1; i <= 50; i++) {
+            labels.push(i);
+            longTailData.push(100 / i); // 1/x curve
+        }
+
+        new Chart(ctxLongTail, {
+            type: 'line',
+            data: {
+                labels: labels, // 1 to 50
+                datasets: [{
+                    label: '売上高',
+                    data: longTailData,
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 0
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                responsive: true,
+                scales: {
+                    x: { 
+                        title: { display: true, text: '人気順位 (Head -> Tail)' },
+                        ticks: { display: false } 
+                    },
+                    y: { 
+                        title: { display: true, text: '販売数' },
+                        ticks: { display: false }
+                    }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { enabled: false }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
