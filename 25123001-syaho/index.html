@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>社会保険の仕組み 完全学習ガイド | Interactive Explorer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Noto Sans JP', sans-serif; }
+        .chart-container { 
+            position: relative; 
+            width: 100%; 
+            max-width: 600px; 
+            margin-left: auto; 
+            margin-right: auto; 
+            height: 300px; 
+            max-height: 400px; 
+        }
+        @media (min-width: 768px) { .chart-container { height: 350px; } }
+        .pillar-card { transition: all 0.3s ease; cursor: pointer; }
+        .pillar-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+        .pillar-card.active { ring-width: 2px; ring-color: #3b82f6; background-color: #eff6ff; }
+        .section-transition { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* Custom Scrollbar for better UX */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+    <!-- Chosen Palette: Trustworthy Blue & Warm Neutral -->
+    <!-- Application Structure Plan: 
+         1. Hero Section: Hook based on "Why is my paycheck low?"
+         2. The 5 Pillars Dashboard: Interactive grid explaining the core systems.
+         3. Terminology Decoder: Interactive diagram distinguishing Narrow vs. Labor insurance.
+         4. The Hidden Benefit (Cost Sharing): Interactive Chart.js visualizer showing employer contribution.
+         5. The Calculation Trap (Spring Overtime): Interactive simulator demonstrating the impact of Apr-Jun overtime on annual premiums.
+         6. Value Proposition: Summary of benefits (Investment vs Cost).
+    -->
+    <!-- Visualization & Content Choices:
+         - 5 Pillars: Grid of interactive cards. Goal: Inform. Method: HTML/Tailwind + JS Class toggle.
+         - Definitions: Nested Box Layout. Goal: Organize. Method: HTML/CSS Flexbox + Tooltips.
+         - Cost Sharing: Stacked Bar Chart. Goal: Compare (You vs Company). Method: Chart.js.
+         - Calculation Logic: Timeline + Interactive Calculator. Goal: Change/Simulate. Method: JS Logic + HTML Inputs.
+         - All adhering to NO SVG/Mermaid constraints.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+<body class="bg-stone-50 text-slate-800 antialiased">
+
+    <!-- Navigation -->
+    <nav class="bg-white border-b border-stone-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <div class="flex-shrink-0 flex items-center">
+                        <span class="font-bold text-xl text-blue-700">社保ガイド</span>
+                    </div>
+                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8" id="desktop-nav">
+                        <!-- Nav items injected by JS -->
+                    </div>
+                </div>
+                <!-- Mobile menu button placeholder -->
+                <div class="flex items-center sm:hidden">
+                    <button id="mobile-menu-btn" class="text-slate-500 hover:text-slate-700 focus:outline-none px-3 py-2 rounded-md text-sm font-medium">
+                        メニュー
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden sm:hidden bg-white border-t border-stone-200">
+            <div class="px-2 pt-2 pb-3 space-y-1" id="mobile-nav-items"></div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-16">
+
+        <!-- Section 1: Introduction -->
+        <section id="intro" class="text-center py-10 section-transition">
+            <h1 class="text-4xl font-bold text-slate-900 mb-4">給与明細の「謎」を解き明かす</h1>
+            <p class="text-xl text-slate-600 max-w-3xl mx-auto mb-8">
+                「結構引かれているな…」と感じる社会保険料。<br>
+                しかし、それは単なるコストではありません。<br>
+                私たちの生活を支える強力なセーフティネットの仕組みを、インタラクティブに学びましょう。
+            </p>
+            <div class="inline-flex rounded-md shadow-sm">
+                <button onclick="scrollToSection('pillars')" class="px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition">
+                    学習を始める
+                </button>
+            </div>
+        </section>
+
+        <!-- Section 2: The 5 Pillars -->
+        <section id="pillars" class="scroll-mt-20 section-transition">
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold text-slate-900 mb-2">社会保険の「5つの柱」</h2>
+                <div class="w-20 h-1 bg-blue-500 rounded mb-4"></div>
+                <p class="text-slate-600">
+                    日本の社会保険制度は、大きく5つの柱で構成され、連携して生活のリスクをカバーしています。<br>
+                    下のカードをクリックして、それぞれの役割を確認しましょう。
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6" id="pillar-grid">
+                <!-- Cards injected via JS -->
+            </div>
+
+            <div id="pillar-detail" class="bg-white rounded-xl shadow-lg border border-stone-100 p-6 min-h-[150px] transition-all duration-300">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0 bg-blue-100 rounded-full p-3 mr-4">
+                        <span id="detail-icon" class="text-2xl">🏥</span>
+                    </div>
+                    <div>
+                        <h3 id="detail-title" class="text-xl font-bold text-slate-900 mb-2">選択してください</h3>
+                        <p id="detail-desc" class="text-slate-600">上のアイコンをクリックすると、各保険の詳細が表示されます。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Definitions (Broad vs Narrow) -->
+        <section id="definitions" class="scroll-mt-20 section-transition bg-stone-100 rounded-2xl p-8">
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-slate-900 mb-2">「社会保険」と「労働保険」の境界線</h2>
+                <p class="text-slate-600 mb-4">
+                    職場では「社会保険」という言葉が2通りの意味で使われます。求人票の「社会保険完備」とは、これら全てが揃っている状態を指します。
+                </p>
+                <div class="flex space-x-4 mb-6">
+                    <button id="view-structure-btn" class="px-4 py-2 bg-slate-800 text-white rounded-lg text-sm font-medium shadow hover:bg-slate-700">構造図を見る</button>
+                    <button id="view-list-btn" class="px-4 py-2 bg-white text-slate-700 border border-slate-300 rounded-lg text-sm font-medium hover:bg-slate-50">リストで見る</button>
+                </div>
+            </div>
+
+            <div id="structure-view" class="relative bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+                <!-- Outer Box: Broad Definition -->
+                <div class="border-2 border-dashed border-slate-300 rounded-xl p-4 md:p-8 relative">
+                    <span class="absolute -top-3 left-4 bg-white px-2 text-slate-500 font-bold text-sm">広い意味の「社会保険」</span>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <!-- Narrow Definition -->
+                        <div class="border-2 border-blue-200 bg-blue-50 rounded-lg p-6 relative group hover:border-blue-400 transition-colors">
+                            <span class="absolute -top-3 left-4 bg-blue-100 text-blue-800 px-2 font-bold text-sm rounded">狭い意味の「社会保険」</span>
+                            <div class="mt-2 space-y-2">
+                                <div class="flex items-center bg-white p-2 rounded shadow-sm">
+                                    <span class="text-blue-500 mr-2">●</span> <span class="font-bold">健康保険</span>
+                                </div>
+                                <div class="flex items-center bg-white p-2 rounded shadow-sm">
+                                    <span class="text-blue-500 mr-2">●</span> <span class="font-bold">厚生年金</span>
+                                </div>
+                            </div>
+                            <p class="mt-4 text-xs text-blue-600 font-medium">特徴：プライベート・老後の備え<br>労使折半</p>
+                        </div>
+
+                        <!-- Labor Insurance -->
+                        <div class="border-2 border-orange-200 bg-orange-50 rounded-lg p-6 relative group hover:border-orange-400 transition-colors">
+                            <span class="absolute -top-3 left-4 bg-orange-100 text-orange-800 px-2 font-bold text-sm rounded">労働保険</span>
+                            <div class="mt-2 space-y-2">
+                                <div class="flex items-center bg-white p-2 rounded shadow-sm">
+                                    <span class="text-orange-500 mr-2">●</span> <span class="font-bold">雇用保険</span>
+                                </div>
+                                <div class="flex items-center bg-white p-2 rounded shadow-sm">
+                                    <span class="text-orange-500 mr-2">●</span> <span class="font-bold">労災保険</span>
+                                </div>
+                            </div>
+                            <p class="mt-4 text-xs text-orange-600 font-medium">特徴：働くことの保険<br>会社負担が大きい</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 text-center">
+                    <span class="inline-block bg-green-100 text-green-800 px-4 py-2 rounded-full font-bold text-sm shadow-sm">
+                        ✨ これら両方が揃って「社会保険完備」
+                    </span>
+                </div>
+            </div>
+            
+            <div id="list-view" class="hidden bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+                <ul class="divide-y divide-stone-100">
+                    <li class="py-3 flex justify-between items-center">
+                        <span class="font-bold text-slate-700">健康保険</span>
+                        <span class="text-sm text-blue-600 bg-blue-50 px-2 py-1 rounded">狭義の社会保険</span>
+                    </li>
+                    <li class="py-3 flex justify-between items-center">
+                        <span class="font-bold text-slate-700">厚生年金</span>
+                        <span class="text-sm text-blue-600 bg-blue-50 px-2 py-1 rounded">狭義の社会保険</span>
+                    </li>
+                    <li class="py-3 flex justify-between items-center">
+                        <span class="font-bold text-slate-700">雇用保険</span>
+                        <span class="text-sm text-orange-600 bg-orange-50 px-2 py-1 rounded">労働保険</span>
+                    </li>
+                    <li class="py-3 flex justify-between items-center">
+                        <span class="font-bold text-slate-700">労災保険</span>
+                        <span class="text-sm text-orange-600 bg-orange-50 px-2 py-1 rounded">労働保険</span>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Section 4: Cost Sharing (Chart.js) -->
+        <section id="costs" class="scroll-mt-20 section-transition">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                <div>
+                    <h2 class="text-3xl font-bold text-slate-900 mb-4">保険料は誰が払う？</h2>
+                    <p class="text-slate-600 mb-6">
+                        給与から引かれる金額だけが保険料ではありません。<br>
+                        実は、会社が皆さんの分と同額（またはそれ以上）を上乗せして払っています。<br>
+                        特に<strong class="text-orange-600">労災保険は会社が100%負担</strong>（タダ）です。
+                    </p>
+                    
+                    <div class="bg-blue-50 p-6 rounded-xl border border-blue-100 mb-6">
+                        <h3 class="font-bold text-blue-900 mb-2">負担シミュレーター</h3>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">想定月給 (万円)</label>
+                        <div class="flex items-center space-x-4">
+                            <input type="range" id="salary-slider" min="20" max="60" value="30" step="5" class="w-full h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer">
+                            <span id="salary-display" class="font-bold text-lg w-20 text-right">30万円</span>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-2">*概算料率で計算しています（健康:約10%, 年金:約18.3%, 雇用:約1.55%, 労災:約0.3%等）</p>
+                    </div>
+
+                    <div class="space-y-2">
+                        <div class="flex items-center text-sm">
+                            <span class="w-4 h-4 bg-blue-500 rounded-sm mr-2"></span>
+                            <span>本人負担 (給与天引き)</span>
+                        </div>
+                        <div class="flex items-center text-sm">
+                            <span class="w-4 h-4 bg-slate-300 rounded-sm mr-2"></span>
+                            <span>会社負担 (見えない給与)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-4 rounded-xl shadow-lg border border-stone-100 flex items-center justify-center">
+                    <div class="chart-container">
+                        <canvas id="costChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 5: The Mechanism (Standard Monthly Remuneration) -->
+        <section id="mechanism" class="scroll-mt-20 section-transition bg-white shadow-xl rounded-2xl overflow-hidden border border-stone-200">
+            <div class="p-8 bg-slate-900 text-white">
+                <h2 class="text-3xl font-bold mb-2">「春の残業」にご用心</h2>
+                <p class="text-slate-300">
+                    社会保険料は毎月の給与で変わるわけではありません。<br>
+                    <strong>4月・5月・6月</strong>の平均給与で、向こう1年間の保険料が固定されます。
+                </p>
+            </div>
+
+            <div class="p-8">
+                <div class="flex flex-col md:flex-row gap-8">
+                    <!-- Timeline Visual -->
+                    <div class="md:w-1/2 relative pl-8 border-l-4 border-slate-200">
+                        <div class="mb-10 relative">
+                            <div class="absolute -left-[42px] bg-yellow-400 text-slate-900 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm border-4 border-white shadow">1</div>
+                            <h4 class="font-bold text-lg text-slate-800">4月・5月・6月</h4>
+                            <p class="text-sm text-slate-600">この3ヶ月間の「給与平均」を計算します。残業代も含まれます。</p>
+                        </div>
+                        <div class="mb-10 relative">
+                            <div class="absolute -left-[42px] bg-slate-400 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm border-4 border-white shadow">2</div>
+                            <h4 class="font-bold text-lg text-slate-800">決定（標準報酬月額）</h4>
+                            <p class="text-sm text-slate-600">平均額をランク表（等級）に当てはめます。</p>
+                        </div>
+                        <div class="relative">
+                            <div class="absolute -left-[42px] bg-blue-600 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm border-4 border-white shadow">3</div>
+                            <h4 class="font-bold text-lg text-slate-800">9月 〜 翌年8月</h4>
+                            <p class="text-sm text-slate-600">決定したランクの保険料が<strong class="text-red-600">1年間固定</strong>で引かれ続けます。</p>
+                        </div>
+                    </div>
+
+                    <!-- Interactive Simulator -->
+                    <div class="md:w-1/2 bg-slate-50 rounded-xl p-6 border border-slate-200">
+                        <h3 class="font-bold text-slate-900 mb-4 flex items-center">
+                            <span class="text-xl mr-2">⚠️</span> 残業影響シミュレーター
+                        </h3>
+                        
+                        <div class="space-y-4 mb-6">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase">基本月給</label>
+                                <input type="number" id="base-salary" value="250000" class="w-full border-slate-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 mt-1 px-3 py-2">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase">4〜6月の月平均残業代</label>
+                                <input type="number" id="ot-pay" value="50000" class="w-full border-slate-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 mt-1 px-3 py-2 text-red-600 font-bold">
+                                <p class="text-xs text-slate-500 mt-1">※もしこの時期に残業を頑張りすぎると...</p>
+                            </div>
+                        </div>
+
+                        <div id="sim-result" class="bg-white rounded-lg p-4 border border-stone-200">
+                            <div class="flex justify-between items-center mb-2 border-b border-stone-100 pb-2">
+                                <span class="text-sm text-slate-600">決定される等級(月額):</span>
+                                <span id="rank-result" class="font-bold text-lg">300,000円</span>
+                            </div>
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm text-slate-600">月々の天引き増額:</span>
+                                <span id="premium-diff" class="font-bold text-red-600">+約 7,000円</span>
+                            </div>
+                            <div class="bg-red-50 text-red-800 text-xs p-2 rounded mt-2">
+                                <span class="font-bold">注意:</span> 10月以降に残業がゼロになっても、来年8月まで毎月<span id="diff-text">7,000円</span>多く引かれ続けます。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 6: Value / Summary -->
+        <section id="summary" class="scroll-mt-20 section-transition">
+            <h2 class="text-2xl font-bold text-slate-900 mb-6 text-center">払いすぎても「損」ではない？</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-gradient-to-br from-indigo-500 to-blue-600 rounded-xl p-8 text-white shadow-lg relative overflow-hidden group">
+                    <div class="absolute right-0 top-0 opacity-10 transform translate-x-10 -translate-y-10 group-hover:scale-110 transition-transform">
+                        <span class="text-9xl">📈</span>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4">将来への投資</h3>
+                    <p class="text-blue-100 mb-4">
+                        厚生年金は現役時代に納めた額に応じて、<br>
+                        <strong>将来受け取る年金額が増える</strong>仕組みです。<br>
+                        高いランクは、豊かな老後への積立となります。
+                    </p>
+                    <div class="inline-block bg-white/20 px-3 py-1 rounded text-sm backdrop-blur-sm">老後の安心</div>
+                </div>
+
+                <div class="bg-gradient-to-br from-orange-400 to-red-500 rounded-xl p-8 text-white shadow-lg relative overflow-hidden group">
+                    <div class="absolute right-0 top-0 opacity-10 transform translate-x-10 -translate-y-10 group-hover:scale-110 transition-transform">
+                        <span class="text-9xl">🛡️</span>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4">保障の手厚さ</h3>
+                    <p class="text-orange-100 mb-4">
+                        病気で休んだ時の「傷病手当金」や<br>
+                        産休中の「出産手当金」は、<br>
+                        <strong>ランク（標準報酬月額）が高いほど給付額が増えます。</strong>
+                    </p>
+                    <div class="inline-block bg-white/20 px-3 py-1 rounded text-sm backdrop-blur-sm">現在の安心</div>
+                </div>
+            </div>
+
+            <div class="mt-12 text-center p-8 bg-white rounded-xl border border-stone-200">
+                <h3 class="text-xl font-bold text-slate-900 mb-2">まとめ</h3>
+                <p class="text-slate-600 max-w-2xl mx-auto">
+                    社会保険は、単に給与から引かれる「コスト」に見えるかもしれません。<br>
+                    しかし実際は、会社も費用を大きく負担している、非常に強力なセーフティネットです。<br>
+                    これからの給与明細は、今までとは違った「安心」の証明書として見えるはずです。
+                </p>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-900 text-slate-400 py-8 mt-12">
+        <div class="max-w-5xl mx-auto px-4 text-center">
+            <p class="text-sm">© Social Insurance Learning Guide. Based on provided educational material.</p>
+            <p class="text-xs mt-2 text-slate-600">※試算額は概算であり、実際の保険料率は年度・加入組合・都道府県により異なります。</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // Data Store
+        const appData = {
+            navItems: [
+                { id: 'pillars', label: '5つの柱' },
+                { id: 'definitions', label: '用語の整理' },
+                { id: 'costs', label: 'お金の負担' },
+                { id: 'mechanism', label: '計算の仕組み' },
+                { id: 'summary', label: 'まとめ' }
+            ],
+            pillars: [
+                { 
+                    id: 'medical', 
+                    title: '医療保険', 
+                    icon: '🏥', 
+                    desc: '病院代が3割負担で済むのはこれのおかげです。',
+                    color: 'bg-blue-500'
+                },
+                { 
+                    id: 'pension', 
+                    title: '年金保険', 
+                    icon: '👴', 
+                    desc: '老後はもちろん、障害を負った時などの生活も支えます。',
+                    color: 'bg-blue-600'
+                },
+                { 
+                    id: 'nursing', 
+                    title: '介護保険', 
+                    icon: '🦽', 
+                    desc: '40歳以上から加入し、介護サービスを支えます。',
+                    color: 'bg-blue-400'
+                },
+                { 
+                    id: 'employment', 
+                    title: '雇用保険', 
+                    icon: '💼', 
+                    desc: '失業した時や育児休業中の収入をサポートします。',
+                    color: 'bg-orange-500'
+                },
+                { 
+                    id: 'workers', 
+                    title: '労災保険', 
+                    icon: '⛑️', 
+                    desc: '仕事中のケガを全額補償。保険料は会社が100%負担します。',
+                    color: 'bg-orange-600'
+                }
+            ]
+        };
+
+        // DOM Elements & Initialization
+        document.addEventListener('DOMContentLoaded', () => {
+            initNav();
+            initPillars();
+            initCostChart();
+            initSimulator();
+            setupDefinitionsToggle();
+        });
+
+        // 1. Navigation Logic
+        function initNav() {
+            const deskNav = document.getElementById('desktop-nav');
+            const mobNav = document.getElementById('mobile-nav-items');
+            const mobBtn = document.getElementById('mobile-menu-btn');
+            const mobMenu = document.getElementById('mobile-menu');
+
+            appData.navItems.forEach(item => {
+                // Desktop
+                const link = document.createElement('a');
+                link.href = `#${item.id}`;
+                link.className = "border-transparent text-slate-500 hover:border-blue-500 hover:text-slate-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition";
+                link.innerText = item.label;
+                link.onclick = (e) => { e.preventDefault(); scrollToSection(item.id); };
+                deskNav.appendChild(link);
+
+                // Mobile
+                const mLink = document.createElement('a');
+                mLink.href = `#${item.id}`;
+                mLink.className = "block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50";
+                mLink.innerText = item.label;
+                mLink.onclick = (e) => { e.preventDefault(); scrollToSection(item.id); toggleMobileMenu(); };
+                mobNav.appendChild(mLink);
+            });
+
+            mobBtn.onclick = toggleMobileMenu;
+
+            function toggleMobileMenu() {
+                mobMenu.classList.toggle('hidden');
+            }
+        }
+
+        function scrollToSection(id) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        // 2. Pillars Logic
+        function initPillars() {
+            const grid = document.getElementById('pillar-grid');
+            const detailBox = document.getElementById('pillar-detail');
+            const dTitle = document.getElementById('detail-title');
+            const dDesc = document.getElementById('detail-desc');
+            const dIcon = document.getElementById('detail-icon');
+
+            appData.pillars.forEach((pillar, index) => {
+                const card = document.createElement('div');
+                card.className = `pillar-card bg-white p-4 rounded-xl border border-stone-200 flex flex-col items-center justify-center h-32 hover:border-blue-300`;
+                card.innerHTML = `
+                    <div class="text-3xl mb-2">${pillar.icon}</div>
+                    <div class="font-bold text-slate-700 text-sm">${pillar.title}</div>
+                `;
+                
+                card.onclick = () => {
+                    // Update UI State
+                    document.querySelectorAll('.pillar-card').forEach(c => c.classList.remove('active'));
+                    card.classList.add('active');
+
+                    // Update Detail View
+                    dTitle.innerText = pillar.title;
+                    dDesc.innerText = pillar.desc;
+                    dIcon.innerText = pillar.icon;
+                    
+                    // Simple highlight animation
+                    detailBox.classList.remove('shadow-lg');
+                    void detailBox.offsetWidth; // trigger reflow
+                    detailBox.classList.add('shadow-lg');
+                };
+
+                grid.appendChild(card);
+            });
+        }
+
+        // 3. Definitions Logic
+        function setupDefinitionsToggle() {
+            const viewStructureBtn = document.getElementById('view-structure-btn');
+            const viewListBtn = document.getElementById('view-list-btn');
+            const structView = document.getElementById('structure-view');
+            const listView = document.getElementById('list-view');
+
+            viewStructureBtn.addEventListener('click', () => {
+                structView.classList.remove('hidden');
+                listView.classList.add('hidden');
+                viewStructureBtn.classList.add('bg-slate-800', 'text-white');
+                viewStructureBtn.classList.remove('bg-white', 'text-slate-700');
+                viewListBtn.classList.remove('bg-slate-800', 'text-white');
+                viewListBtn.classList.add('bg-white', 'text-slate-700');
+            });
+
+            viewListBtn.addEventListener('click', () => {
+                structView.classList.add('hidden');
+                listView.classList.remove('hidden');
+                viewListBtn.classList.add('bg-slate-800', 'text-white');
+                viewListBtn.classList.remove('bg-white', 'text-slate-700');
+                viewStructureBtn.classList.remove('bg-slate-800', 'text-white');
+                viewStructureBtn.classList.add('bg-white', 'text-slate-700');
+            });
+        }
+
+        // 4. Cost Chart Logic
+        let costChart;
+        function initCostChart() {
+            const ctx = document.getElementById('costChart').getContext('2d');
+            const slider = document.getElementById('salary-slider');
+            const display = document.getElementById('salary-display');
+
+            // Approx rates (simplified)
+            const rates = {
+                employee: 0.15, // Health(5%) + Pension(9.15%) + Emp(0.6%) + Care(approx)
+                company: 0.16   // Health(5%) + Pension(9.15%) + Emp(0.95%) + Workers(0.3%) + Child(approx)
+            };
+
+            function updateChart(salary) {
+                const empCost = Math.round(salary * 10000 * rates.employee);
+                const compCost = Math.round(salary * 10000 * rates.company);
+                
+                display.innerText = `${salary}万円`;
+
+                costChart.data.datasets[0].data = [empCost];
+                costChart.data.datasets[1].data = [compCost];
+                costChart.update();
+            }
+
+            costChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['月額保険料総額'],
+                    datasets: [
+                        {
+                            label: '本人負担 (給与天引き)',
+                            data: [0],
+                            backgroundColor: '#3b82f6',
+                            barThickness: 50
+                        },
+                        {
+                            label: '会社負担 (上乗せ)',
+                            data: [0],
+                            backgroundColor: '#cbd5e1',
+                            barThickness: 50
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { stacked: true },
+                        y: { 
+                            stacked: true,
+                            beginAtZero: true,
+                            title: { display: true, text: '金額 (円)' }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                footer: (items) => {
+                                    const total = items.reduce((a, b) => a + b.raw, 0);
+                                    return `合計: ${total.toLocaleString()}円\n(内、労災は会社が100%負担)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            slider.addEventListener('input', (e) => updateChart(e.target.value));
+            updateChart(30); // Init
+        }
+
+        // 5. Simulator Logic (Standard Monthly Remuneration)
+        function initSimulator() {
+            const baseInput = document.getElementById('base-salary');
+            const otInput = document.getElementById('ot-pay');
+            const rankResult = document.getElementById('rank-result');
+            const premiumDiff = document.getElementById('premium-diff');
+            const diffText = document.getElementById('diff-text');
+
+            // Very simplified Grade Logic for Educational Purpose
+            // Real tables have fixed brackets. We will simulate continuous approx 15% rate for simplicity of demo
+            const rate = 0.15; 
+
+            function calculate() {
+                const base = parseInt(baseInput.value) || 0;
+                const ot = parseInt(otInput.value) || 0;
+
+                const standardSalary = base;
+                const boostedSalary = base + ot;
+
+                // Round to nearest rank (simplified: just round to 1000s)
+                // In reality, brackets exist (e.g. 290k-310k -> 300k rank)
+                // We will just use the raw difference * rate to show the point
+                
+                const premiumNormal = standardSalary * rate;
+                const premiumHigh = boostedSalary * rate;
+                
+                const diff = Math.round(premiumHigh - premiumNormal);
+                const annualLoss = diff * 12;
+
+                // For display, let's pretend the rank jumps
+                // If OT is 50k, rank likely jumps 2-3 grades.
+                
+                rankResult.innerText = `${boostedSalary.toLocaleString()}円 相当`;
+                premiumDiff.innerText = `+${diff.toLocaleString()}円 / 月`;
+                diffText.innerText = `${diff.toLocaleString()}円`;
+
+                // Add visual feedback
+                const container = document.getElementById('sim-result');
+                if (diff > 0) {
+                    container.classList.add('border-red-200');
+                    container.classList.remove('border-stone-200');
+                } else {
+                    container.classList.remove('border-red-200');
+                    container.classList.add('border-stone-200');
+                }
+            }
+
+            baseInput.addEventListener('input', calculate);
+            otInput.addEventListener('input', calculate);
+            calculate(); // Init
+        }
+
+    </script>
+</body>
+</html>
