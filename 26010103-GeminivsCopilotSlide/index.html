@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini vs Copilot: AIスライド生成 徹底比較ガイド</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Noto Sans JP', sans-serif; }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            height: 350px;
+            max-height: 400px;
+        }
+        .card-transition { transition: all 0.3s ease; }
+        .card-transition:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+        .tab-active { border-bottom: 2px solid #4f46e5; color: #4f46e5; font-weight: 700; }
+        .tab-inactive { color: #6b7280; }
+        .tab-inactive:hover { color: #374151; }
+    </style>
+    <!-- Chosen Palette: Warm Neutrals with Brand Accents (Stone/Warm Gray background, Microsoft Blue, Google Indigo/Gradient) -->
+    <!-- Application Structure Plan: 
+         1. Hero Section: Sets the stage ("Which one to choose?").
+         2. Concept Split: Visualizes the core difference ("Creation" vs "Conversion") using a toggle interaction.
+         3. Feature Radar: A Chart.js radar chart visualizing the qualitative strengths (Creativity, Formatting, Research, etc.) inferred from the script.
+         4. Scenario Recommender: An interactive "Wizard" where users click their current situation to get a recommendation.
+         5. Deep Dive: Detailed cards for each tool with content from the script.
+         6. Summary: Final takeaways.
+         This structure moves from high-level concept -> visual comparison -> personalized advice -> detailed reading. -->
+    <!-- Visualization & Content Choices:
+         - Radar Chart: Goal: Compare. Method: Chart.js Radar. Justification: Perfect for showing the asymmetrical strengths (Creativity vs Utility) of the two tools described in the script.
+         - Scenario Buttons: Goal: Engage/Guide. Method: HTML/JS interactive logic. Justification: Translates the "Recommended Cases" slides into an active decision tool.
+         - Concept Toggles: Goal: Inform. Method: Dynamic text update. Justification: Helps user internalize the "Start Point" difference.
+         - Supporting the DESIGNED structure: No SVG/Mermaid used. Unicode icons for visual cues. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+<body class="bg-stone-50 text-stone-800 antialiased selection:bg-indigo-100 selection:text-indigo-800">
+
+    <!-- Navigation / Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <span class="text-2xl">🤖</span>
+                <h1 class="text-xl font-bold tracking-tight text-stone-900">AIスライド生成ナビ</h1>
+            </div>
+            <nav class="hidden md:flex space-x-8 text-sm font-medium">
+                <a href="#concept" class="hover:text-indigo-600 transition-colors">基本概念</a>
+                <a href="#comparison" class="hover:text-indigo-600 transition-colors">強み比較</a>
+                <a href="#recommendation" class="hover:text-indigo-600 transition-colors">診断ツール</a>
+                <a href="#details" class="hover:text-indigo-600 transition-colors">詳細解説</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="relative bg-white overflow-hidden">
+        <div class="max-w-7xl mx-auto pt-16 pb-20 px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-4xl md:text-5xl font-extrabold text-stone-900 mb-6 leading-tight">
+                <span class="text-indigo-600">Gemini</span> か、<span class="text-blue-600">Copilot</span> か？
+            </h2>
+            <p class="mt-4 max-w-2xl mx-auto text-xl text-stone-600 leading-relaxed">
+                「AIでスライドが作れる」時代。でも、どっちを使えばいいの？<br>
+                あなたの業務を効率化する最適なパートナーを見つけましょう。
+            </p>
+            <div class="mt-10 flex justify-center gap-4">
+                <a href="#concept" class="px-8 py-3 rounded-full bg-stone-900 text-white font-semibold hover:bg-stone-700 transition shadow-lg">
+                    違いを知る ↓
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 1: The Core Concept (Start Point) -->
+    <section id="concept" class="py-16 bg-stone-100">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h3 class="text-3xl font-bold text-stone-800">最大の違いは「スタート地点」</h3>
+                <p class="mt-4 text-stone-600">
+                    このセクションでは、プレゼン資料作成における2つのツールの根本的なアプローチの違いを解説します。<br>
+                    AIが作業プロセスの「どこ」に介入するかを理解するのが、使い分けの第一歩です。
+                </p>
+            </div>
+
+            <!-- Concept Toggle Interaction -->
+            <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-stone-200">
+                <div class="flex border-b border-stone-200">
+                    <button onclick="updateConcept('copilot')" id="btn-copilot" class="flex-1 py-4 text-center font-bold text-lg transition-colors bg-stone-50 text-stone-500 hover:bg-stone-100">
+                        Copilotのアプローチ
+                    </button>
+                    <button onclick="updateConcept('gemini')" id="btn-gemini" class="flex-1 py-4 text-center font-bold text-lg transition-colors bg-stone-50 text-stone-500 hover:bg-stone-100">
+                        Geminiのアプローチ
+                    </button>
+                </div>
+                
+                <div class="p-8 md:p-12 transition-all duration-500" id="concept-content">
+                    <!-- Content injected by JS -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 2: Qualitative Comparison (Chart.js) -->
+    <section id="comparison" class="py-16 bg-white">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                
+                <!-- Text Context -->
+                <div>
+                    <h3 class="text-3xl font-bold text-stone-800 mb-6">強みの可視化</h3>
+                    <div class="prose text-stone-600 mb-8">
+                        <p class="mb-4">
+                            両者の強みは対照的です。右のレーダーチャートは、それぞれのツールが得意とする領域を表しています。
+                        </p>
+                        <p>
+                            <strong>Copilot</strong>は「整える」ことに特化しており、既存の資産を活用する力に長けています。一方、<strong>Gemini</strong>は「広げる」ことに特化しており、外部情報の取り込みやゼロからの発想支援に優れています。
+                        </p>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div class="flex items-center">
+                            <span class="w-4 h-4 rounded-full bg-blue-500 mr-3"></span>
+                            <span class="font-bold text-stone-700">Copilot:</span>
+                            <span class="ml-2 text-stone-600 text-sm">既存文書の変換、デザイン調整、社内資産活用</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="w-4 h-4 rounded-full bg-indigo-500 mr-3"></span>
+                            <span class="font-bold text-stone-700">Gemini:</span>
+                            <span class="ml-2 text-stone-600 text-sm">アイデア出し、Web検索連携、画像生成</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chart Container -->
+                <div class="bg-stone-50 rounded-xl p-6 shadow-inner border border-stone-100">
+                    <div class="chart-container">
+                        <canvas id="comparisonChart"></canvas>
+                    </div>
+                    <p class="text-center text-xs text-stone-400 mt-4">※各項目のスコアは解説内容に基づく定性的な目安です</p>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 3: Scenario Recommender (Interactive Wizard) -->
+    <section id="recommendation" class="py-16 bg-stone-900 text-white">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-10">
+                <h3 class="text-3xl font-bold text-white">あなたにおすすめなのは？</h3>
+                <p class="mt-4 text-stone-300">今の状況をクリックしてください。AIが最適なツールを診断します。</p>
+            </div>
+
+            <!-- Interactive Diagnostic Box -->
+            <div class="bg-stone-800 rounded-2xl shadow-2xl p-8 border border-stone-700">
+                <div id="diagnostic-step-1" class="text-center">
+                    <h4 class="text-xl font-semibold mb-8">現在の手持ち資料の状況は？</h4>
+                    <div class="grid sm:grid-cols-2 gap-4">
+                        <button onclick="showResult('copilot')" class="p-6 bg-stone-700 rounded-xl hover:bg-stone-600 hover:ring-2 hover:ring-blue-500 transition-all group text-left">
+                            <div class="text-3xl mb-3">📄</div>
+                            <div class="font-bold text-lg mb-1 group-hover:text-blue-400">Wordの企画書がある</div>
+                            <div class="text-sm text-stone-400">すでに文章として完成している</div>
+                        </button>
+                        <button onclick="showResult('copilot')" class="p-6 bg-stone-700 rounded-xl hover:bg-stone-600 hover:ring-2 hover:ring-blue-500 transition-all group text-left">
+                            <div class="text-3xl mb-3">📊</div>
+                            <div class="font-bold text-lg mb-1 group-hover:text-blue-400">過去のPPTを直したい</div>
+                            <div class="text-sm text-stone-400">デザインやレイアウトを整えたい</div>
+                        </button>
+                        <button onclick="showResult('gemini')" class="p-6 bg-stone-700 rounded-xl hover:bg-stone-600 hover:ring-2 hover:ring-indigo-500 transition-all group text-left">
+                            <div class="text-3xl mb-3">💭</div>
+                            <div class="font-bold text-lg mb-1 group-hover:text-indigo-400">アイデアしかない</div>
+                            <div class="text-sm text-stone-400">ゼロから構成を考えたい</div>
+                        </button>
+                        <button onclick="showResult('gemini')" class="p-6 bg-stone-700 rounded-xl hover:bg-stone-600 hover:ring-2 hover:ring-indigo-500 transition-all group text-left">
+                            <div class="text-3xl mb-3">🌐</div>
+                            <div class="font-bold text-lg mb-1 group-hover:text-indigo-400">最新情報を調べたい</div>
+                            <div class="text-sm text-stone-400">WebやYouTubeを参考にしたい</div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Result View (Hidden by default) -->
+                <div id="diagnostic-result" class="hidden text-center animate-fade-in">
+                    <div id="result-icon" class="text-6xl mb-4"></div>
+                    <h4 id="result-title" class="text-2xl font-bold mb-2"></h4>
+                    <p id="result-desc" class="text-stone-300 mb-8 max-w-lg mx-auto"></p>
+                    
+                    <button onclick="resetDiagnostic()" class="px-6 py-2 border border-stone-500 rounded-lg hover:bg-stone-700 transition text-sm">
+                        もう一度診断する
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 4: Detailed Breakdown -->
+    <section id="details" class="py-16 bg-stone-50">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h3 class="text-3xl font-bold text-stone-800 text-center mb-12">機能詳細解説</h3>
+            
+            <div class="grid md:grid-cols-2 gap-8">
+                
+                <!-- Copilot Card -->
+                <div class="bg-white rounded-xl shadow-lg border-t-4 border-blue-600 p-8 card-transition">
+                    <div class="flex items-center mb-6">
+                        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 text-2xl mr-4">
+                            C
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-bold text-stone-900">Copilot in PowerPoint</h4>
+                            <p class="text-sm text-stone-500">Microsoft 365</p>
+                        </div>
+                    </div>
+                    <ul class="space-y-4">
+                        <li class="flex items-start">
+                            <span class="text-blue-500 mr-2 mt-1">✔</span>
+                            <div>
+                                <strong class="block text-stone-800">Word企画書を一瞬で変換</strong>
+                                <p class="text-sm text-stone-600 mt-1">文書の構造を解析し、最適なレイアウトに自動変換。「スライドにして」と言うだけの手軽さ。</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-blue-500 mr-2 mt-1">✔</span>
+                            <div>
+                                <strong class="block text-stone-800">詳細なデザイン調整</strong>
+                                <p class="text-sm text-stone-600 mt-1">「フォントを統一して」「画像を明るくして」など、PPT固有の操作をAIに指示可能。</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-blue-500 mr-2 mt-1">✔</span>
+                            <div>
+                                <strong class="block text-stone-800">社内資産の活用</strong>
+                                <p class="text-sm text-stone-600 mt-1">OneDrive内のファイルを直接参照し、それをベースに資料を作成できる。</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Gemini Card -->
+                <div class="bg-white rounded-xl shadow-lg border-t-4 border-indigo-500 p-8 card-transition">
+                    <div class="flex items-center mb-6">
+                        <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center text-indigo-500 text-2xl mr-4">
+                            G
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-bold text-stone-900">Gemini</h4>
+                            <p class="text-sm text-stone-500">Google Workspace</p>
+                        </div>
+                    </div>
+                    <ul class="space-y-4">
+                        <li class="flex items-start">
+                            <span class="text-indigo-500 mr-2 mt-1">✔</span>
+                            <div>
+                                <strong class="block text-stone-800">ゼロからの構成作成</strong>
+                                <p class="text-sm text-stone-600 mt-1">「〜についてのスライド案を作って」の一言から、壁打ち相手のように相談しながら作成。</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-indigo-500 mr-2 mt-1">✔</span>
+                            <div>
+                                <strong class="block text-stone-800">Web情報の統合</strong>
+                                <p class="text-sm text-stone-600 mt-1">Google検索やYouTube動画の最新情報を要約し、スライドのネタとして取り込める。</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-indigo-500 mr-2 mt-1">✔</span>
+                            <div>
+                                <strong class="block text-stone-800">クリエイティブな画像生成</strong>
+                                <p class="text-sm text-stone-600 mt-1">スライドの内容に合ったイメージ画像を、その場で生成して挿入できる。</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer / Summary -->
+    <footer class="bg-white border-t border-stone-200 py-12">
+        <div class="max-w-4xl mx-auto px-4 text-center">
+            <h2 class="text-2xl font-bold text-stone-800 mb-6">まとめ</h2>
+            <div class="inline-block bg-stone-100 rounded-2xl p-8 border border-stone-200">
+                <p class="text-xl md:text-2xl font-medium text-stone-700 mb-4">
+                    しっかりとした<span class="text-blue-600 font-bold border-b-2 border-blue-600">資料があるなら、Copilot</span>
+                </p>
+                <div class="h-px bg-stone-300 w-1/2 mx-auto my-4"></div>
+                <p class="text-xl md:text-2xl font-medium text-stone-700">
+                    これから考える<span class="text-indigo-600 font-bold border-b-2 border-indigo-600">アイデア出しなら、Gemini</span>
+                </p>
+            </div>
+            <p class="mt-8 text-stone-500 text-sm">
+                この2つをうまく使い分けて、資料作成の時間を劇的に短縮しましょう。
+            </p>
+        </div>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- 1. Concept Toggle Logic ---
+        const conceptData = {
+            copilot: {
+                title: "「変換」が得意",
+                desc: "すでに手元にあるWordの原稿や報告書を、スライド形式に「変身」させます。<br>0から1を作るのではなく、10ある情報を整理して見せるのが得意です。",
+                icon: "📄 ➡ 📊",
+                colorClass: "text-blue-600",
+                btnClass: "bg-white text-blue-600 shadow-sm border-t-2 border-blue-600"
+            },
+            gemini: {
+                title: "「創造」が得意",
+                desc: "まだ原稿がなく、「これからアイデアを考えたい」という真っ白な状態からスタートします。<br>チャットで相談しながら、0から1を生み出すのが得意です。",
+                icon: "💭 ➡ ✨",
+                colorClass: "text-indigo-600",
+                btnClass: "bg-white text-indigo-600 shadow-sm border-t-2 border-indigo-600"
+            }
+        };
+
+        function updateConcept(type) {
+            const contentDiv = document.getElementById('concept-content');
+            const data = conceptData[type];
+            
+            // Update Buttons style
+            document.getElementById('btn-copilot').className = `flex-1 py-4 text-center font-bold text-lg transition-colors ${type === 'copilot' ? data.btnClass : 'bg-stone-50 text-stone-400 hover:bg-stone-100'}`;
+            document.getElementById('btn-gemini').className = `flex-1 py-4 text-center font-bold text-lg transition-colors ${type === 'gemini' ? data.btnClass : 'bg-stone-50 text-stone-400 hover:bg-stone-100'}`;
+
+            // Update Content with Fade effect
+            contentDiv.style.opacity = 0;
+            setTimeout(() => {
+                contentDiv.innerHTML = `
+                    <div class="text-6xl mb-6 animate-bounce text-center">${data.icon}</div>
+                    <h4 class="text-3xl font-bold mb-4 text-center ${data.colorClass}">${data.title}</h4>
+                    <p class="text-xl text-stone-600 leading-relaxed text-center max-w-2xl mx-auto">${data.desc}</p>
+                `;
+                contentDiv.style.opacity = 1;
+            }, 200);
+        }
+
+        // Initialize Concept Section
+        updateConcept('copilot');
+
+
+        // --- 2. Chart.js Radar Chart ---
+        document.addEventListener("DOMContentLoaded", function() {
+            const ctx = document.getElementById('comparisonChart').getContext('2d');
+            
+            // Data inferred from the script's qualitative descriptions
+            const radarData = {
+                labels: ['Word変換力', '既存デザイン調整', '社内資産連携', 'ゼロからの構成', 'Web情報検索', '画像生成力'],
+                datasets: [{
+                    label: 'Copilot',
+                    data: [10, 10, 9, 4, 3, 5], // Strong in conversion/ecosystem
+                    fill: true,
+                    backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                    borderColor: 'rgb(59, 130, 246)',
+                    pointBackgroundColor: 'rgb(59, 130, 246)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgb(59, 130, 246)'
+                }, {
+                    label: 'Gemini',
+                    data: [4, 5, 5, 10, 10, 9], // Strong in creation/web
+                    fill: true,
+                    backgroundColor: 'rgba(99, 102, 241, 0.2)',
+                    borderColor: 'rgb(99, 102, 241)',
+                    pointBackgroundColor: 'rgb(99, 102, 241)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgb(99, 102, 241)'
+                }]
+            };
+
+            new Chart(ctx, {
+                type: 'radar',
+                data: radarData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    elements: {
+                        line: { borderWidth: 3 }
+                    },
+                    scales: {
+                        r: {
+                            angleLines: { display: true },
+                            suggestedMin: 0,
+                            suggestedMax: 10,
+                            ticks: { display: false } // Hide numbers for cleaner look
+                        }
+                    },
+                    plugins: {
+                        legend: { position: 'top' },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + (context.raw > 7 ? '得意' : (context.raw > 4 ? '普通' : '苦手'));
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+
+
+        // --- 3. Diagnostic Tool Logic ---
+        function showResult(resultType) {
+            const step1 = document.getElementById('diagnostic-step-1');
+            const resultDiv = document.getElementById('diagnostic-result');
+            const rIcon = document.getElementById('result-icon');
+            const rTitle = document.getElementById('result-title');
+            const rDesc = document.getElementById('result-desc');
+
+            step1.classList.add('hidden');
+            resultDiv.classList.remove('hidden');
+
+            if (resultType === 'copilot') {
+                rIcon.innerHTML = '📂';
+                rTitle.innerHTML = 'おすすめは <span class="text-blue-400">Copilot</span> です';
+                rDesc.innerHTML = '手元に原稿や資料があるあなたには、Copilotが最適です。文章をコピペする手間を省き、デザイン調整もAIに任せてしまいましょう。';
+                resultDiv.className = "text-center animate-fade-in bg-stone-800 rounded-xl p-6 border-2 border-blue-500";
+            } else {
+                rIcon.innerHTML = '💡';
+                rTitle.innerHTML = 'おすすめは <span class="text-indigo-400">Gemini</span> です';
+                rDesc.innerHTML = 'アイデア出しから始めたい、あるいは最新情報を盛り込みたいあなたには、Geminiが最適です。壁打ち相手として相談しながら構成を固めましょう。';
+                resultDiv.className = "text-center animate-fade-in bg-stone-800 rounded-xl p-6 border-2 border-indigo-500";
+            }
+        }
+
+        function resetDiagnostic() {
+            document.getElementById('diagnostic-result').classList.add('hidden');
+            document.getElementById('diagnostic-step-1').classList.remove('hidden');
+        }
+
+    </script>
+</body>
+</html>
