@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chrome拡張機能開発ガイド</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/reset.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/reveal.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/theme/simple.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap');
+        
+        .reveal {
+            font-family: 'Noto Sans JP', sans-serif;
+            color: #333;
+        }
+        .reveal h1, .reveal h2, .reveal h3 {
+            font-family: 'Noto Sans JP', sans-serif;
+            text-transform: none;
+            font-weight: 700;
+        }
+        .reveal ul {
+            font-size: 0.8em;
+        }
+        .reveal li {
+            margin-bottom: 15px;
+        }
+        .image-placeholder {
+            background-color: #f0f4f8;
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            font-weight: bold;
+            height: 300px;
+            width: 100%;
+            margin: 20px auto;
+        }
+        .notes-area {
+            font-size: 0.5em;
+            background: #f1f1f1;
+            padding: 10px;
+            margin-top: 20px;
+            border-radius: 5px;
+            text-align: left;
+            display: none; /* デフォルトでは非表示、必要に応じて表示可能 */
+        }
+    </style>
+</head>
+<body>
+    <div class="reveal">
+        <div class="slides">
+
+            <!-- Slide 1: タイトル -->
+            <section>
+                <h2>Chrome拡張機能開発<br>完全スタートガイド</h2>
+                <div class="image-placeholder">
+                    [イラスト] PC（Win/Chromebook）と<br>パズルピースのアイコン
+                </div>
+                <p class="text-xl text-gray-600">Windows (Codespaces) & Chromebook (Linux)<br>環境別・最適解のまとめ</p>
+                
+                <aside class="notes">
+                    【台本】
+                    今回は、WindowsとChromebook、それぞれの環境でChrome拡張機能を開発する手順とポイントを解説します。
+                    特に「環境構築が難しい」と感じている初心者の方に向けた、最も効率的な方法をまとめました。
+                </aside>
+            </section>
+
+            <!-- Slide 2: 課題の整理 -->
+            <section>
+                <h3>開発における「最大の壁」</h3>
+                <div class="grid grid-cols-2 gap-8 items-center">
+                    <div>
+                        <ul>
+                            <li><b>クラウド(Codespaces)の仕様</b><br>ブラウザの中に隔離された環境</li>
+                            <li><b>拡張機能のセキュリティ制約</b><br>「PC本体(ローカル)」のファイルしか読み込めない</li>
+                            <li><b>結論：ファイルの「転送」が必須</b></li>
+                        </ul>
+                    </div>
+                    <div class="image-placeholder">
+                        [イラスト] 雲(Cloud)からPCへ<br>矢印が伸びている図<br>「壁」があるイメージ
+                    </div>
+                </div>
+
+                <aside class="notes">
+                    【台本】
+                    GitHub Codespacesは便利ですが、拡張機能開発では一つ大きな壁があります。
+                    それは、Chromeブラウザのセキュリティ仕様により、クラウド上のファイルを直接読み込めないことです。
+                    そのため、どうしてもファイルを「PC本体」に持ってくるというひと手間が必要になります。
+                </aside>
+            </section>
+
+            <!-- Slide 3: Windowsでの手順 -->
+            <section>
+                <h3>Windowsでの開発フロー</h3>
+                <div class="image-placeholder" style="height: 200px;">
+                    [イラスト] 実装 → ZIP転送 → 実行<br>3ステップのフローチャート
+                </div>
+                <ul>
+                    <li><b>Step 1：実装 (Cloud)</b><br>Codespacesで `manifest.json` 等を作成</li>
+                    <li><b>Step 2：転送 (Download)</b><br>ZIPでダウンロード、またはGitでPCへ同期</li>
+                    <li><b>Step 3：実行 (Local)</b><br>Chromeの「デベロッパーモード」で読み込む</li>
+                </ul>
+
+                <aside class="notes">
+                    【台本】
+                    Windows環境でCodespacesを使う場合の具体的な手順です。
+                    まずクラウドでコードを書き、それをZIPまたはGit経由でPCに保存します。
+                    最後に、Chromeの設定画面から、保存したフォルダを読み込ませて動作確認を行います。
+                </aside>
+            </section>
+
+            <!-- Slide 4: Chromebookの誤解 -->
+            <section>
+                <h3>Chromebookでも開発可能？</h3>
+                <div class="grid grid-cols-2 gap-8 items-center">
+                    <div class="image-placeholder">
+                        [イラスト] Chromebookで<br>「OK！」サインを出すキャラクター
+                    </div>
+                    <div>
+                        <ul>
+                            <li><b>答え：YES！（完全対応）</b></li>
+                            <li><b>よくある誤解</b><br>iPad等の「モバイルアプリ版」と混同されがち</li>
+                            <li><b>実際の中身</b><br>Windowsと同じ「PC版ブラウザ」を搭載</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <aside class="notes">
+                    【台本】
+                    「Chromebookでは開発できない」と思っていませんか？それは大きな誤解です。
+                    Chromebookに搭載されているのは、Windowsと同じ「PC版のChromeブラウザ」です。
+                    そのため、デベロッパーモードを含むすべての機能が問題なく利用できます。
+                </aside>
+            </section>
+
+            <!-- Slide 5: Linux環境 (Crostini) -->
+            <section>
+                <h3>Chromebookの切り札<br>「Linux開発環境」</h3>
+                <ul>
+                    <li><b>PCの中に「別のPC」を作る機能</b><br>サンドボックス環境で安全に動作</li>
+                    <li><b>プロ用ツールが動く</b><br>PC版 VS Code, Git, Dockerなどが使用可能</li>
+                    <li><b>導入は簡単</b><br>設定 → デベロッパー → オンにするだけ</li>
+                </ul>
+                <div class="image-placeholder" style="height: 150px;">
+                    [イラスト] Chromebookの中に<br>ペンギン(Linux)が住んでいるイメージ
+                </div>
+
+                <aside class="notes">
+                    【台本】
+                    さらにChromebookには「Linux開発環境」という強力な武器があります。
+                    これを使えば、マシンの内側に、プロのエンジニアが使うのと同等の本格的なプログラミング環境を構築できます。
+                    設定からスイッチ一つでオンにできる手軽さも魅力です。
+                </aside>
+            </section>
+
+            <!-- Slide 6: Linux環境のメリット -->
+            <section>
+                <h3>なぜLinux環境が最強なのか</h3>
+                <div class="grid grid-cols-2 gap-8 items-center">
+                    <div>
+                        <ul>
+                            <li><b>「ダウンロード」の手間ゼロ</b><br>Linuxフォルダ内のコードを直接ブラウザで読める</li>
+                            <li><b>修正サイクルが爆速</b><br>コード保存 → ブラウザ更新だけで反映</li>
+                            <li><b>オフライン開発もOK</b></li>
+                        </ul>
+                    </div>
+                    <div class="image-placeholder">
+                        [イラスト] ストレスなく<br>サクサク開発している様子<br>（ダウンロード不要！）
+                    </div>
+                </div>
+
+                <aside class="notes">
+                    【台本】
+                    Linux環境を使う最大のメリットは、「ファイルのダウンロード」が不要になることです。
+                    Linuxフォルダ内で書いたコードを、Chromeブラウザが直接読み込めます。
+                    保存して更新するだけ。WindowsやMacでの開発と同じ、快適な開発サイクルが手に入ります。
+                </aside>
+            </section>
+
+            <!-- Slide 7: まとめ -->
+            <section>
+                <h3>自分に合った環境を選ぼう</h3>
+                <div class="image-placeholder" style="height: 200px;">
+                    [イラスト] ゴールフラッグと<br>笑顔のエンジニア
+                </div>
+                <ul>
+                    <li><b>Windowsユーザー</b><br>Codespaces + Git連携で環境構築をスキップ</li>
+                    <li><b>Chromebookユーザー</b><br>Linux環境をオンにして、PC並みのパワーを発揮</li>
+                    <li><b>結論：どの端末でも開発は楽しめる！</b></li>
+                </ul>
+
+                <aside class="notes">
+                    【台本】
+                    まとめです。WindowsならCodespacesの手軽さを、ChromebookならLinux環境の快適さを活かしましょう。
+                    環境構築の壁を乗り越えれば、どちらの端末でもChrome拡張機能開発を存分に楽しむことができます。
+                    さあ、今日から開発を始めましょう！
+                </aside>
+            </section>
+
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/reveal.min.js"></script>
+    <script>
+        Reveal.initialize({
+            controls: true,
+            progress: true,
+            center: true,
+            hash: true,
+            transition: 'slide', // none/fade/slide/convex/concave/zoom
+            slideNumber: true,
+        });
+    </script>
+</body>
+</html>
