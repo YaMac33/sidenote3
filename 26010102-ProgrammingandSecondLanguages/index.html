@@ -1,0 +1,586 @@
+<!-- Chosen Palette: Warm Academia (Stone, Orange, Teal) - Promoting a calm, studious, and encouraging atmosphere. -->
+<!-- Application Structure Plan: A linear narrative scroll (Storytelling) broken into interactive modules. 
+     1. Hero: The Core Insight. 
+     2. The Bridge (Commonalities): Interactive cards comparing language vs. code structure and process. 
+     3. The Simulator (Linux): A 'chat' interface to experience the command line as conversation. 
+     4. The Relief (Differences): Data visualization showing vocabulary size and a logic demo for strictness. 
+     5. Conclusion: Encouragement. -->
+<!-- Visualization & Content Choices: 
+     1. 'Structure & Process' Cards: Click-to-reveal interactions to map English concepts to Programming concepts directly. 
+     2. Linux Terminal: A JS-driven mock terminal. Goal: Demystify the CLI by framing it as a chat. 
+     3. Vocab Size Chart: Chart.js Bar Chart. Goal: Visually demonstrate the low memory burden of coding vs. natural language. 
+     4. Logic/Strictness Toggle: Interactive text comparison. Goal: Show the trade-off between ambiguity and strictness. -->
+<!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>プログラミング習得 ≒ 第二言語習得</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap');
+        
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: #fafaf9; /* Stone-50 */
+            color: #44403c; /* Stone-700 */
+        }
+
+        /* Essential Chart Container Styling */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+
+        /* Terminal Cursor Animation */
+        .terminal-cursor {
+            display: inline-block;
+            width: 10px;
+            height: 1.2em;
+            background-color: #22c55e;
+            animation: blink 1s step-end infinite;
+            vertical-align: middle;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        .btn-primary {
+            background-color: #ea580c; /* Orange-600 */
+            color: white;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: #c2410c; /* Orange-700 */
+            transform: translateY(-2px);
+        }
+
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Smooth Scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+    <!-- Navigation -->
+    <nav class="bg-white/90 backdrop-blur-md shadow-sm sticky top-0 z-50 transition-all duration-300">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <span class="text-xl font-bold text-stone-800 flex items-center">
+                        <i class="fa-solid fa-code mr-2 text-orange-600"></i>Code Fluency
+                    </span>
+                </div>
+                <div class="hidden md:flex items-center space-x-4">
+                    <button onclick="scrollToSection('hero')" class="text-stone-600 hover:text-orange-600 px-3 py-2 text-sm font-medium transition-colors">Top</button>
+                    <button onclick="scrollToSection('commonalities')" class="text-stone-600 hover:text-orange-600 px-3 py-2 text-sm font-medium transition-colors">共通点</button>
+                    <button onclick="scrollToSection('linux')" class="text-stone-600 hover:text-orange-600 px-3 py-2 text-sm font-medium transition-colors">Linux</button>
+                    <button onclick="scrollToSection('differences')" class="text-stone-600 hover:text-orange-600 px-3 py-2 text-sm font-medium transition-colors">違い</button>
+                </div>
+                <!-- Mobile menu button (visual only for this demo) -->
+                <div class="md:hidden flex items-center">
+                    <button class="text-stone-600 p-2"><i class="fa-solid fa-bars"></i></button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="hero" class="bg-stone-100 py-20 px-4 relative overflow-hidden">
+        <!-- Decorative background element -->
+        <div class="absolute top-0 right-0 w-64 h-64 bg-orange-100 rounded-full opacity-50 -translate-y-1/2 translate-x-1/3"></div>
+        
+        <div class="max-w-4xl mx-auto text-center relative z-10">
+            <div class="inline-block p-4 rounded-full bg-white shadow-sm text-orange-600 mb-6 text-4xl animate-bounce-slow">
+                <i class="fa-solid fa-language"></i>
+            </div>
+            <h1 class="text-4xl md:text-5xl font-bold text-stone-800 mb-6 leading-tight">
+                プログラミングの習得は、<br>
+                <span class="text-orange-600">「第二言語の習得」</span>と同じです。
+            </h1>
+            <p class="text-xl text-stone-600 mb-10 max-w-2xl mx-auto leading-relaxed">
+                「難しい」「覚えられない」と感じるのは、脳が新しい言語回路を作ろうとしている証拠です。<br>
+                その「似ている点」と「決定的な違い」を知れば、学習はずっと楽になります。
+            </p>
+            <button onclick="scrollToSection('commonalities')" class="btn-primary px-8 py-4 rounded-lg text-lg font-bold shadow-lg flex items-center mx-auto">
+                共通点を見る <i class="fa-solid fa-arrow-down ml-2"></i>
+            </button>
+        </div>
+    </section>
+
+    <!-- Section 1: Commonalities (Structure & Process) -->
+    <section id="commonalities" class="py-20 max-w-6xl mx-auto px-4">
+        <div class="mb-12 text-center">
+            <span class="text-orange-600 font-bold tracking-wider text-sm uppercase">Commonalities</span>
+            <h2 class="text-3xl font-bold text-stone-800 mt-2 mb-4">なぜ「言語」と同じなのか？</h2>
+            <p class="text-lg text-stone-600 max-w-2xl mx-auto">
+                英語学習とプログラミング学習には、構造・実践・思考の3点で驚くべき共通点があります。<br>
+                カードをクリックして、その仕組みを確認してください。
+            </p>
+        </div>
+
+        <!-- Interactive Comparison Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+            
+            <!-- Card 1: Structure -->
+            <div class="bg-white border border-stone-200 p-8 rounded-xl shadow-sm card-hover cursor-pointer group flex flex-col items-center h-full" onclick="toggleCard('card1')">
+                <div class="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center text-blue-600 text-3xl mb-6 group-hover:bg-blue-100 transition-colors">
+                    <i class="fa-solid fa-shapes"></i>
+                </div>
+                <h3 class="text-xl font-bold text-center mb-2 group-hover:text-blue-600 transition-colors">① 構造が同じ</h3>
+                <p class="text-stone-400 text-center text-sm mb-4"><i class="fa-solid fa-chevron-down mr-1"></i>クリックで展開</p>
+                
+                <div id="card1-content" class="hidden w-full border-t border-stone-100 pt-4 mt-auto animate-fade-in">
+                    <div class="grid grid-cols-2 gap-4 text-sm mb-4">
+                        <div class="text-center p-2 bg-stone-50 rounded">
+                            <strong class="block text-blue-600 mb-1">英語</strong>
+                            <span class="block text-stone-600 text-xs">文法 (Grammar)</span>
+                            <span class="block text-stone-600 text-xs">単語 (Words)</span>
+                        </div>
+                        <div class="text-center p-2 bg-orange-50 rounded">
+                            <strong class="block text-orange-600 mb-1">コード</strong>
+                            <span class="block text-stone-600 text-xs">構文 (Syntax)</span>
+                            <span class="block text-stone-600 text-xs">関数 (Function)</span>
+                        </div>
+                    </div>
+                    <p class="text-sm text-stone-600 leading-relaxed text-center">
+                        「S+V+Oの順序」と「コマンド+引数の順序」を守る脳の働きは全く同じです。
+                    </p>
+                </div>
+            </div>
+
+            <!-- Card 2: Practice -->
+            <div class="bg-white border border-stone-200 p-8 rounded-xl shadow-sm card-hover cursor-pointer group flex flex-col items-center h-full" onclick="toggleCard('card2')">
+                <div class="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center text-green-600 text-3xl mb-6 group-hover:bg-green-100 transition-colors">
+                    <i class="fa-solid fa-dumbbell"></i>
+                </div>
+                <h3 class="text-xl font-bold text-center mb-2 group-hover:text-green-600 transition-colors">② 実践がすべて</h3>
+                <p class="text-stone-400 text-center text-sm mb-4"><i class="fa-solid fa-chevron-down mr-1"></i>クリックで展開</p>
+                
+                <div id="card2-content" class="hidden w-full border-t border-stone-100 pt-4 mt-auto animate-fade-in">
+                    <div class="text-center mb-4">
+                        <div class="flex items-center justify-center space-x-2 text-sm bg-stone-50 p-3 rounded-lg">
+                            <span class="text-stone-400 line-through">読むだけ</span>
+                            <i class="fa-solid fa-arrow-right text-stone-300"></i>
+                            <span class="font-bold text-green-600"><i class="fa-solid fa-keyboard mr-1"></i>書く/話す</span>
+                        </div>
+                    </div>
+                    <p class="text-sm text-stone-600 leading-relaxed text-center">
+                        本を読むだけでは話せません。指を動かして「筋肉」で覚える点が共通しています。
+                    </p>
+                </div>
+            </div>
+
+            <!-- Card 3: Thinking -->
+            <div class="bg-white border border-stone-200 p-8 rounded-xl shadow-sm card-hover cursor-pointer group flex flex-col items-center h-full" onclick="toggleCard('card3')">
+                <div class="w-20 h-20 bg-purple-50 rounded-full flex items-center justify-center text-purple-600 text-3xl mb-6 group-hover:bg-purple-100 transition-colors">
+                    <i class="fa-solid fa-brain"></i>
+                </div>
+                <h3 class="text-xl font-bold text-center mb-2 group-hover:text-purple-600 transition-colors">③ 脳内翻訳の脱却</h3>
+                <p class="text-stone-400 text-center text-sm mb-4"><i class="fa-solid fa-chevron-down mr-1"></i>クリックで展開</p>
+                
+                <div id="card3-content" class="hidden w-full border-t border-stone-100 pt-4 mt-auto animate-fade-in">
+                    <div class="space-y-2 text-sm mb-4">
+                        <div class="flex items-center justify-between text-stone-400 text-xs">
+                            <span>初期</span>
+                            <span>日本語 → 翻訳 → コード</span>
+                        </div>
+                        <div class="h-1 bg-stone-200 rounded overflow-hidden">
+                            <div class="h-full bg-purple-500 w-full animate-pulse"></div>
+                        </div>
+                        <div class="flex items-center justify-between font-bold text-purple-700 text-xs">
+                            <span>習得後</span>
+                            <span>思考 → コード (直感)</span>
+                        </div>
+                    </div>
+                    <p class="text-sm text-stone-600 leading-relaxed text-center">
+                        「頭が疲れる」のは翻訳しているから。慣れるとロジックで直接考えられるようになります。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 2: Linux Simulator (The Chat) -->
+    <section id="linux" class="bg-stone-900 py-24 text-stone-300 relative">
+        <!-- Section Intro -->
+        <div class="max-w-4xl mx-auto px-4 mb-10 text-center">
+            <span class="text-green-500 font-bold tracking-wider text-sm uppercase">Interactive Demo</span>
+            <h2 class="text-3xl font-bold text-white mt-2 mb-4">Linuxは「異文化チャット」</h2>
+            <p class="text-lg text-stone-400">
+                黒い画面（ターミナル）は、コンピュータという無口な住人とのチャットルームです。<br>
+                彼らの言葉（コマンド）で話しかければ、必ず応えてくれます。
+            </p>
+        </div>
+
+        <!-- Fake Terminal -->
+        <div class="max-w-3xl mx-auto px-4">
+            <div class="bg-black rounded-xl shadow-2xl overflow-hidden border border-stone-700 font-mono text-sm md:text-base relative">
+                <!-- Window Controls -->
+                <div class="bg-stone-800 px-4 py-3 flex items-center gap-2 border-b border-stone-700">
+                    <div class="w-3 h-3 rounded-full bg-red-500 hover:bg-red-600 transition-colors"></div>
+                    <div class="w-3 h-3 rounded-full bg-yellow-500 hover:bg-yellow-600 transition-colors"></div>
+                    <div class="w-3 h-3 rounded-full bg-green-500 hover:bg-green-600 transition-colors"></div>
+                    <span class="ml-4 text-xs text-stone-500 flex-1 text-center pr-12">user@learning-machine:~</span>
+                </div>
+
+                <!-- Output Area -->
+                <div id="terminal-output" class="p-6 h-80 overflow-y-auto space-y-3 scrollbar-thin scrollbar-thumb-stone-700">
+                    <div class="text-stone-500">Last login: Today from 127.0.0.1</div>
+                    <div class="text-stone-400 mb-4">--- Linux Chat Simulator v1.0 ---<br>Type a command to talk to the OS.</div>
+                    
+                    <div><span class="text-green-500">user@linux:~</span>$ <span class="text-white">こんにちは</span></div>
+                    <div class="text-white pl-4 border-l-2 border-red-500">bash: こんにちは: command not found (その言葉はわかりません)</div>
+                    
+                    <div><span class="text-green-500">user@linux:~</span>$ <span class="text-white">ls</span></div>
+                    <div class="text-blue-400 pl-4">Documents&nbsp;&nbsp;&nbsp;Downloads&nbsp;&nbsp;&nbsp;project_folder&nbsp;&nbsp;&nbsp;memo.txt</div>
+                </div>
+
+                <!-- Input Area -->
+                <div class="p-4 bg-stone-900 border-t border-stone-800 flex items-center">
+                    <span class="text-green-500 mr-2 whitespace-nowrap">user@linux:~</span>$ 
+                    <input type="text" id="terminal-input" class="bg-transparent border-none outline-none text-white flex-1 ml-2 w-full focus:ring-0" placeholder="コマンドを入力 (例: ls, pwd, mkdir test)" autocomplete="off">
+                </div>
+            </div>
+
+            <!-- Hints -->
+            <div class="mt-6 flex flex-wrap justify-center gap-3 text-sm">
+                <span class="text-stone-500">試せる言葉:</span>
+                <button onclick="typeCommand('ls')" class="bg-stone-800 hover:bg-stone-700 text-orange-400 px-3 py-1 rounded transition-colors code-btn">ls (一覧)</button>
+                <button onclick="typeCommand('pwd')" class="bg-stone-800 hover:bg-stone-700 text-orange-400 px-3 py-1 rounded transition-colors code-btn">pwd (現在地)</button>
+                <button onclick="typeCommand('mkdir study')" class="bg-stone-800 hover:bg-stone-700 text-orange-400 px-3 py-1 rounded transition-colors code-btn">mkdir [名] (作成)</button>
+                <button onclick="typeCommand('whoami')" class="bg-stone-800 hover:bg-stone-700 text-orange-400 px-3 py-1 rounded transition-colors code-btn">whoami (誰?)</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 3: Differences (The Relief) -->
+    <section id="differences" class="py-24 max-w-6xl mx-auto px-4 bg-white">
+        <div class="text-center mb-16">
+            <span class="text-orange-600 font-bold tracking-wider text-sm uppercase">Differences</span>
+            <h2 class="text-3xl font-bold text-stone-800 mt-2 mb-4">逆に「楽」なところもある</h2>
+            <p class="text-lg text-stone-600 max-w-2xl mx-auto">
+                「難しい」ばかりではありません。プログラミングには、人間相手よりも「気が楽」な決定的な違いが2つあります。
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+            
+            <!-- Difference 1: Vocab Size (Chart) -->
+            <div class="flex flex-col h-full">
+                <div class="mb-6">
+                    <div class="flex items-center mb-2">
+                        <span class="bg-orange-100 text-orange-600 text-xs font-bold px-2 py-1 rounded mr-2">Good News 1</span>
+                        <h3 class="text-2xl font-bold text-stone-800">覚える単語数が圧倒的に少ない</h3>
+                    </div>
+                    <p class="text-stone-600">
+                        日常会話に必要な単語数と、プログラミングに必要な単語数（予約語・頻出コマンド）の比較です。終わりが見える数だと思いませんか？
+                    </p>
+                </div>
+                
+                <div class="bg-stone-50 p-6 rounded-2xl border border-stone-100 flex-grow flex items-center justify-center">
+                    <div class="chart-container">
+                        <canvas id="vocabChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Difference 2: Ambiguity (Interactive Demo) -->
+            <div class="flex flex-col h-full">
+                 <div class="mb-6">
+                    <div class="flex items-center mb-2">
+                        <span class="bg-teal-100 text-teal-700 text-xs font-bold px-2 py-1 rounded mr-2">Good News 2</span>
+                        <h3 class="text-2xl font-bold text-stone-800">「空気を読む」必要がない</h3>
+                    </div>
+                    <p class="text-stone-600">
+                        コンピュータは察してくれませんが、機嫌を損ねることもありません。論理さえ合っていれば、誰に対しても公平です。
+                    </p>
+                </div>
+
+                <div class="bg-stone-50 p-8 rounded-2xl border border-stone-100 flex-grow space-y-6">
+                    <!-- Scenario 1 -->
+                    <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-red-300 hover:shadow-md transition-shadow">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="font-bold text-stone-700"><i class="fa-regular fa-face-smile mr-2"></i>人間の会話</span>
+                            <span class="text-xs text-red-400 bg-red-50 px-2 py-1 rounded">ハイコンテクスト</span>
+                        </div>
+                        <p class="text-stone-800 text-lg font-serif italic mb-2">"まあ、いいんじゃない？"</p>
+                        <p class="text-sm text-stone-500">
+                            <i class="fa-solid fa-circle-question mr-1"></i> 本当に良い？ 皮肉？ 遠慮？<br>
+                            → <strong>文脈や表情で判断が必要 (疲れる)</strong>
+                        </p>
+                    </div>
+                    
+                    <div class="flex justify-center text-stone-300">
+                        <i class="fa-solid fa-arrow-down-long text-2xl"></i>
+                    </div>
+
+                    <!-- Scenario 2 -->
+                    <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-teal-500 hover:shadow-md transition-shadow">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="font-bold text-stone-700"><i class="fa-solid fa-laptop-code mr-2"></i>プログラミング</span>
+                            <span class="text-xs text-teal-600 bg-teal-50 px-2 py-1 rounded">ローコンテクスト</span>
+                        </div>
+                        <code class="block bg-stone-900 text-green-400 p-3 rounded mb-2 text-sm">if (isGood == true) { run(); }</code>
+                        <p class="text-sm text-stone-500">
+                            <i class="fa-solid fa-check mr-1"></i> Trueなら動く。Falseなら動かない。<br>
+                            → <strong>100%公平。裏を読む必要なし。</strong>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Conclusion -->
+    <section class="bg-stone-100 py-20 px-4">
+        <div class="max-w-3xl mx-auto text-center">
+            <h2 class="text-3xl font-bold text-stone-800 mb-8">結論：毎日少しずつ触れよう</h2>
+            <div class="bg-white p-8 md:p-10 rounded-2xl shadow-xl border-t-8 border-orange-500">
+                <p class="text-xl text-stone-700 leading-relaxed mb-8 font-medium">
+                    プログラミングやLinuxの習得は、<br>
+                    <span class="underline decoration-orange-300 decoration-4 underline-offset-4">新しい言語圏の住人と仲良くなるプロセス</span>です。
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
+                    <div class="bg-stone-50 p-5 rounded-lg border border-stone-200">
+                        <div class="text-orange-500 text-2xl mb-3"><i class="fa-solid fa-bug"></i></div>
+                        <h4 class="font-bold text-stone-800 mb-1">エラーを恐れない</h4>
+                        <p class="text-sm text-stone-600">エラーはただの「言い間違い」。人間相手より恥ずかしくありません。</p>
+                    </div>
+                    <div class="bg-stone-50 p-5 rounded-lg border border-stone-200">
+                        <div class="text-teal-500 text-2xl mb-3"><i class="fa-regular fa-calendar-check"></i></div>
+                        <h4 class="font-bold text-stone-800 mb-1">毎日5分触れる</h4>
+                        <p class="text-sm text-stone-600">週末の猛勉強より、毎日の5分。語学と同じで「慣れ」が最強の近道です。</p>
+                    </div>
+                </div>
+                <div class="mt-10">
+                    <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="text-stone-500 hover:text-orange-600 font-bold text-sm transition-colors flex items-center justify-center mx-auto">
+                        <i class="fa-solid fa-arrow-up mr-2"></i> もう一度最初から確認する
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-stone-800 text-stone-400 py-10 text-center border-t border-stone-700">
+        <div class="mb-4 text-2xl text-stone-600">
+            <i class="fa-solid fa-code"></i>
+        </div>
+        <p class="text-sm">Based on the Learning Analogy: Programming as a Second Language</p>
+        <p class="text-xs mt-2 text-stone-600">Generated for Educational Purpose</p>
+    </footer>
+
+    <script>
+        // --- Navigation Logic ---
+        function scrollToSection(id) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        // --- Card Toggle Logic (Accordion) ---
+        function toggleCard(cardId) {
+            const content = document.getElementById(cardId + '-content');
+            // Close all others first (optional, but cleaner)
+            // document.querySelectorAll('[id$="-content"]').forEach(el => {
+            //     if(el.id !== cardId + '-content') el.classList.add('hidden');
+            // });
+
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+            } else {
+                content.classList.add('hidden');
+            }
+        }
+
+        // --- Terminal Simulator Logic ---
+        const terminalInput = document.getElementById('terminal-input');
+        const terminalOutput = document.getElementById('terminal-output');
+
+        // Allow clicking hint buttons to insert text
+        function typeCommand(cmd) {
+            terminalInput.value = cmd;
+            terminalInput.focus();
+        }
+
+        terminalInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                const command = terminalInput.value.trim(); // keep case for display, lower for process
+                if (command) {
+                    // Add user command to output
+                    addToTerminal(`<span class="text-green-500">user@linux:~</span>$ <span class="text-white">${command}</span>`);
+                    
+                    // Process command
+                    processCommand(command.toLowerCase());
+                    
+                    // Clear input
+                    terminalInput.value = '';
+                }
+            }
+        });
+
+        function addToTerminal(html) {
+            const div = document.createElement('div');
+            div.innerHTML = html;
+            terminalOutput.appendChild(div);
+            // Scroll to bottom
+            terminalOutput.scrollTop = terminalOutput.scrollHeight;
+        }
+
+        function processCommand(cmd) {
+            // Simulate processing delay slightly for realism
+            setTimeout(() => {
+                let response = "";
+                // Handle arguments for mkdir
+                const parts = cmd.split(' ');
+                const mainCmd = parts[0];
+                const arg = parts[1];
+
+                switch (mainCmd) {
+                    case 'ls':
+                        response = '<span class="text-blue-400 font-bold">Documents&nbsp;&nbsp;&nbsp;Downloads&nbsp;&nbsp;&nbsp;Pictures&nbsp;&nbsp;&nbsp;learning_code.txt</span>';
+                        break;
+                    case 'mkdir':
+                        if (arg) {
+                            response = `<span class="text-stone-500 italic">(無言で成功しました... フォルダ '${arg}' が作成されました)</span>`;
+                        } else {
+                            response = '<span class="text-red-400">mkdir: missing operand (フォルダ名を指定してください)</span>';
+                        }
+                        break;
+                    case 'pwd':
+                        response = '<span class="text-white">/home/user/learning</span>';
+                        break;
+                    case 'whoami':
+                        response = '<span class="text-white">user (あなたです)</span>';
+                        break;
+                    case 'help':
+                        response = '<span class="text-stone-400">Commands: ls, mkdir [name], pwd, whoami</span>';
+                        break;
+                    case 'hello':
+                    case 'こんにちは':
+                    case 'ありがとう':
+                        response = '<span class="text-stone-500">... (Linuxは挨拶を知りません。コマンドを打ってください)</span>';
+                        break;
+                    case 'sudo':
+                        response = '<span class="text-yellow-400 font-bold">[sudo] password for user: </span><span class="text-stone-500">(権限が必要です)</span>';
+                        break;
+                    default:
+                        response = `<span class="text-red-400">Command not found: ${mainCmd} (その言葉はわかりません)</span>`;
+                }
+                addToTerminal(response);
+            }, 300);
+        }
+
+        // --- Chart.js Visualization ---
+        // Ensuring it runs after load
+        window.addEventListener('load', function() {
+            const ctx = document.getElementById('vocabChart').getContext('2d');
+            
+            const vocabChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['自然言語 (日常会話)', 'プログラミング (予約語)'],
+                    datasets: [{
+                        label: '必要な語彙数',
+                        data: [10000, 100],
+                        backgroundColor: [
+                            'rgba(168, 162, 158, 0.4)', // Stone-400
+                            'rgba(234, 88, 12, 0.8)'   // Orange-600
+                        ],
+                        borderColor: [
+                            'rgba(168, 162, 158, 1)',
+                            'rgba(234, 88, 12, 1)'
+                        ],
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false, // Fits the container
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.parsed.y + ' 語';
+                                },
+                                afterLabel: function(context) {
+                                    if(context.label.includes('プログラミング')) {
+                                        return '自然言語の 1/100 以下！';
+                                    }
+                                    return '果てしない道のり...';
+                                }
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: '習得に必要な単語数の比較',
+                            color: '#57534e',
+                            font: { size: 16, family: "'Noto Sans JP', sans-serif" }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#f5f5f4'
+                            },
+                            title: {
+                                display: true,
+                                text: '単語数'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        });
+
+        // Add fade-in animation to style
+        const style = document.createElement('style');
+        style.innerHTML = `
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(-5px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            .animate-fade-in {
+                animation: fadeIn 0.3s ease-out forwards;
+            }
+            .animate-bounce-slow {
+                animation: bounce 3s infinite;
+            }
+        `;
+        document.head.appendChild(style);
+
+    </script>
+</body>
+</html>
