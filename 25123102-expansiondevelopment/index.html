@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chrome拡張機能 開発入門ガイド</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Noto Sans JP', sans-serif; background-color: #f8f9fa; color: #202124; }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        .card-hover:hover { transform: translateY(-4px); transition: all 0.3s ease; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+        .step-active { border-color: #1a73e8; color: #1a73e8; font-weight: bold; }
+        .step-inactive { border-color: #dadce0; color: #5f6368; }
+        .nav-link { cursor: pointer; border-bottom: 2px solid transparent; transition: border-color 0.3s; }
+        .nav-link:hover { border-bottom-color: #1a73e8; }
+        .tab-active { background-color: #e8f0fe; color: #1a73e8; border-left: 4px solid #1a73e8; }
+        .code-block { background-color: #1e1e1e; color: #d4d4d4; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; font-family: monospace; }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <span class="text-2xl font-bold text-blue-600">Chrome<span class="text-gray-700">Dev</span></span>
+                </div>
+                <div class="hidden sm:flex items-center space-x-8">
+                    <a onclick="scrollToSection('intro')" class="nav-link text-gray-600 px-3 py-2 text-sm font-medium">はじめに</a>
+                    <a onclick="scrollToSection('tech')" class="nav-link text-gray-600 px-3 py-2 text-sm font-medium">技術の仕組み</a>
+                    <a onclick="scrollToSection('structure')" class="nav-link text-gray-600 px-3 py-2 text-sm font-medium">構成要素</a>
+                    <a onclick="scrollToSection('tutorial')" class="nav-link text-gray-600 px-3 py-2 text-sm font-medium">開発手順</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header id="intro" class="bg-white overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 text-center">
+            <h1 class="text-4xl tracking-tight font-extrabold text-gray-900 sm:text-5xl md:text-6xl">
+                <span class="block">ブラウザを「自分仕様」に</span>
+                <span class="block text-blue-600">Chrome拡張機能 開発入門</span>
+            </h1>
+            <p class="mt-4 max-w-md mx-auto text-base text-gray-500 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
+                プログラミング初心者でも大丈夫。Web開発の中でも特に成果が見えやすく、楽しく作れる「拡張機能」の世界へようこそ。その仕組みと、自分だけの機能を作る楽しさを解説します。
+            </p>
+            <div class="mt-8">
+                <button onclick="scrollToSection('concept')" class="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 md:py-4 md:text-lg md:px-10 transition duration-150 ease-in-out shadow-lg">
+                    学習を始める
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-24">
+
+        <!-- Section 1: Concept & Metaphors -->
+        <section id="concept">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-extrabold text-gray-900">Chrome拡張機能とは？</h2>
+                <p class="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
+                    一言で言うと、ブラウザを「自分仕様」に改造する魔法のようなツールです。普通のWebサイトとは違い、あらゆるページであなたの操作をサポートします。
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+                <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-100 card-hover text-center">
+                    <div class="text-6xl mb-4">👩‍💼</div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">有能な秘書</h3>
+                    <p class="text-gray-600">あなたの隣にいつもいて、必要な時にサッと手助けしてくれる存在です。</p>
+                </div>
+                <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-100 card-hover text-center">
+                    <div class="text-6xl mb-4">👓</div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">特殊なメガネ</h3>
+                    <p class="text-gray-600">かけると、普段は見えない情報（フォントや色、裏側のデータ）が見えるようになります。</p>
+                </div>
+            </div>
+
+            <!-- Use Cases Tabs -->
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+                <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-800">具体的な活用シーン</h3>
+                        <p class="text-sm text-gray-500">クリックしてカテゴリを切り替え</p>
+                    </div>
+                </div>
+                <div class="flex flex-col md:flex-row">
+                    <!-- Tab Headers -->
+                    <div class="md:w-1/3 bg-gray-50 border-r border-gray-200 flex flex-col">
+                        <button onclick="switchTab('efficiency')" id="tab-efficiency" class="w-full text-left px-6 py-5 font-medium text-gray-700 hover:bg-gray-100 focus:outline-none transition tab-active border-b border-gray-100">
+                            ⏱️ 業務効率化
+                        </button>
+                        <button onclick="switchTab('learning')" id="tab-learning" class="w-full text-left px-6 py-5 font-medium text-gray-700 hover:bg-gray-100 focus:outline-none transition border-b border-gray-100">
+                            📚 学習・翻訳
+                        </button>
+                        <button onclick="switchTab('dev')" id="tab-dev" class="w-full text-left px-6 py-5 font-medium text-gray-700 hover:bg-gray-100 focus:outline-none transition">
+                            💻 開発・情報収集
+                        </button>
+                    </div>
+                    <!-- Tab Content -->
+                    <div class="md:w-2/3 p-8 bg-white min-h-[300px]">
+                        <div id="content-efficiency" class="tab-content block animate-fade-in">
+                            <h4 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                                <span class="bg-blue-100 text-blue-600 p-2 rounded-lg mr-3">⏱️</span>
+                                作業に集中できる環境を作る
+                            </h4>
+                            <ul class="space-y-4 text-gray-600">
+                                <li class="flex items-start bg-gray-50 p-3 rounded-lg"><span class="text-green-500 mr-3 font-bold">✔</span><span>開きすぎたタブを一瞬でリスト化して整理し、メモリを節約</span></li>
+                                <li class="flex items-start bg-gray-50 p-3 rounded-lg"><span class="text-green-500 mr-3 font-bold">✔</span><span>閲覧中のページの邪魔な広告をブロックして快適に</span></li>
+                                <li class="flex items-start bg-gray-50 p-3 rounded-lg"><span class="text-green-500 mr-3 font-bold">✔</span><span>複雑なパスワードを自動生成・管理してセキュリティ向上</span></li>
+                            </ul>
+                        </div>
+                        <div id="content-learning" class="tab-content hidden animate-fade-in">
+                            <h4 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                                <span class="bg-green-100 text-green-600 p-2 rounded-lg mr-3">📚</span>
+                                学習の壁を取り払う
+                            </h4>
+                            <ul class="space-y-4 text-gray-600">
+                                <li class="flex items-start bg-gray-50 p-3 rounded-lg"><span class="text-green-500 mr-3 font-bold">✔</span><span>英語のページ全体を一瞬で自然な日本語に翻訳</span></li>
+                                <li class="flex items-start bg-gray-50 p-3 rounded-lg"><span class="text-green-500 mr-3 font-bold">✔</span><span>マウスオーバーするだけで単語の意味を辞書表示</span></li>
+                                <li class="flex items-start bg-gray-50 p-3 rounded-lg"><span class="text-green-500 mr-3 font-bold">✔</span><span>動画の要約をAIで生成して時間を節約・要点把握</span></li>
+                            </ul>
+                        </div>
+                        <div id="content-dev" class="tab-content hidden animate-fade-in">
+                            <h4 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                                <span class="bg-purple-100 text-purple-600 p-2 rounded-lg mr-3">💻</span>
+                                プロのツールとして活用
+                            </h4>
+                            <ul class="space-y-4 text-gray-600">
+                                <li class="flex items-start bg-gray-50 p-3 rounded-lg"><span class="text-green-500 mr-3 font-bold">✔</span><span>気になったサイトの色コードやフォント情報を抽出</span></li>
+                                <li class="flex items-start bg-gray-50 p-3 rounded-lg"><span class="text-green-500 mr-3 font-bold">✔</span><span>スマホでの表示崩れがないかPC上でシミュレーション</span></li>
+                                <li class="flex items-start bg-gray-50 p-3 rounded-lg"><span class="text-green-500 mr-3 font-bold">✔</span><span>参考記事やデザインをワンクリックでメモ帳アプリに保存</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Technical Foundation -->
+        <section id="tech" class="bg-blue-50 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-16">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center mb-10">
+                    <h2 class="text-3xl font-extrabold text-gray-900">開発に必要な技術</h2>
+                    <p class="mt-4 text-lg text-gray-600">
+                        「難しそう」と身構える必要はありません。実は、普段見ているWebサイトを作っている技術と全く同じもので作られています。
+                    </p>
+                </div>
+
+                <div class="flex flex-col md:flex-row items-center justify-center gap-12">
+                    <!-- Chart Container -->
+                    <div class="w-full md:w-1/2 flex flex-col items-center">
+                        <div class="bg-white p-6 rounded-2xl shadow-sm w-full max-w-md">
+                            <h3 class="text-lg font-bold text-center mb-4 text-gray-700">構成技術の割合</h3>
+                            <div class="chart-container">
+                                <canvas id="techStackChart"></canvas>
+                            </div>
+                            <p class="text-sm text-center text-gray-500 mt-4">Webサイト制作の知識がそのまま使えます</p>
+                        </div>
+                    </div>
+
+                    <!-- Text Description -->
+                    <div class="w-full md:w-1/2 space-y-6">
+                        <div class="flex items-center bg-white p-4 rounded-lg shadow-sm border border-blue-100">
+                            <div class="bg-orange-100 p-3 rounded-full mr-4 text-orange-600 font-bold w-12 h-12 flex items-center justify-center">H</div>
+                            <div>
+                                <h4 class="font-bold text-gray-900">HTML (エイチティーエムエル)</h4>
+                                <p class="text-sm text-gray-600">画面の骨組み。ポップアップ画面などの構造を作ります。</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center bg-white p-4 rounded-lg shadow-sm border border-blue-100">
+                            <div class="bg-blue-100 p-3 rounded-full mr-4 text-blue-600 font-bold w-12 h-12 flex items-center justify-center">C</div>
+                            <div>
+                                <h4 class="font-bold text-gray-900">CSS (シーエスエス)</h4>
+                                <p class="text-sm text-gray-600">見た目のデザイン。色やレイアウトを整えます。</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center bg-white p-4 rounded-lg shadow-sm border border-blue-100">
+                            <div class="bg-yellow-100 p-3 rounded-full mr-4 text-yellow-600 font-bold w-12 h-12 flex items-center justify-center">JS</div>
+                            <div>
+                                <h4 class="font-bold text-gray-900">JavaScript (ジャバスクリプト)</h4>
+                                <p class="text-sm text-gray-600">実際の動き。クリックした時の処理など、ロジックを担当します。</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Chromebook Callout -->
+                        <div class="mt-8 bg-green-50 border border-green-200 rounded-lg p-4 shadow-sm">
+                            <h4 class="flex items-center text-green-800 font-bold mb-2">
+                                <span class="text-xl mr-2">💻</span> Chromebookでも開発可能？
+                            </h4>
+                            <p class="text-green-700 text-sm">
+                                <strong>完全に可能です！</strong> 高価なPCや専用ソフトは不要。標準の「テキストエディタ」さえあれば、今すぐにでも作り始めることができます。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Web App vs Extension & File Structure -->
+        <section id="structure">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <!-- Comparison -->
+                <div>
+                    <h2 class="text-2xl font-extrabold text-gray-900 mb-6">Webアプリとの違い</h2>
+                    <p class="mb-6 text-gray-600">使う言語は同じですが、「できること」と「動ける場所」が違います。</p>
+                    
+                    <div class="bg-white rounded-lg shadow overflow-hidden border border-gray-200">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">項目</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Webアプリ</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-blue-600 uppercase tracking-wider">拡張機能</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">活動場所</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">自分のサイト内のみ</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-blue-600 font-bold">ブラウザ全体</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">権限</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">制限あり</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-blue-600 font-bold">Chrome API (強力)</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">待機</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">ページを開いている間</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-blue-600 font-bold">裏側で常駐可能</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- File Structure Interactive -->
+                <div>
+                    <h2 class="text-2xl font-extrabold text-gray-900 mb-6">構成ファイルの基本</h2>
+                    <p class="mb-6 text-gray-600">クリックして各ファイルの役割を確認しましょう。</p>
+
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <!-- File List -->
+                        <div class="w-full sm:w-1/3 space-y-2">
+                            <button onclick="showFileDetail('manifest')" class="w-full text-left p-3 rounded border border-blue-200 bg-blue-50 hover:bg-blue-100 font-mono text-sm text-blue-700 transition font-bold">manifest.json <span class="float-right">★</span></button>
+                            <button onclick="showFileDetail('popuphtml')" class="w-full text-left p-3 rounded border border-gray-200 bg-white hover:bg-gray-50 font-mono text-sm text-gray-700 transition">popup.html</button>
+                            <button onclick="showFileDetail('popupjs')" class="w-full text-left p-3 rounded border border-gray-200 bg-white hover:bg-gray-50 font-mono text-sm text-gray-700 transition">popup.js</button>
+                            <button onclick="showFileDetail('icon')" class="w-full text-left p-3 rounded border border-gray-200 bg-white hover:bg-gray-50 font-mono text-sm text-gray-700 transition">icon.png</button>
+                        </div>
+
+                        <!-- Detail View -->
+                        <div class="w-full sm:w-2/3 bg-gray-800 text-gray-200 p-6 rounded-lg font-mono text-sm min-h-[200px] flex flex-col justify-center relative shadow-lg">
+                            <div id="file-title" class="absolute top-2 left-4 text-xs text-gray-500 uppercase tracking-wide font-bold">manifest.json</div>
+                            <div id="file-content">
+                                <p class="text-green-400 font-bold">// 最も重要な「設計図」ファイル</p>
+                                <p class="mb-2 mt-2">名前、バージョン、必要な権限（タブ操作など）をここで宣言します。これがないと拡張機能として認識されません。</p>
+                                <p class="text-gray-500 text-xs mt-4">{ "name": "My Extension", "version": "1.0", ... }</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Idea Case Study -->
+        <section class="bg-indigo-900 text-white rounded-2xl p-8 md:p-12 overflow-hidden relative shadow-xl">
+            <div class="relative z-10">
+                <div class="flex flex-col md:flex-row items-center">
+                    <div class="md:w-2/3">
+                        <span class="inline-block bg-indigo-700 text-indigo-100 text-xs px-2 py-1 rounded-full uppercase tracking-wide font-bold mb-2">CASE STUDY</span>
+                        <h2 class="text-3xl font-bold mb-4">アイデア：Webメモ機能</h2>
+                        <p class="text-indigo-200 mb-6 text-lg">
+                            「勉強中、このWebページに直接手書きでメモができたらいいのに…」<br>
+                            そんな願いも、拡張機能なら叶えられます。
+                        </p>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+                            <div class="bg-indigo-800 bg-opacity-50 p-4 rounded-lg border border-indigo-700">
+                                <strong class="block text-white mb-2 text-lg">① 透明なキャンバス</strong>
+                                ページ最前面に透明なレイヤー(canvas)を重ねて、お絵描きエリアを作ります。
+                            </div>
+                            <div class="bg-indigo-800 bg-opacity-50 p-4 rounded-lg border border-indigo-700">
+                                <strong class="block text-white mb-2 text-lg">② データの保存</strong>
+                                描いた線やテキストをURLと紐付けて「Chrome Storage」に保存します。
+                            </div>
+                            <div class="bg-indigo-800 bg-opacity-50 p-4 rounded-lg border border-indigo-700">
+                                <strong class="block text-white mb-2 text-lg">③ 学習効率UP</strong>
+                                参考書にマーカーを引く感覚で、Webサイトを自分のノートにできます。
+                            </div>
+                        </div>
+                    </div>
+                    <div class="md:w-1/3 mt-8 md:mt-0 flex justify-center">
+                        <div class="text-9xl opacity-20 transform rotate-12">✍️</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 5: Tutorial Stepper -->
+        <section id="tutorial">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-extrabold text-gray-900">まずは「Hello World」から</h2>
+                <p class="mt-4 text-lg text-gray-600">
+                    たった3つのステップで、あなたのブラウザに自作機能を追加できます。
+                </p>
+            </div>
+
+            <div class="max-w-4xl mx-auto">
+                <!-- Steps Indicator -->
+                <div class="flex justify-between items-center mb-8 relative">
+                    <div class="absolute top-1/2 left-0 w-full h-1 bg-gray-200 -z-10 transform -translate-y-1/2"></div>
+                    
+                    <div id="step-ind-1" class="flex flex-col items-center bg-white px-2">
+                        <div class="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold mb-2 shadow-md">1</div>
+                        <span class="text-sm font-bold text-blue-600">フォルダ作成</span>
+                    </div>
+                    <div id="step-ind-2" class="flex flex-col items-center bg-white px-2">
+                        <div class="w-10 h-10 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold mb-2 transition-colors duration-300">2</div>
+                        <span class="text-sm font-medium text-gray-500">設計図を書く</span>
+                    </div>
+                    <div id="step-ind-3" class="flex flex-col items-center bg-white px-2">
+                        <div class="w-10 h-10 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold mb-2 transition-colors duration-300">3</div>
+                        <span class="text-sm font-medium text-gray-500">読み込む</span>
+                    </div>
+                </div>
+
+                <!-- Step Content -->
+                <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-8 min-h-[350px] flex flex-col justify-between">
+                    
+                    <!-- Step 1 Content -->
+                    <div id="step-content-1" class="step-panel block animate-fade-in">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-4">Step 1: フォルダを作る</h3>
+                        <p class="text-lg text-gray-600 mb-6">
+                            まずはデスクトップなどのわかりやすい場所に、新しいフォルダを作成しましょう。名前は何でもOKです（例: <code class="bg-gray-100 px-2 py-1 rounded border border-gray-300">my-extension</code>）。
+                        </p>
+                        <div class="bg-gray-50 p-6 rounded-lg border border-gray-200 text-center text-gray-500 flex flex-col items-center justify-center h-40">
+                            <span class="text-4xl mb-2">📁</span>
+                            <span>my-extension (空のフォルダ)</span>
+                        </div>
+                    </div>
+
+                    <!-- Step 2 Content -->
+                    <div id="step-content-2" class="step-panel hidden animate-fade-in">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-4">Step 2: manifest.json を書く</h3>
+                        <p class="text-lg text-gray-600 mb-4">
+                            フォルダの中にテキストファイルを作り、名前を <code class="bg-gray-100 px-2 py-1 rounded border border-gray-300">manifest.json</code> にします。中身は以下のコードをコピペしてください。
+                        </p>
+                        <div class="code-block text-sm">
+{
+  "manifest_version": 3,
+  "name": "My First Extension",
+  "version": "1.0"
+}
+                        </div>
+                        <p class="text-sm text-gray-500 mt-2">※ これが拡張機能の「名札」になります。ファイル名は正確に！</p>
+                    </div>
+
+                    <!-- Step 3 Content -->
+                    <div id="step-content-3" class="step-panel hidden animate-fade-in">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-4">Step 3: Chromeに読み込ませる</h3>
+                        <ol class="list-decimal list-inside space-y-4 text-lg text-gray-600 mb-6">
+                            <li>Chromeのアドレスバーに <code class="bg-gray-100 px-2 py-1 rounded border border-gray-300">chrome://extensions</code> と入力してEnter。</li>
+                            <li>画面右上の <strong>「デベロッパーモード」</strong> スイッチをONにする。</li>
+                            <li>左上の <strong>「パッケージ化されていない拡張機能を読み込む」</strong> ボタンを押し、さっき作ったフォルダを選択。</li>
+                        </ol>
+                        <div class="bg-green-50 text-green-800 p-4 rounded-lg text-center font-bold border border-green-200">
+                            🎉 これで完了！ツールバーのパズルアイコン🧩から確認してみましょう！
+                        </div>
+                    </div>
+
+                    <!-- Navigation Buttons -->
+                    <div class="flex justify-between mt-8 pt-6 border-t border-gray-100">
+                        <button onclick="changeStep(-1)" id="btn-prev" class="px-6 py-2 border border-gray-300 rounded-md text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition" disabled>戻る</button>
+                        <button onclick="changeStep(1)" id="btn-next" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition shadow-md">次へ</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-white border-t border-gray-200 py-12 mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-2xl font-bold text-gray-900 mb-4">アイデアを形にしよう</h2>
+            <p class="text-gray-600 mb-8 max-w-2xl mx-auto">
+                Chrome拡張機能は、小さな「不便」を「快適」に変える最強のツールです。<br>
+                まずは簡単な「Hello World」から、始めてみませんか？
+            </p>
+            <p class="text-sm text-gray-400">
+                Created for learning purposes.
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // --- Navigation Scroll Logic ---
+        function scrollToSection(id) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        // --- Tab Logic ---
+        function switchTab(tabId) {
+            // Hide all contents
+            document.querySelectorAll('.tab-content').forEach(el => {
+                el.classList.add('hidden');
+                el.classList.remove('block');
+            });
+            // Show selected content
+            const content = document.getElementById(`content-${tabId}`);
+            content.classList.remove('hidden');
+            content.classList.add('block');
+
+            // Reset tab styles
+            const tabs = ['efficiency', 'learning', 'dev'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`tab-${t}`);
+                btn.classList.remove('tab-active');
+                btn.classList.add('hover:bg-gray-100');
+                btn.classList.add('border-b');
+                btn.classList.add('border-gray-100');
+                btn.classList.remove('border-l-4'); // Reset left border just in case
+            });
+
+            // Set active tab style
+            const activeBtn = document.getElementById(`tab-${tabId}`);
+            activeBtn.classList.add('tab-active');
+            activeBtn.classList.remove('hover:bg-gray-100');
+            activeBtn.classList.remove('border-b');
+            activeBtn.classList.remove('border-gray-100');
+        }
+
+        // --- Chart Logic ---
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('techStackChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['HTML', 'CSS', 'JavaScript'],
+                    datasets: [{
+                        data: [33, 33, 33],
+                        backgroundColor: [
+                            '#ff6d00', // HTML Orange
+                            '#2962ff', // CSS Blue
+                            '#ffd600'  // JS Yellow
+                        ],
+                        borderWidth: 0,
+                        hoverOffset: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                font: { family: "'Noto Sans JP', sans-serif" },
+                                padding: 20
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.label + ': Web開発と同じ';
+                                }
+                            }
+                        }
+                    },
+                    cutout: '60%'
+                }
+            });
+        });
+
+        // --- File Explorer Logic ---
+        const fileDescriptions = {
+            'manifest': {
+                title: 'manifest.json (必須)',
+                html: '<p class="text-green-400 font-bold">// 最も重要な「設計図」ファイル</p><p class="mt-2 text-white">拡張機能の名前、バージョン、必要な権限（タブ操作など）をここで宣言します。これがないと動きません。</p>'
+            },
+            'popuphtml': {
+                title: 'popup.html',
+                html: '<p class="text-blue-300 font-bold">&lt;!DOCTYPE html&gt;</p><p class="mt-2 text-white">アイコンをクリックした時に表示される「小さな画面」の中身です。普通のWebページと同じHTMLで作ります。</p>'
+            },
+            'popupjs': {
+                title: 'popup.js',
+                html: '<p class="text-yellow-300 font-bold">document.getElementById...</p><p class="mt-2 text-white">ポップアップ画面のボタンが押された時の動作など、動きを制御するスクリプトです。</p>'
+            },
+            'icon': {
+                title: 'icon.png',
+                html: '<p class="text-pink-300 font-bold">[画像ファイル]</p><p class="mt-2 text-white">ブラウザのツールバーに表示されるアイコン画像です。自分の好きな画像を設定できます。</p>'
+            }
+        };
+
+        function showFileDetail(fileKey) {
+            const display = document.getElementById('file-content');
+            const title = document.getElementById('file-title');
+            
+            title.textContent = fileDescriptions[fileKey].title;
+            display.innerHTML = fileDescriptions[fileKey].html;
+        }
+
+        // --- Tutorial Stepper Logic ---
+        let currentStep = 1;
+        const totalSteps = 3;
+
+        function changeStep(direction) {
+            const nextStep = currentStep + direction;
+            if (nextStep < 1 || nextStep > totalSteps) return;
+
+            // Hide current
+            document.getElementById(`step-content-${currentStep}`).classList.add('hidden');
+            document.getElementById(`step-content-${currentStep}`).classList.remove('block');
+            
+            // Update indicator style (Old)
+            const oldInd = document.getElementById(`step-ind-${currentStep}`).querySelector('div');
+            const oldText = document.getElementById(`step-ind-${currentStep}`).querySelector('span');
+
+            if (direction > 0) {
+                 // Completed
+                 oldInd.classList.remove('bg-blue-600', 'text-white');
+                 oldInd.classList.add('bg-blue-600', 'text-white'); 
+                 oldText.classList.remove('font-bold', 'text-blue-600');
+                 oldText.classList.add('font-medium', 'text-gray-500');
+            } else {
+                 // Back to inactive
+                 oldInd.classList.remove('bg-blue-600', 'text-white');
+                 oldInd.classList.add('bg-gray-200', 'text-gray-500');
+                 oldText.classList.remove('font-bold', 'text-blue-600');
+                 oldText.classList.add('font-medium', 'text-gray-500');
+            }
+
+            // Show next
+            document.getElementById(`step-content-${nextStep}`).classList.remove('hidden');
+            document.getElementById(`step-content-${nextStep}`).classList.add('block');
+
+            // Update indicator style (New)
+            const newInd = document.getElementById(`step-ind-${nextStep}`).querySelector('div');
+            const newText = document.getElementById(`step-ind-${nextStep}`).querySelector('span');
+            
+            newInd.classList.remove('bg-gray-200', 'text-gray-500');
+            newInd.classList.add('bg-blue-600', 'text-white');
+            newText.classList.remove('font-medium', 'text-gray-500');
+            newText.classList.add('font-bold', 'text-blue-600');
+
+            currentStep = nextStep;
+
+            // Button State
+            document.getElementById('btn-prev').disabled = currentStep === 1;
+            const nextBtn = document.getElementById('btn-next');
+            if (currentStep === totalSteps) {
+                nextBtn.textContent = '完了';
+                nextBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                nextBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+            } else {
+                nextBtn.textContent = '次へ';
+                nextBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+                nextBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
+            }
+        }
+    </script>
+</body>
+</html>
