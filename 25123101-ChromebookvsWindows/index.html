@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chromebook vs Windows: 開発環境選びの決定版</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Chosen Palette: Slate & Blue (Tech/Professional/Clean) -->
+    <!-- 
+        Background: Slate-50 (#f8fafc) - Soft, neutral base.
+        Cards: White (#ffffff) - Clean content areas.
+        Primary: Blue-600 (#2563eb) - Action and emphasis, trustworthy tech color.
+        Text: Slate-800 (#1e293b) - High readability.
+        Accent: Emerald-500 (#10b981) - Success/Positive indicators.
+        Warning: Amber-500 (#f59e0b) - Cautionary notes (e.g., memory limits).
+    -->
+
+    <style>
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+        }
+        
+        /* Chart Container Styles - STRICT COMPLIANCE */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px; /* Constraint width */
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px; /* Base height */
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+
+        /* Custom Animations */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .packet {
+            width: 12px;
+            height: 12px;
+            background-color: #2563eb;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 0;
+            transform: translateY(-50%);
+            display: none;
+        }
+
+        .flow-line {
+            height: 4px;
+            background-color: #e2e8f0;
+            position: relative;
+            width: 100%;
+            border-radius: 2px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Application Structure Plan: 
+        1. Hero Section: Sets the stage (Low cost dev environment).
+        2. "The Big Question": Interactive Tab comparison of OS differences.
+        3. "Cloud Architecture": Visual demo of Codespaces to explain WHY low specs work.
+        4. Performance & Specs: Chart.js visualization of RAM usage (4GB vs 8GB).
+        5. Interactive Diagnosis: A simple form to recommend CB or Win based on user needs.
+        6. Summary/Conclusion: Final verdict.
+        
+        Rationale: This structure moves from the problem (choice) to the mechanism (cloud), 
+        provides evidence (specs chart), and helps the user decide (diagnosis).
+    -->
+
+    <!-- Visualization & Content Choices:
+        1. OS Comparison: Tabbed Interface (HTML/JS) -> Goal: Inform/Compare -> Cleanly separates the two choices.
+        2. Cloud Flow: CSS Animation/Diagram -> Goal: Inform -> Visualizes the abstract concept of "remote computing".
+        3. RAM Usage: Stacked Bar Chart (Chart.js) -> Goal: Inform/Compare -> Visually proves why 8GB is the minimum requirement.
+        4. Suitability Checker: JS Logic Form -> Goal: Engage -> Personalizes the advice.
+    -->
+
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <!-- Navbar -->
+    <nav class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center">
+                    <i class="fa-solid fa-laptop-code text-blue-600 text-2xl mr-2"></i>
+                    <span class="font-bold text-xl tracking-tight">DevStarter Guide</span>
+                </div>
+                <div class="hidden md:flex space-x-8 text-sm font-medium text-slate-600">
+                    <a href="#comparison" class="hover:text-blue-600 transition">OS比較</a>
+                    <a href="#mechanism" class="hover:text-blue-600 transition">仕組み</a>
+                    <a href="#specs" class="hover:text-blue-600 transition">スペック</a>
+                    <a href="#diagnosis" class="hover:text-blue-600 transition">診断</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="bg-gradient-to-br from-slate-900 to-slate-800 text-white py-20">
+        <div class="max-w-4xl mx-auto px-4 text-center">
+            <h1 class="text-3xl md:text-5xl font-bold mb-6 leading-tight">
+                Chromebook vs Windows<br>
+                <span class="text-blue-400">プログラミングを始めるならどっち？</span>
+            </h1>
+            <p class="text-lg text-slate-300 mb-8 max-w-2xl mx-auto">
+                「なるべく安く始めたい、でも失敗したくない。」<br>
+                GitHubやGASを使った開発を検討中のあなたへ、賢いパソコンの選び方を解説します。
+            </p>
+            <a href="#diagnosis" class="inline-block bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-8 rounded-full transition shadow-lg transform hover:-translate-y-1">
+                自分に合うPCを診断する
+            </a>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-4 py-12 space-y-24">
+
+        <!-- Section 1: Basic Comparison -->
+        <section id="comparison" class="scroll-mt-20">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-bold text-slate-800 mb-4">1. 基本的な違いを知る</h2>
+                <p class="text-slate-600 max-w-2xl mx-auto">
+                    まずはそれぞれのOSの得意・不得意を整理しましょう。Chromebookは「スマホ感覚」、Windowsは「万能型」と言えます。
+                </p>
+            </div>
+
+            <!-- Interactive Toggle Cards -->
+            <div class="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
+                <div class="flex border-b border-slate-200">
+                    <button onclick="switchTab('chromebook')" id="tab-chromebook" class="flex-1 py-4 text-center font-bold text-lg bg-blue-50 text-blue-700 border-b-2 border-blue-600 transition-colors">
+                        <i class="fa-brands fa-chrome mr-2"></i>Chromebook
+                    </button>
+                    <button onclick="switchTab('windows')" id="tab-windows" class="flex-1 py-4 text-center font-bold text-lg text-slate-500 hover:text-slate-700 transition-colors">
+                        <i class="fa-brands fa-windows mr-2"></i>Windows PC
+                    </button>
+                </div>
+
+                <div class="p-8 min-h-[400px]">
+                    <!-- Chromebook Content -->
+                    <div id="content-chromebook" class="fade-in">
+                        <div class="grid md:grid-cols-2 gap-8 items-center">
+                            <div>
+                                <h3 class="text-2xl font-bold text-slate-800 mb-4">スマホ感覚で使える軽快さ</h3>
+                                <ul class="space-y-4">
+                                    <li class="flex items-start">
+                                        <i class="fa-solid fa-bolt text-yellow-500 mt-1 mr-3"></i>
+                                        <span><strong>起動が爆速:</strong> 電源ボタンを押して数秒で作業開始。</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fa-solid fa-shield-halved text-green-500 mt-1 mr-3"></i>
+                                        <span><strong>セキュリティ:</strong> ウイルス対策ソフト不要。更新も自動。</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fa-solid fa-sack-dollar text-blue-500 mt-1 mr-3"></i>
+                                        <span><strong>価格:</strong> 3〜5万円台で十分実用的なモデルが買える。</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fa-solid fa-ban text-red-400 mt-1 mr-3"></i>
+                                        <span><strong>弱点:</strong> Windows専用ソフト（.exe）は動かない。</span>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="bg-blue-50 p-6 rounded-xl border border-blue-100">
+                                <h4 class="font-bold text-blue-800 mb-2"><i class="fa-brands fa-google mr-2"></i>GAS・Web開発との相性</h4>
+                                <p class="text-sm text-slate-600 mb-4">
+                                    Google Apps Script (GAS)はブラウザ上で動くため、Chromebookの得意分野です。
+                                    GitHub Codespacesを使えば、ブラウザの中にVS Code環境を作れます。
+                                </p>
+                                <div class="text-center">
+                                    <span class="inline-block px-3 py-1 bg-blue-200 text-blue-800 rounded-full text-xs font-bold">推奨ユーザー</span>
+                                    <p class="mt-2 text-slate-700 font-medium">Web開発入門者、サブ機が欲しい人</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Windows Content -->
+                    <div id="content-windows" class="hidden fade-in">
+                        <div class="grid md:grid-cols-2 gap-8 items-center">
+                            <div>
+                                <h3 class="text-2xl font-bold text-slate-800 mb-4">何でもできる万能選手</h3>
+                                <ul class="space-y-4">
+                                    <li class="flex items-start">
+                                        <i class="fa-solid fa-layer-group text-purple-500 mt-1 mr-3"></i>
+                                        <span><strong>汎用性:</strong> 仕事、ゲーム、編集、何でも対応可能。</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fa-solid fa-file-word text-blue-600 mt-1 mr-3"></i>
+                                        <span><strong>ソフト:</strong> Office完全版、Adobeなど全てのPCソフトが動く。</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fa-solid fa-print text-slate-500 mt-1 mr-3"></i>
+                                        <span><strong>周辺機器:</strong> プリンター等の対応機器が圧倒的に多い。</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fa-solid fa-screwdriver-wrench text-orange-400 mt-1 mr-3"></i>
+                                        <span><strong>弱点:</strong> 更新やメンテナンスの手間が必要。安物は重い。</span>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="bg-slate-100 p-6 rounded-xl border border-slate-200">
+                                <h4 class="font-bold text-slate-800 mb-2"><i class="fa-solid fa-code mr-2"></i>開発環境として</h4>
+                                <p class="text-sm text-slate-600 mb-4">
+                                    ローカルに環境を構築できるため、ネットがなくても開発可能。
+                                    ただし、快適に動かすにはそれなりのスペック（価格）が必要です。
+                                </p>
+                                <div class="text-center">
+                                    <span class="inline-block px-3 py-1 bg-slate-300 text-slate-800 rounded-full text-xs font-bold">推奨ユーザー</span>
+                                    <p class="mt-2 text-slate-700 font-medium">PCを本格的に学びたい人、ゲームもしたい人</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: How it Works (The Cloud Mechanism) -->
+        <section id="mechanism" class="scroll-mt-20">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-bold text-slate-800 mb-4">2. なぜ安いChromebookで開発できる？</h2>
+                <p class="text-slate-600 max-w-2xl mx-auto">
+                    「GitHub Codespaces」を使えば、重い処理は全てインターネットの向こう側（クラウド）で行われます。
+                    あなたのPCは、ただその結果を表示する「モニター」の役割をするだけです。
+                </p>
+            </div>
+
+            <!-- Visual Diagram -->
+            <div class="bg-slate-900 rounded-2xl p-8 text-white shadow-xl relative overflow-hidden">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-8 relative z-10">
+                    
+                    <!-- User Side -->
+                    <div class="flex flex-col items-center w-full md:w-1/3">
+                        <div class="w-24 h-24 bg-slate-700 rounded-lg flex items-center justify-center mb-4 border-2 border-slate-500 relative">
+                            <i class="fa-brands fa-chrome text-4xl text-yellow-400"></i>
+                            <div class="absolute -top-2 -right-2 bg-green-500 text-xs px-2 py-0.5 rounded-full">Low Spec OK</div>
+                        </div>
+                        <h4 class="font-bold text-lg">あなたのPC</h4>
+                        <p class="text-sm text-slate-400 text-center">Chromeブラウザを表示するだけ。<br>CPU負荷：<span class="text-green-400">低</span></p>
+                    </div>
+
+                    <!-- Connection -->
+                    <div class="flex-1 w-full flex flex-col items-center justify-center relative h-24">
+                        <div class="flow-line flex items-center">
+                            <div id="packet" class="packet"></div>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-2 uppercase tracking-widest">Internet Connection</p>
+                        <button onclick="animatePacket()" class="mt-2 bg-blue-600 hover:bg-blue-500 text-white text-xs px-4 py-2 rounded-full transition shadow-md">
+                            <i class="fa-solid fa-play mr-1"></i> 処理を実行
+                        </button>
+                    </div>
+
+                    <!-- Cloud Side -->
+                    <div class="flex flex-col items-center w-full md:w-1/3">
+                        <div class="w-24 h-24 bg-blue-900/50 rounded-lg flex items-center justify-center mb-4 border-2 border-blue-500 shadow-[0_0_20px_rgba(37,99,235,0.5)]">
+                            <i class="fa-solid fa-server text-4xl text-blue-400"></i>
+                        </div>
+                        <h4 class="font-bold text-lg">GitHub Codespaces</h4>
+                        <p class="text-sm text-slate-400 text-center">高性能な仮想PC。<br>ここでVS Codeが動く。</p>
+                    </div>
+
+                </div>
+                
+                <!-- Background decoration -->
+                <div class="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
+                    <div class="absolute top-10 left-10 text-6xl"><i class="fa-solid fa-code"></i></div>
+                    <div class="absolute bottom-10 right-10 text-6xl"><i class="fa-solid fa-cloud"></i></div>
+                </div>
+            </div>
+            
+            <div class="mt-6 bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg">
+                <p class="text-blue-900">
+                    <strong>ポイント:</strong> GitHub Codespacesはブラウザの中に「VS Code」そのものを表示します。ChromebookでもWindowsでも、<strong>クラウドを使うなら処理速度は同じ</strong>です。
+                </p>
+            </div>
+        </section>
+
+        <!-- Section 3: Specs Requirement (Chart) -->
+        <section id="specs" class="scroll-mt-20">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-bold text-slate-800 mb-4">3. 【重要】スペックの選び方</h2>
+                <p class="text-slate-600 max-w-2xl mx-auto">
+                    「安い端末でOK」と言っても、最低ラインがあります。特に<strong>メモリ</strong>は快適さに直結します。
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-10 items-center">
+                <div class="bg-white p-6 rounded-2xl shadow-lg border border-slate-100">
+                    <h3 class="text-lg font-bold text-center mb-4">メモリ使用量のイメージ</h3>
+                    <div class="chart-container">
+                        <canvas id="memoryChart"></canvas>
+                    </div>
+                    <p class="text-xs text-center text-slate-400 mt-4">※ブラウザで複数タブを開きながら開発する場合の目安</p>
+                </div>
+
+                <div class="space-y-6">
+                    <div class="bg-red-50 p-6 rounded-xl border border-red-100">
+                        <div class="flex items-center mb-2">
+                            <i class="fa-solid fa-triangle-exclamation text-red-500 text-xl mr-3"></i>
+                            <h4 class="font-bold text-red-800 text-lg">4GB は避けよう</h4>
+                        </div>
+                        <p class="text-red-700">
+                            OSとブラウザだけでメモリの大部分を使ってしまいます。調べ物のタブを開くとすぐに動作が重くなり、開発どころではありません。
+                        </p>
+                    </div>
+
+                    <div class="bg-green-50 p-6 rounded-xl border border-green-100 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">推奨</div>
+                        <div class="flex items-center mb-2">
+                            <i class="fa-solid fa-check-circle text-green-600 text-xl mr-3"></i>
+                            <h4 class="font-bold text-green-800 text-lg">8GB 以上を選ぼう</h4>
+                        </div>
+                        <p class="text-green-700">
+                            これなら余裕があります。CPUはコスパ最強の<strong>「Intel N100」</strong>搭載モデルが、3〜5万円台で見つかるため非常におすすめです。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Interactive Diagnosis -->
+        <section id="diagnosis" class="scroll-mt-20">
+            <div class="bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-200">
+                <div class="p-8 md:p-12">
+                    <div class="text-center mb-8">
+                        <h2 class="text-3xl font-bold text-slate-800">あなたに合うのはどっち？</h2>
+                        <p class="text-slate-500 mt-2">やりたいことをチェックしてください。</p>
+                    </div>
+
+                    <div class="max-w-xl mx-auto space-y-4">
+                        <label class="flex items-center p-4 border rounded-xl cursor-pointer hover:bg-slate-50 transition select-none">
+                            <input type="checkbox" id="chk-gas" class="w-6 h-6 text-blue-600 rounded focus:ring-blue-500" onchange="updateDiagnosis()">
+                            <span class="ml-4 text-lg">Google Apps Script (GAS) をやりたい</span>
+                        </label>
+                        <label class="flex items-center p-4 border rounded-xl cursor-pointer hover:bg-slate-50 transition select-none">
+                            <input type="checkbox" id="chk-github" class="w-6 h-6 text-blue-600 rounded focus:ring-blue-500" onchange="updateDiagnosis()">
+                            <span class="ml-4 text-lg">GitHubでコードを書きたい・管理したい</span>
+                        </label>
+                        <label class="flex items-center p-4 border rounded-xl cursor-pointer hover:bg-slate-50 transition select-none">
+                            <input type="checkbox" id="chk-games" class="w-6 h-6 text-purple-600 rounded focus:ring-purple-500" onchange="updateDiagnosis()">
+                            <span class="ml-4 text-lg">PCゲーム（Steamなど）もやりたい</span>
+                        </label>
+                        <label class="flex items-center p-4 border rounded-xl cursor-pointer hover:bg-slate-50 transition select-none">
+                            <input type="checkbox" id="chk-office" class="w-6 h-6 text-purple-600 rounded focus:ring-purple-500" onchange="updateDiagnosis()">
+                            <span class="ml-4 text-lg">Word/Excelの高度な機能（マクロ等）が必要</span>
+                        </label>
+                    </div>
+
+                    <div id="result-area" class="mt-10 p-6 rounded-xl bg-slate-50 border border-slate-200 text-center transition-all duration-300 hidden">
+                        <h3 id="result-title" class="text-2xl font-bold mb-2"></h3>
+                        <p id="result-desc" class="text-slate-600"></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-400 py-12 mt-20">
+        <div class="max-w-5xl mx-auto px-4 text-center">
+            <h2 class="text-white text-2xl font-bold mb-4">結論</h2>
+            <p class="text-lg mb-8 max-w-2xl mx-auto">
+                「GASとGitHubでの開発」がメインなら、<br>
+                <span class="text-blue-400 font-bold">メモリ8GBのChromebook</span>は、非常に賢い選択です。
+            </p>
+            <hr class="border-slate-800 my-8">
+            <p class="text-sm">Based on research regarding Chromebook vs Windows development environments.</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- 1. Tab Switching Logic ---
+        function switchTab(tab) {
+            const tabs = ['chromebook', 'windows'];
+            
+            tabs.forEach(t => {
+                const btn = document.getElementById(`tab-${t}`);
+                const content = document.getElementById(`content-${t}`);
+                
+                if (t === tab) {
+                    // Active State
+                    btn.classList.remove('text-slate-500', 'hover:text-slate-700');
+                    btn.classList.add('bg-blue-50', 'text-blue-700', 'border-b-2', 'border-blue-600');
+                    content.classList.remove('hidden');
+                } else {
+                    // Inactive State
+                    btn.classList.add('text-slate-500', 'hover:text-slate-700');
+                    btn.classList.remove('bg-blue-50', 'text-blue-700', 'border-b-2', 'border-blue-600');
+                    content.classList.add('hidden');
+                }
+            });
+        }
+
+        // --- 2. Cloud Animation Logic ---
+        function animatePacket() {
+            const packet = document.getElementById('packet');
+            
+            // Reset animation
+            packet.style.display = 'block';
+            packet.style.left = '0';
+            packet.style.transition = 'none';
+            
+            // Force reflow
+            void packet.offsetWidth;
+
+            // Start animation
+            packet.style.transition = 'left 1.5s ease-in-out';
+            packet.style.left = '100%';
+
+            setTimeout(() => {
+                packet.style.display = 'none';
+                packet.style.left = '0';
+            }, 1500);
+        }
+
+        // --- 3. Chart.js Implementation (Specs) ---
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('memoryChart').getContext('2d');
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['4GB Model', '8GB Model'],
+                    datasets: [
+                        {
+                            label: 'OS & 基本システム',
+                            data: [2.5, 2.5],
+                            backgroundColor: '#94a3b8', // Slate-400
+                        },
+                        {
+                            label: 'ブラウザ (調べ物タブ)',
+                            data: [1.2, 1.2],
+                            backgroundColor: '#60a5fa', // Blue-400
+                        },
+                        {
+                            label: '余裕 (空き容量)',
+                            data: [0.3, 4.3], // 4GB model has almost no room
+                            backgroundColor: function(context) {
+                                const value = context.dataset.data[context.dataIndex];
+                                return value < 0.5 ? '#ef4444' : '#10b981'; // Red for low, Green for good
+                            }
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { stacked: true },
+                        y: { 
+                            stacked: true,
+                            max: 9,
+                            title: {
+                                display: true,
+                                text: 'メモリ (GB)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                footer: function(tooltipItems) {
+                                    let total = 0;
+                                    tooltipItems.forEach(function(tooltipItem) {
+                                        total += tooltipItem.parsed.y;
+                                    });
+                                    if (tooltipItems[0].dataIndex === 0) {
+                                        return "警告: ほぼ満杯です。固まります。";
+                                    } else {
+                                        return "良好: 快適に作業できます。";
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+
+        // --- 4. Diagnosis Logic ---
+        function updateDiagnosis() {
+            const gas = document.getElementById('chk-gas').checked;
+            const github = document.getElementById('chk-github').checked;
+            const games = document.getElementById('chk-games').checked;
+            const office = document.getElementById('chk-office').checked;
+
+            const resultArea = document.getElementById('result-area');
+            const resultTitle = document.getElementById('result-title');
+            const resultDesc = document.getElementById('result-desc');
+            
+            // Logic
+            let recommendation = "";
+            let description = "";
+            let colorClass = "";
+
+            // Check if any box is checked
+            if (!gas && !github && !games && !office) {
+                resultArea.classList.add('hidden');
+                return;
+            }
+
+            resultArea.classList.remove('hidden');
+
+            if (games || office) {
+                // Windows Recommended
+                recommendation = "Windows PC がおすすめ";
+                description = "「PCゲーム」や「Officeの高度な機能」にはWindowsが必須です。Chromebookではこれらが動きません。予算を少し上げて、Windows機を探しましょう。";
+                resultArea.className = "mt-10 p-6 rounded-xl bg-purple-50 border-2 border-purple-200 text-center fade-in";
+                resultTitle.className = "text-2xl font-bold mb-2 text-purple-800";
+                resultTitle.innerHTML = `<i class="fa-brands fa-windows mr-2"></i>${recommendation}`;
+            } else {
+                // Chromebook Recommended
+                recommendation = "Chromebook が最適！";
+                description = "GASやGitHub（Web開発）がメインなら、Chromebookがコスパ最強です。メモリ8GBのモデルを選んで、クラウド開発を楽しみましょう！";
+                resultArea.className = "mt-10 p-6 rounded-xl bg-blue-50 border-2 border-blue-200 text-center fade-in";
+                resultTitle.className = "text-2xl font-bold mb-2 text-blue-700";
+                resultTitle.innerHTML = `<i class="fa-brands fa-chrome mr-2"></i>${recommendation}`;
+            }
+
+            resultDesc.innerText = description;
+        }
+    </script>
+</body>
+</html>
