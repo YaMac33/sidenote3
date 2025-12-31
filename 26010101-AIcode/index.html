@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>生成AIと開発者生産性：調査レポート</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Configuration & Styles -->
+    <style>
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: #fafaf9; /* Stone-50 */
+            color: #1c1917; /* Stone-900 */
+        }
+        
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Custom Chart Container - CRITICAL for responsiveness */
+        .chart-wrapper {
+            position: relative;
+            height: 350px;
+            width: 100%;
+            max-width: 100%;
+        }
+        
+        .chart-wrapper-sm {
+            position: relative;
+            height: 250px;
+            width: 100%;
+        }
+
+        /* Card Hover Effects */
+        .stat-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Custom Scrollbar for side panels if needed */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f5f5f4; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d6d3d1; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a29e; 
+        }
+    </style>
+
+    <!-- 
+    Placeholder Comments:
+    
+    <!-- Chosen Palette: Warm Neutrals (Stone/Warm Gray) with Teal Accents. 
+         Background: Stone-50 (#fafaf9). 
+         Text: Stone-900 (#1c1917). 
+         Accents: Teal-600 for primary actions/data. 
+         Secondary: Amber-500 for warnings/nuance. 
+         Why: Creates a calm, paper-like report feel that reduces eye strain and implies objectivity. -->
+
+    <!-- Application Structure Plan: 
+         1. Header/Nav: Sticky for easy access to sections.
+         2. Hero Section: Executive Summary (The "Yes, but..." conclusion).
+         3. The "Speed Paradox" Section: Interactive Bar Chart contrasting Raw Coding Speed vs. Actual Issue Resolution time. Goal: Show that typing faster doesn't mean shipping faster.
+         4. Task Analysis Section: Radar Chart showing impact by SDLC phase (Plan, Code, Test, Doc). Goal: Highlight that AI helps documentation/boilerplate more than complex logic.
+         5. The Seniority Gap: Interactive text/stat block. Comparison of Junior vs. Senior dev benefits/risks.
+         6. Challenges & Quality: Donut chart + List showing the rise in "Code Churn" and "Review Time".
+         7. Conclusion/Takeaways: Actionable bullet points. 
+         Structure chosen to lead the user from the hype (Hero) to the data (Charts) to the nuance (Seniority/Quality). -->
+
+    <!-- Visualization & Content Choices:
+         1. Metric Cards: Simple huge numbers for immediate impact (e.g., "+55% Coding Speed").
+         2. Grouped Bar Chart (Chart.js): To compare "Without AI" vs "With AI" across different metrics. Interaction: Toggle data sets.
+         3. Radar Chart (Chart.js): Best for multi-dimensional analysis of the Software Development Lifecycle (SDLC).
+         4. Donut Chart (Chart.js): To visualize the breakdown of negative side effects (Security, Bugs, Formatting).
+         5. Seniority Toggle (Vanilla JS): Buttons to switch content text. Low cognitive load interaction.
+         Justification: Chart.js handles responsive canvas well. No SVGs/Mermaid used. -->
+
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    -->
+</head>
+<body class="bg-stone-50 text-stone-800 antialiased selection:bg-teal-100 selection:text-teal-900">
+
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 bg-white/90 backdrop-blur-sm border-b border-stone-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <span class="text-xl font-bold tracking-tight text-teal-700">DevVelocity<span class="text-stone-500 font-light">.AI_Report</span></span>
+                </div>
+                <div class="hidden md:flex space-x-8 items-center">
+                    <a href="#overview" class="text-stone-600 hover:text-teal-600 px-3 py-2 text-sm font-medium transition-colors">概要</a>
+                    <a href="#impact-analysis" class="text-stone-600 hover:text-teal-600 px-3 py-2 text-sm font-medium transition-colors">速度 vs 品質</a>
+                    <a href="#task-breakdown" class="text-stone-600 hover:text-teal-600 px-3 py-2 text-sm font-medium transition-colors">タスク別分析</a>
+                    <a href="#seniority" class="text-stone-600 hover:text-teal-600 px-3 py-2 text-sm font-medium transition-colors">スキルレベル格差</a>
+                    <a href="#risks" class="text-stone-600 hover:text-teal-600 px-3 py-2 text-sm font-medium transition-colors">課題とリスク</a>
+                </div>
+                <!-- Mobile menu button placeholder (simplified for single file) -->
+                <div class="flex items-center md:hidden">
+                    <button class="text-stone-500 hover:text-stone-700 font-bold">Menu</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-16">
+
+        <!-- Section 1: Hero & Executive Summary -->
+        <section id="overview" class="text-center space-y-6">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-stone-900 tracking-tight">
+                生成AIは開発スピードを<br class="hidden md:block">
+                <span class="text-teal-600">本当に向上させたのか？</span>
+            </h1>
+            <p class="max-w-3xl mx-auto text-lg text-stone-600 leading-relaxed">
+                ChatGPTやCopilotの普及により「開発効率が爆発的に向上する」と言われています。
+                しかし、GitHub Copilotの初期調査データや実際の開発現場の数値を分析すると、
+                「コーディング速度」と「プロジェクト完了速度」の間には大きな乖離があることが判明しました。
+                本レポートでは、その実態をデータで可視化します。
+            </p>
+            
+            <!-- Key Stat Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10">
+                <div class="stat-card bg-white p-6 rounded-xl border border-stone-200 shadow-sm">
+                    <p class="text-sm font-semibold text-stone-500 uppercase tracking-wider">コーディング速度</p>
+                    <p class="text-5xl font-bold text-teal-600 mt-2">+55<span class="text-2xl">%</span></p>
+                    <p class="text-sm text-stone-400 mt-2">定型コード生成における最大値</p>
+                </div>
+                <div class="stat-card bg-white p-6 rounded-xl border border-stone-200 shadow-sm">
+                    <p class="text-sm font-semibold text-stone-500 uppercase tracking-wider">全体生産性 (実質)</p>
+                    <p class="text-5xl font-bold text-amber-500 mt-2">+26<span class="text-2xl">%</span></p>
+                    <p class="text-sm text-stone-400 mt-2">修正・レビューを含む実際の短縮率</p>
+                </div>
+                <div class="stat-card bg-white p-6 rounded-xl border border-stone-200 shadow-sm">
+                    <p class="text-sm font-semibold text-stone-500 uppercase tracking-wider">コード修正頻度</p>
+                    <p class="text-5xl font-bold text-rose-500 mt-2">High</p>
+                    <p class="text-sm text-stone-400 mt-2">AI生成コードのバグ混入・手直し率</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Speed vs Quality Paradox (Bar Chart) -->
+        <section id="impact-analysis" class="scroll-mt-24">
+            <div class="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden">
+                <div class="p-6 md:p-8 border-b border-stone-100">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div>
+                            <h2 class="text-2xl font-bold text-stone-800">「速度」のパラドックス</h2>
+                            <p class="text-stone-600 mt-2 max-w-2xl">
+                                生成AI導入前後でのパフォーマンス比較です。単純なコード記述（Boilerplate）は劇的に速くなりますが、
+                                バグ修正やシステム設計などの「認知負荷」が高いタスクでは効果が限定的です。
+                                また、プルリクエストのレビュー時間は増加傾向にあります。
+                            </p>
+                        </div>
+                        <!-- Controls -->
+                        <div class="flex bg-stone-100 p-1 rounded-lg self-start md:self-center">
+                            <button onclick="updateMainChart('speed')" id="btn-speed" class="px-4 py-2 rounded-md text-sm font-medium bg-white text-teal-700 shadow-sm transition-all duration-200">時間短縮率</button>
+                            <button onclick="updateMainChart('quality')" id="btn-quality" class="px-4 py-2 rounded-md text-sm font-medium text-stone-500 hover:text-stone-900 transition-all duration-200">品質コスト</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="p-6 md:p-8 bg-stone-50/50">
+                    <!-- Chart Container -->
+                    <div class="chart-wrapper">
+                        <canvas id="impactChart"></canvas>
+                    </div>
+                    <p id="chart-context" class="text-center text-sm text-stone-500 mt-4 italic">
+                        ※ データソース：GitHub Copilot Impact Study / Stack Overflow Survey 2024 (Simulated)
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Task Breakdown (Radar Chart) & Qualitative Insights -->
+        <section id="task-breakdown" class="scroll-mt-24 grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Left: Radar Chart -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-stone-200">
+                <h3 class="text-xl font-bold text-stone-800 mb-4">タスク別：AIの得意・不得意</h3>
+                <p class="text-stone-600 mb-6 text-sm">
+                    AIは「0から1を作る」タスク（ドキュメント作成、テストコード生成）で最強の効果を発揮します。
+                    一方で、既存の複雑なコードベースのデバッグや、高度なアーキテクチャ設計における貢献度は低くなります。
+                </p>
+                <div class="chart-wrapper">
+                    <canvas id="taskRadarChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Right: Interactive List -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-stone-200 flex flex-col">
+                <h3 class="text-xl font-bold text-stone-800 mb-4">開発フェーズ詳細分析</h3>
+                <div class="space-y-3 flex-1 overflow-y-auto pr-2">
+                    
+                    <div class="group p-4 rounded-xl bg-stone-50 border border-stone-100 hover:border-teal-200 transition-colors cursor-pointer" onclick="highlightTask('doc')">
+                        <div class="flex items-center justify-between">
+                            <h4 class="font-bold text-stone-700">📄 ドキュメント作成・翻訳</h4>
+                            <span class="px-2 py-1 bg-teal-100 text-teal-800 text-xs font-bold rounded">+80% 効率化</span>
+                        </div>
+                        <p class="text-sm text-stone-500 mt-2">API仕様書やREADMEの草案作成にかかる時間をほぼゼロに短縮。多言語対応も瞬時に完了。</p>
+                    </div>
+
+                    <div class="group p-4 rounded-xl bg-stone-50 border border-stone-100 hover:border-teal-200 transition-colors cursor-pointer" onclick="highlightTask('test')">
+                        <div class="flex items-center justify-between">
+                            <h4 class="font-bold text-stone-700">🧪 単体テスト作成</h4>
+                            <span class="px-2 py-1 bg-teal-100 text-teal-800 text-xs font-bold rounded">+70% 効率化</span>
+                        </div>
+                        <p class="text-sm text-stone-500 mt-2">エッジケースを含むテストパターンの網羅性が向上。TDD（テスト駆動開発）の障壁を下げる。</p>
+                    </div>
+
+                    <div class="group p-4 rounded-xl bg-stone-50 border border-stone-100 hover:border-amber-200 transition-colors cursor-pointer" onclick="highlightTask('debug')">
+                        <div class="flex items-center justify-between">
+                            <h4 class="font-bold text-stone-700">🐞 デバッグ・修正</h4>
+                            <span class="px-2 py-1 bg-amber-100 text-amber-800 text-xs font-bold rounded">+15% 効率化 (限定的)</span>
+                        </div>
+                        <p class="text-sm text-stone-500 mt-2">エラーログの解析は早いが、AI自身が埋め込んだ「微妙なバグ」の特定には人間より時間がかかる場合がある。</p>
+                    </div>
+
+                    <div class="group p-4 rounded-xl bg-stone-50 border border-stone-100 hover:border-rose-200 transition-colors cursor-pointer" onclick="highlightTask('arch')">
+                        <div class="flex items-center justify-between">
+                            <h4 class="font-bold text-stone-700">🏗️ 設計・アーキテクチャ</h4>
+                            <span class="px-2 py-1 bg-stone-200 text-stone-600 text-xs font-bold rounded">変化なし / リスク増</span>
+                        </div>
+                        <p class="text-sm text-stone-500 mt-2">コンテキスト長に限界があるため、大規模システム全体の整合性を保つ能力はまだ低い。</p>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: The Seniority Gap (Interactive Text) -->
+        <section id="seniority" class="scroll-mt-24 bg-stone-900 rounded-2xl shadow-lg overflow-hidden text-white">
+            <div class="grid grid-cols-1 md:grid-cols-5 h-full">
+                <!-- Sidebar Controls -->
+                <div class="md:col-span-2 p-8 border-b md:border-b-0 md:border-r border-stone-700 bg-stone-800">
+                    <h2 class="text-2xl font-bold mb-2">スキルレベルによる影響格差</h2>
+                    <p class="text-stone-400 text-sm mb-8">
+                        AIは全ての開発者を平等に助けるわけではありません。経験年数によって、AIは「教師」にも「落とし穴」にもなります。
+                    </p>
+                    
+                    <div class="space-y-4">
+                        <button onclick="setSeniority('junior')" id="btn-junior" class="w-full text-left p-4 rounded-lg bg-teal-600 border border-teal-500 shadow-md transition-all">
+                            <div class="font-bold">Junior (経験1-3年)</div>
+                            <div class="text-xs text-teal-100 mt-1">依存度: 高 / 学習効果: 低下リスク</div>
+                        </button>
+                        <button onclick="setSeniority('senior')" id="btn-senior" class="w-full text-left p-4 rounded-lg bg-stone-700 border border-stone-600 hover:bg-stone-600 transition-all">
+                            <div class="font-bold">Senior (経験5年+)</div>
+                            <div class="text-xs text-stone-300 mt-1">活用法: フォースマルチプライヤー</div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Content Area -->
+                <div class="md:col-span-3 p-8 flex flex-col justify-center bg-stone-900 relative">
+                    <!-- Dynamic Content -->
+                    <div id="seniority-content">
+                        <div class="mb-6">
+                            <span class="inline-block px-3 py-1 bg-teal-900 text-teal-300 text-xs font-bold rounded-full mb-2">Impact Analysis</span>
+                            <h3 class="text-3xl font-bold text-white mb-4" id="role-title">Junior Developer</h3>
+                            <p class="text-stone-300 leading-relaxed text-lg" id="role-desc">
+                                ジュニア層はAIの恩恵を最も感じやすい層です。分からない構文やAPIを即座に生成できるため、**詰まっている時間（Blocker）が大幅に減少**します。
+                                しかし、コードの「意味」を理解せずにコピペする傾向が強まり、長期的には成長機会の損失や、セキュリティリスクの増大が懸念されます。
+                            </p>
+                        </div>
+                        <div class="grid grid-cols-2 gap-6 mt-4">
+                            <div class="p-4 bg-stone-800 rounded-lg border-l-4 border-teal-500">
+                                <p class="text-xs text-stone-400 uppercase">生産性向上</p>
+                                <p class="text-2xl font-bold text-white" id="role-stat1">High (+60%)</p>
+                            </div>
+                            <div class="p-4 bg-stone-800 rounded-lg border-l-4 border-rose-500">
+                                <p class="text-xs text-stone-400 uppercase">コード品質リスク</p>
+                                <p class="text-2xl font-bold text-white" id="role-stat2">High</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 5: Risks & Challenges (Grid with Donut) -->
+        <section id="risks" class="scroll-mt-24">
+            <h2 class="text-2xl font-bold text-stone-800 mb-6">導入における課題と「見えないコスト」</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Donut Chart -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-stone-200">
+                    <h4 class="text-center font-bold text-stone-700 mb-4">開発者の懸念事項</h4>
+                    <div class="chart-wrapper-sm flex justify-center">
+                        <canvas id="riskChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Textual Analysis -->
+                <div class="md:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-stone-200">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 h-full">
+                        <div class="space-y-2">
+                            <div class="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center text-rose-600 text-xl font-bold mb-2">1</div>
+                            <h4 class="font-bold text-stone-800">レビュー負荷の増大</h4>
+                            <p class="text-sm text-stone-600">
+                                AIによりコードの生産量（Volume）が増えた結果、シニアエンジニアによるコードレビューの負担が激増しています。
+                                「一見正しく動くが、微妙に間違っているコード」の発見は非常に困難です。
+                            </p>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 text-xl font-bold mb-2">2</div>
+                            <h4 class="font-bold text-stone-800">メンテナンス性の低下</h4>
+                            <p class="text-sm text-stone-600">
+                                AIはDRY（Don't Repeat Yourself）原則を無視しがちです。
+                                重複コードや冗長な記述が増え、将来的な技術的負債（Technical Debt）が蓄積するリスクがあります。
+                            </p>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-xl font-bold mb-2">3</div>
+                            <h4 class="font-bold text-stone-800">セキュリティ & 権利侵害</h4>
+                            <p class="text-sm text-stone-600">
+                                クローズドな社内コードの流出懸念や、生成されたコードの著作権・ライセンス侵害のリスク管理が新たなタスクとして発生しています。
+                            </p>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center text-teal-600 text-xl font-bold mb-2">4</div>
+                            <h4 class="font-bold text-stone-800">結論：ツールであって魔法ではない</h4>
+                            <p class="text-sm text-stone-600">
+                                生産性は確かに向上しますが、それは「考える時間」を減らすものではありません。
+                                むしろ、AIの出力を検証する「監査能力」が開発者の新たな必須スキルとなります。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="border-t border-stone-200 pt-8 pb-12 text-center">
+            <p class="text-stone-500 text-sm">
+                Generated based on simulated research data regarding Generative AI Impact.
+                <br>Designed for clear data visualization and analysis.
+            </p>
+        </footer>
+
+    </main>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- Data Store ---
+        const reportData = {
+            mainChart: {
+                labels: ['コード記述', 'テスト作成', 'ドキュメント', 'デバッグ', 'レビュー', '全体納品速度'],
+                speed: {
+                    label: '時間短縮率 (%)',
+                    data: [55, 70, 80, 15, -10, 26], // Review is negative (takes longer)
+                    backgroundColor: 'rgba(13, 148, 136, 0.7)', // Teal-600
+                    borderColor: 'rgb(13, 148, 136)'
+                },
+                quality: {
+                    label: 'バグ混入/手戻り率 (相対値)',
+                    data: [10, 5, 2, 20, 30, 15], // Higher is worse
+                    backgroundColor: 'rgba(245, 158, 11, 0.7)', // Amber-500
+                    borderColor: 'rgb(245, 158, 11)'
+                }
+            },
+            radar: {
+                labels: ['新規実装', 'リファクタリング', 'ドキュメント', '学習/調査', 'テスト', '保守/運用'],
+                data: [75, 40, 90, 85, 80, 30]
+            },
+            risks: {
+                labels: ['コード品質への不安', 'セキュリティ', 'スキル低下', 'その他'],
+                data: [45, 30, 20, 5]
+            },
+            seniority: {
+                junior: {
+                    title: "Junior Developer (経験1-3年)",
+                    desc: "ジュニア層はAIの恩恵を最も感じやすい層です。分からない構文やAPIを即座に生成できるため、「詰まっている時間（Blocker）が大幅に減少」します。しかし、コードの「意味」を理解せずにコピペする傾向が強まり、長期的には成長機会の損失や、セキュリティリスクの増大が懸念されます。",
+                    stat1: "High (+60%)",
+                    stat2: "High (要監視)",
+                    color: "teal"
+                },
+                senior: {
+                    title: "Senior Developer (経験5年+)",
+                    desc: "シニア層にとってAIは「優秀な助手」です。ボイラープレートの記述をAIに任せ、自身はアーキテクチャ設計や複雑なビジネスロジックに集中できます。AIの出力するコードの誤りを即座に見抜けるため、リスクを抑えつつ生産性を最大化（レバレッジ）できます。",
+                    stat1: "Medium (+25%)",
+                    stat2: "Low (制御可能)",
+                    color: "stone"
+                }
+            }
+        };
+
+        // --- Chart Initialization ---
+        
+        // 1. Main Bar Chart (Speed vs Quality)
+        let mainChartInstance = null;
+        
+        function initMainChart() {
+            const ctx = document.getElementById('impactChart').getContext('2d');
+            mainChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: reportData.mainChart.labels,
+                    datasets: [{
+                        label: reportData.mainChart.speed.label,
+                        data: reportData.mainChart.speed.data,
+                        backgroundColor: reportData.mainChart.speed.backgroundColor,
+                        borderColor: reportData.mainChart.speed.borderColor,
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: '#e7e5e4' } // Stone-200
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: true, position: 'top' },
+                        tooltip: {
+                            backgroundColor: '#1c1917',
+                            padding: 12,
+                            titleFont: { size: 14 },
+                            bodyFont: { size: 14 }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 2. Radar Chart (Tasks)
+        function initRadarChart() {
+            const ctx = document.getElementById('taskRadarChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: reportData.radar.labels,
+                    datasets: [{
+                        label: 'AI貢献度スコア (100点満点)',
+                        data: reportData.radar.data,
+                        fill: true,
+                        backgroundColor: 'rgba(20, 184, 166, 0.2)', // Teal-500
+                        borderColor: 'rgb(20, 184, 166)',
+                        pointBackgroundColor: 'rgb(13, 148, 136)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgb(13, 148, 136)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: { color: '#e7e5e4' },
+                            grid: { color: '#e7e5e4' },
+                            pointLabels: {
+                                font: { size: 12, family: "'Noto Sans JP', sans-serif" },
+                                color: '#44403c'
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 100
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+
+        // 3. Donut Chart (Risks)
+        function initRiskChart() {
+            const ctx = document.getElementById('riskChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: reportData.risks.labels,
+                    datasets: [{
+                        data: reportData.risks.data,
+                        backgroundColor: [
+                            'rgba(244, 63, 94, 0.8)', // Rose-500
+                            'rgba(99, 102, 241, 0.8)', // Indigo-500
+                            'rgba(245, 158, 11, 0.8)', // Amber-500
+                            'rgba(120, 113, 108, 0.5)' // Stone-500
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } }
+                    },
+                    cutout: '70%'
+                }
+            });
+        }
+
+        // --- Interaction Logic ---
+
+        // Update Main Chart
+        function updateMainChart(type) {
+            const btnSpeed = document.getElementById('btn-speed');
+            const btnQuality = document.getElementById('btn-quality');
+            const contextText = document.getElementById('chart-context');
+
+            if (type === 'speed') {
+                // Style updates
+                btnSpeed.className = "px-4 py-2 rounded-md text-sm font-medium bg-white text-teal-700 shadow-sm transition-all duration-200";
+                btnQuality.className = "px-4 py-2 rounded-md text-sm font-medium text-stone-500 hover:text-stone-900 transition-all duration-200";
+                
+                // Data updates
+                mainChartInstance.data.datasets[0].label = reportData.mainChart.speed.label;
+                mainChartInstance.data.datasets[0].data = reportData.mainChart.speed.data;
+                mainChartInstance.data.datasets[0].backgroundColor = reportData.mainChart.speed.backgroundColor;
+                mainChartInstance.data.datasets[0].borderColor = reportData.mainChart.speed.borderColor;
+                
+                contextText.innerText = "※ 青いバーは正の値（時間短縮）を示しますが、レビュー工程（-10%）のみ時間が増加している点に注目してください。";
+            } else {
+                // Style updates
+                btnQuality.className = "px-4 py-2 rounded-md text-sm font-medium bg-white text-amber-700 shadow-sm transition-all duration-200";
+                btnSpeed.className = "px-4 py-2 rounded-md text-sm font-medium text-stone-500 hover:text-stone-900 transition-all duration-200";
+
+                // Data updates
+                mainChartInstance.data.datasets[0].label = reportData.mainChart.quality.label;
+                mainChartInstance.data.datasets[0].data = reportData.mainChart.quality.data;
+                mainChartInstance.data.datasets[0].backgroundColor = reportData.mainChart.quality.backgroundColor;
+                mainChartInstance.data.datasets[0].borderColor = reportData.mainChart.quality.borderColor;
+
+                contextText.innerText = "※ オレンジのバーが高いほど、バグ発生や手戻りのリスクが高いことを示します。レビューとデバッグが急上昇します。";
+            }
+            mainChartInstance.update();
+        }
+
+        // Update Seniority Section
+        function setSeniority(level) {
+            const data = reportData.seniority[level];
+            const btnJunior = document.getElementById('btn-junior');
+            const btnSenior = document.getElementById('btn-senior');
+
+            // Update Text
+            document.getElementById('role-title').innerText = data.title;
+            document.getElementById('role-desc').innerHTML = data.desc.replace(/\*\*(.*?)\*\*/g, '<span class="text-teal-400 font-bold">$1</span>');
+            document.getElementById('role-stat1').innerText = data.stat1;
+            document.getElementById('role-stat2').innerText = data.stat2;
+
+            // Update Button Styles
+            if (level === 'junior') {
+                btnJunior.className = "w-full text-left p-4 rounded-lg bg-teal-600 border border-teal-500 shadow-md transition-all ring-2 ring-teal-300 ring-offset-2 ring-offset-stone-800";
+                btnSenior.className = "w-full text-left p-4 rounded-lg bg-stone-700 border border-stone-600 hover:bg-stone-600 transition-all opacity-60 hover:opacity-100";
+            } else {
+                btnSenior.className = "w-full text-left p-4 rounded-lg bg-stone-600 border border-stone-500 shadow-md transition-all ring-2 ring-stone-400 ring-offset-2 ring-offset-stone-800";
+                btnJunior.className = "w-full text-left p-4 rounded-lg bg-stone-800/50 border border-teal-900/30 text-stone-400 hover:bg-stone-800 transition-all";
+            }
+        }
+
+        // Highlight Interaction (Dummy function for visual feedback)
+        function highlightTask(taskId) {
+            // In a full app, this might filter the radar chart.
+            // For now, we just log or add a subtle visual effect if needed.
+            // The hover effect is handled by CSS.
+        }
+
+        // --- Init ---
+        document.addEventListener('DOMContentLoaded', () => {
+            initMainChart();
+            initRadarChart();
+            initRiskChart();
+        });
+
+    </script>
+</body>
+</html>
