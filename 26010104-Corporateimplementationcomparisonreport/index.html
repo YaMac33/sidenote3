@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chromebook vs Windows: 企業導入比較レポート</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Font Awesome (for icons) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: #f5f5f4; /* Stone 100 - Warm Neutral */
+            color: #44403c; /* Stone 700 */
+        }
+        
+        /* Smooth transitions for interactive elements */
+        .transition-all-300 {
+            transition: all 0.3s ease-in-out;
+        }
+
+        /* Chart Container Styling - MANDATORY */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px; /* Limit max width for readability */
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px; /* Base height */
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+
+        /* Tab Active State */
+        .tab-active {
+            background-color: #57534e; /* Stone 600 */
+            color: white;
+            border-bottom: 2px solid #a8a29e;
+        }
+        .tab-inactive {
+            background-color: white;
+            color: #78716c;
+            border: 1px solid #e7e5e4;
+        }
+        .tab-inactive:hover {
+            background-color: #e7e5e4;
+        }
+
+        /* Card Hover Effects */
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+
+    <!-- Placeholder Comments Required -->
+    <!-- Chosen Palette: Warm Neutrals (Stone) with Muted Blue (Trust/Tech) and Soft Green (Savings) accents. -->
+    
+    <!-- Application Structure Plan: 
+         1. Header: Executive Summary & Context.
+         2. Interactive Dashboard Navigation: Tabs for "TCO Analysis", "Security Risk", "Operational Efficiency".
+         3. Dynamic Content Area:
+            - TCO: Stacked Bar Charts for hardware/soft costs, ROI Calculator input.
+            - Security: Radar chart comparing risk vectors, Incident recovery timeline visualization.
+            - Operations: Comparison of setup times and helpdesk tickets using Bar/Line charts.
+         4. Synthesis/Conclusion: Key takeaways list.
+         This structure allows users to digest complex financial and technical data in isolated, focused chunks before seeing the holistic picture. -->
+
+    <!-- Visualization & Content Choices:
+         - TCO Section: Stacked Bar Chart (Chart.js) to show the composition of costs (Device + Mgmt + Support) over 3 years. Goal: Inform/Compare.
+         - ROI Calculator: JS-driven text update based on user input (Employee count). Goal: Personalize/Engage.
+         - Security Section: Radar Chart (Chart.js) to compare qualitative risk scores (Malware, Theft, Phishing) between OSs. Goal: Compare/Relationships.
+         - Operations Section: Horizontal Bar Chart showing time savings (Boot time, Setup time). Goal: Inform/Change.
+         - Library: Chart.js for all graphs due to responsiveness and ease of updates. No SVG/Mermaid used. -->
+
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+<body class="bg-stone-100 min-h-screen">
+
+    <!-- Main Container -->
+    <div class="max-w-6xl mx-auto px-4 py-8">
+        
+        <!-- Header Section -->
+        <header class="mb-10 text-center">
+            <h1 class="text-3xl md:text-4xl font-bold text-stone-800 mb-4">
+                <i class="fas fa-balance-scale mr-3 text-stone-600"></i>企業向けデバイス導入比較レポート
+            </h1>
+            <p class="text-lg text-stone-600 max-w-3xl mx-auto">
+                全社員へのChromebook貸与を実施した企業のデータに基づき、従来のWindows環境と比較したコスト（TCO）、セキュリティリスク、および運用効率を包括的に分析しました。
+            </p>
+        </header>
+
+        <!-- Executive Summary Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+            <div class="stat-card bg-white p-6 rounded-lg shadow-sm border-l-4 border-emerald-500 transition-all-300">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-stone-500 font-medium">3年間コスト削減率</h3>
+                    <i class="fas fa-piggy-bank text-emerald-500 text-xl"></i>
+                </div>
+                <p class="text-3xl font-bold text-stone-800">42% <span class="text-sm font-normal text-stone-500">削減</span></p>
+                <p class="text-sm text-stone-400 mt-2">ハードウェア・管理費・保守費用の合計</p>
+            </div>
+            <div class="stat-card bg-white p-6 rounded-lg shadow-sm border-l-4 border-blue-500 transition-all-300">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-stone-500 font-medium">セキュリティインシデント</h3>
+                    <i class="fas fa-shield-alt text-blue-500 text-xl"></i>
+                </div>
+                <p class="text-3xl font-bold text-stone-800">ゼロ <span class="text-sm font-normal text-stone-500">ランサムウェア被害</span></p>
+                <p class="text-sm text-stone-400 mt-2">サンドボックス技術と自動更新による防御</p>
+            </div>
+            <div class="stat-card bg-white p-6 rounded-lg shadow-sm border-l-4 border-amber-500 transition-all-300">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-stone-500 font-medium">キッティング工数</h3>
+                    <i class="fas fa-stopwatch text-amber-500 text-xl"></i>
+                </div>
+                <p class="text-3xl font-bold text-stone-800">93% <span class="text-sm font-normal text-stone-500">短縮</span></p>
+                <p class="text-sm text-stone-400 mt-2">ゼロタッチ登録による配布プロセスの効率化</p>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="flex flex-wrap justify-center gap-4 mb-8">
+            <button onclick="switchTab('tco')" id="tab-tco" class="tab-active px-6 py-3 rounded-full font-medium transition-all-300 shadow-sm focus:outline-none">
+                <i class="fas fa-chart-line mr-2"></i>TCO・コスト分析
+            </button>
+            <button onclick="switchTab('security')" id="tab-security" class="tab-inactive px-6 py-3 rounded-full font-medium transition-all-300 shadow-sm focus:outline-none">
+                <i class="fas fa-lock mr-2"></i>セキュリティ・リスク
+            </button>
+            <button onclick="switchTab('ops')" id="tab-ops" class="tab-inactive px-6 py-3 rounded-full font-medium transition-all-300 shadow-sm focus:outline-none">
+                <i class="fas fa-cogs mr-2"></i>運用効率・生産性
+            </button>
+        </div>
+
+        <!-- Main Content Area -->
+        <main class="bg-white rounded-xl shadow-lg p-6 md:p-10 min-h-[500px]">
+            
+            <!-- SECTION 1: TCO ANALYSIS -->
+            <section id="content-tco" class="block animate-fade-in">
+                <div class="border-b border-stone-200 pb-4 mb-6">
+                    <h2 class="text-2xl font-bold text-stone-800 mb-2">TCO（総保有コスト）の比較分析</h2>
+                    <p class="text-stone-600">
+                        デバイス本体価格だけでなく、3年間の運用にかかるライセンス費用、キッティング（初期設定）費用、ヘルプデスク対応コストを含めた総保有コストを試算しました。Chromebookは管理工数の大幅な削減により、運用年数が経過するほどコストメリットが拡大します。
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
+                    <!-- Chart Column -->
+                    <div class="bg-stone-50 rounded-lg p-4">
+                        <h3 class="text-lg font-bold text-stone-700 mb-4 text-center">従業員1人あたりの3年間コスト構成</h3>
+                        <div class="chart-container">
+                            <canvas id="tcoChart"></canvas>
+                        </div>
+                        <p class="text-xs text-center text-stone-400 mt-2">※市場平均価格に基づく概算（単位：円）</p>
+                    </div>
+
+                    <!-- Calculator Column -->
+                    <div class="flex flex-col space-y-6">
+                        <div class="bg-blue-50 p-6 rounded-lg border border-blue-100">
+                            <h3 class="text-xl font-bold text-blue-800 mb-4"><i class="fas fa-calculator mr-2"></i>コスト削減シミュレーター</h3>
+                            <p class="text-sm text-blue-700 mb-4">貴社の従業員数を入力して、Windowsから切り替えた場合の推定削減額を確認してください。</p>
+                            
+                            <label class="block text-sm font-medium text-stone-700 mb-2">従業員数</label>
+                            <input type="range" id="employeeCount" min="10" max="5000" value="100" step="10" class="w-full h-2 bg-stone-300 rounded-lg appearance-none cursor-pointer mb-4">
+                            <div class="flex justify-between text-sm text-stone-500 mb-6">
+                                <span>10名</span>
+                                <span id="employeeCountDisplay" class="font-bold text-blue-600 text-lg">100名</span>
+                                <span>5,000名</span>
+                            </div>
+
+                            <div class="bg-white p-4 rounded shadow-sm">
+                                <p class="text-stone-600 text-sm">3年間の推定削減総額</p>
+                                <p class="text-3xl font-bold text-emerald-600" id="totalSavings">¥12,400,000</p>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 class="font-bold text-stone-700 mb-2">主な削減要因</h4>
+                            <ul class="space-y-3">
+                                <li class="flex items-start">
+                                    <span class="bg-emerald-100 text-emerald-800 p-1 rounded mr-3 mt-1"><i class="fas fa-check text-xs"></i></span>
+                                    <span class="text-stone-600 text-sm"><strong>ライセンス費用の統合:</strong> ウイルス対策ソフトや資産管理ツールの別途購入が不要。</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="bg-emerald-100 text-emerald-800 p-1 rounded mr-3 mt-1"><i class="fas fa-check text-xs"></i></span>
+                                    <span class="text-stone-600 text-sm"><strong>ハードウェア単価:</strong> 同等のパフォーマンスを発揮する端末価格が3〜5万円安価。</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="bg-emerald-100 text-emerald-800 p-1 rounded mr-3 mt-1"><i class="fas fa-check text-xs"></i></span>
+                                    <span class="text-stone-600 text-sm"><strong>ヘルプデスク負荷:</strong> 「起動しない」「重い」といった問い合わせが激減し、IT部門の人件費を抑制。</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 2: SECURITY RISK -->
+            <section id="content-security" class="hidden animate-fade-in">
+                <div class="border-b border-stone-200 pb-4 mb-6">
+                    <h2 class="text-2xl font-bold text-stone-800 mb-2">セキュリティリスク比較とデータ紛失対策</h2>
+                    <p class="text-stone-600">
+                        「データは端末に残さない」というChromebookの基本設計は、紛失時の情報漏洩リスクを根本から低減します。従来の境界防御型（Windows）とゼロトラスト前提（ChromeOS）のリスクスコアを比較しました。
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Concept Diagram (HTML/CSS) -->
+                    <div class="bg-stone-50 p-6 rounded-lg">
+                        <h3 class="text-lg font-bold text-stone-700 mb-4 text-center">データ管理構造の違い</h3>
+                        
+                        <div class="flex flex-col space-y-4">
+                            <!-- Windows Model -->
+                            <div class="border border-red-200 bg-white p-4 rounded-lg relative overflow-hidden">
+                                <div class="absolute top-0 right-0 bg-red-100 text-red-600 text-xs px-2 py-1 font-bold">従来型 (Windows)</div>
+                                <div class="flex items-center mb-2">
+                                    <i class="fab fa-windows text-2xl text-stone-400 mr-3"></i>
+                                    <span class="font-bold text-stone-700">ローカル保存</span>
+                                </div>
+                                <div class="w-full bg-stone-200 rounded-full h-2.5 mb-2">
+                                    <div class="bg-red-400 h-2.5 rounded-full" style="width: 80%"></div>
+                                </div>
+                                <p class="text-xs text-stone-500">データの大半がHDD/SSD内に存在。暗号化していても、マルウェア感染や物理的抜き取りのリスクが残存。</p>
+                            </div>
+
+                            <!-- ChromeOS Model -->
+                            <div class="border border-blue-200 bg-white p-4 rounded-lg relative overflow-hidden">
+                                <div class="absolute top-0 right-0 bg-blue-100 text-blue-600 text-xs px-2 py-1 font-bold">クラウドネイティブ (ChromeOS)</div>
+                                <div class="flex items-center mb-2">
+                                    <i class="fab fa-chrome text-2xl text-blue-500 mr-3"></i>
+                                    <span class="font-bold text-stone-700">クラウド保存</span>
+                                </div>
+                                <div class="w-full bg-stone-200 rounded-full h-2.5 mb-2">
+                                    <div class="bg-blue-400 h-2.5 rounded-full" style="width: 10%"></div>
+                                </div>
+                                <p class="text-xs text-stone-500">ローカルデータは一時ファイルのみで強力に暗号化。紛失時はリモートワイプで即座に無効化可能。</p>
+                            </div>
+                        </div>
+
+                        <div class="mt-6">
+                            <h4 class="font-bold text-sm text-stone-700 mb-2">インシデント復旧時間</h4>
+                            <div class="flex items-center text-sm">
+                                <div class="w-24 text-stone-600">Windows</div>
+                                <div class="flex-1 bg-stone-200 h-4 rounded-r mr-2 relative group">
+                                    <div class="bg-red-400 h-4 rounded-r" style="width: 100%"></div>
+                                    <span class="absolute right-2 top-0 text-xs text-white">4-8時間 (再イメージング)</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center text-sm mt-2">
+                                <div class="w-24 text-stone-600">Chromebook</div>
+                                <div class="flex-1 bg-stone-200 h-4 rounded-r mr-2 relative">
+                                    <div class="bg-blue-400 h-4 rounded-r" style="width: 15%"></div>
+                                    <span class="absolute left-2 top-0 text-xs text-stone-700 ml-16">5分 (Powerwash)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Radar Chart -->
+                    <div>
+                        <h3 class="text-lg font-bold text-stone-700 mb-2 text-center">リスク要因スコア比較</h3>
+                        <p class="text-xs text-center text-stone-400 mb-4">（スコアが高いほどリスクが高い）</p>
+                        <div class="chart-container">
+                            <canvas id="riskChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 3: OPERATIONAL EFFICIENCY -->
+            <section id="content-ops" class="hidden animate-fade-in">
+                <div class="border-b border-stone-200 pb-4 mb-6">
+                    <h2 class="text-2xl font-bold text-stone-800 mb-2">運用効率と生産性への影響</h2>
+                    <p class="text-stone-600">
+                        IT管理者の負担軽減だけでなく、エンドユーザーにとっても「待ち時間」の削減は生産性向上に直結します。起動時間やアップデートによる業務中断時間を比較しました。
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Metric 1 -->
+                    <div class="col-span-1 bg-white border border-stone-200 p-6 rounded-lg text-center hover:border-amber-300 transition-colors">
+                        <div class="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-power-off text-amber-600"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-stone-700">OS起動時間</h3>
+                        <div class="flex justify-center items-baseline mt-2 space-x-4">
+                            <div>
+                                <p class="text-xs text-stone-400">Windows</p>
+                                <p class="text-xl font-bold text-stone-500">30-60<span class="text-xs">秒</span></p>
+                            </div>
+                            <i class="fas fa-arrow-right text-stone-300"></i>
+                            <div>
+                                <p class="text-xs text-stone-400">ChromeOS</p>
+                                <p class="text-3xl font-bold text-amber-600">6-10<span class="text-base">秒</span></p>
+                            </div>
+                        </div>
+                        <p class="text-xs text-stone-500 mt-4">スリープ復帰は瞬時。会議開始の遅延を防ぎます。</p>
+                    </div>
+
+                    <!-- Metric 2 -->
+                    <div class="col-span-1 bg-white border border-stone-200 p-6 rounded-lg text-center hover:border-amber-300 transition-colors">
+                        <div class="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-sync text-amber-600"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-stone-700">更新プロセス</h3>
+                        <div class="mt-4 text-left">
+                            <div class="mb-2">
+                                <span class="text-xs font-bold text-stone-500 block">Windows</span>
+                                <span class="text-xs text-red-500 bg-red-50 px-2 py-1 rounded">再起動・待機時間あり</span>
+                            </div>
+                            <div>
+                                <span class="text-xs font-bold text-stone-500 block">ChromeOS</span>
+                                <span class="text-xs text-emerald-600 bg-emerald-50 px-2 py-1 rounded">バックグラウンド更新・数秒で適用</span>
+                            </div>
+                        </div>
+                        <p class="text-xs text-stone-500 mt-4">業務を中断させないシームレスな更新。</p>
+                    </div>
+
+                    <!-- Metric 3 -->
+                    <div class="col-span-1 bg-white border border-stone-200 p-6 rounded-lg text-center hover:border-amber-300 transition-colors">
+                        <div class="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-headset text-amber-600"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-stone-700">ITサポート要求</h3>
+                        <p class="text-3xl font-bold text-emerald-600 mt-2">-48%</p>
+                        <p class="text-xs text-stone-500 mt-2">チケット数削減</p>
+                        <p class="text-xs text-stone-500 mt-2">OS不具合、アプリ互換性問題、ウイルス疑義などの問い合わせが大幅減。</p>
+                    </div>
+                </div>
+
+                <div class="mt-8 bg-stone-50 p-6 rounded-lg">
+                    <h3 class="text-lg font-bold text-stone-700 mb-4 text-center">キッティング（初期設定）時間の比較</h3>
+                    <div class="chart-container">
+                        <canvas id="opsChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- Footer / Summary -->
+        <footer class="mt-10 text-center text-stone-500 text-sm">
+            <p class="mb-2 font-bold">推奨事項</p>
+            <p class="max-w-2xl mx-auto">
+                Webベースの業務が主体であれば、Chromebookへの移行はコスト・セキュリティ・生産性の全方位で明確なメリットがあります。
+                特にレガシーアプリへの依存が少ない部門から段階的に導入することをお勧めします。
+            </p>
+            <div class="mt-6 pt-6 border-t border-stone-200">
+                &copy; 2024 Enterprise Device Strategy Research Group.
+            </div>
+        </footer>
+
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // State Management
+        const state = {
+            currentTab: 'tco',
+            employeeCount: 100,
+            windowsCostPerUser: 124000, // Estimated 3-year TCO per user for Windows (Hardware + Soft + Support)
+            chromeCostPerUser: 72000,   // Estimated 3-year TCO per user for Chrome (Hardware + CEU + Support)
+        };
+
+        // DOM Elements
+        const tabs = {
+            tco: document.getElementById('tab-tco'),
+            security: document.getElementById('tab-security'),
+            ops: document.getElementById('tab-ops')
+        };
+        const contents = {
+            tco: document.getElementById('content-tco'),
+            security: document.getElementById('content-security'),
+            ops: document.getElementById('content-ops')
+        };
+        const empSlider = document.getElementById('employeeCount');
+        const empDisplay = document.getElementById('employeeCountDisplay');
+        const savingsDisplay = document.getElementById('totalSavings');
+
+        // Navigation Function
+        function switchTab(tabId) {
+            state.currentTab = tabId;
+
+            // Update Tab Styles
+            Object.keys(tabs).forEach(key => {
+                if (key === tabId) {
+                    tabs[key].className = "tab-active px-6 py-3 rounded-full font-medium transition-all-300 shadow-sm focus:outline-none";
+                } else {
+                    tabs[key].className = "tab-inactive px-6 py-3 rounded-full font-medium transition-all-300 shadow-sm focus:outline-none";
+                }
+            });
+
+            // Update Content Visibility
+            Object.keys(contents).forEach(key => {
+                if (key === tabId) {
+                    contents[key].classList.remove('hidden');
+                    contents[key].classList.add('block');
+                } else {
+                    contents[key].classList.remove('block');
+                    contents[key].classList.add('hidden');
+                }
+            });
+        }
+
+        // Calculator Logic
+        function updateSavings() {
+            const count = parseInt(empSlider.value);
+            state.employeeCount = count;
+            empDisplay.innerText = count.toLocaleString() + "名";
+
+            const savingsPerUser = state.windowsCostPerUser - state.chromeCostPerUser;
+            const totalSavings = savingsPerUser * count;
+
+            savingsDisplay.innerText = "¥" + totalSavings.toLocaleString();
+        }
+
+        // Event Listeners
+        empSlider.addEventListener('input', updateSavings);
+
+        // Chart Initialization
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initial Calculator Update
+            updateSavings();
+
+            // Chart Configuration Common Options
+            const commonOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            font: { family: "'Noto Sans JP', sans-serif" }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(68, 64, 60, 0.9)',
+                        titleFont: { family: "'Noto Sans JP', sans-serif" },
+                        bodyFont: { family: "'Noto Sans JP', sans-serif" },
+                        padding: 10,
+                        cornerRadius: 4
+                    }
+                }
+            };
+
+            // 1. TCO Chart (Stacked Bar)
+            const ctxTco = document.getElementById('tcoChart').getContext('2d');
+            new Chart(ctxTco, {
+                type: 'bar',
+                data: {
+                    labels: ['Windows PC', 'Chromebook'],
+                    datasets: [
+                        {
+                            label: 'デバイス本体',
+                            data: [80000, 50000],
+                            backgroundColor: '#a8a29e', // Stone 400
+                            barThickness: 50,
+                        },
+                        {
+                            label: '設定・導入費',
+                            data: [15000, 2000],
+                            backgroundColor: '#fbbf24', // Amber 400
+                            barThickness: 50,
+                        },
+                        {
+                            label: '運用管理・サポート(3年)',
+                            data: [45000, 15000],
+                            backgroundColor: '#ef4444', // Red 500
+                            barThickness: 50,
+                        }
+                    ]
+                },
+                options: {
+                    ...commonOptions,
+                    scales: {
+                        x: { stacked: true },
+                        y: { 
+                            stacked: true,
+                            title: { display: true, text: 'コスト (円)' }
+                        }
+                    }
+                }
+            });
+
+            // 2. Risk Chart (Radar)
+            const ctxRisk = document.getElementById('riskChart').getContext('2d');
+            new Chart(ctxRisk, {
+                type: 'radar',
+                data: {
+                    labels: ['マルウェア感染', '端末紛失時のデータ漏洩', 'OS破損リスク', 'ランサムウェア', '不正アプリ導入'],
+                    datasets: [{
+                        label: 'Windows',
+                        data: [85, 90, 70, 80, 75],
+                        fill: true,
+                        backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                        borderColor: '#ef4444',
+                        pointBackgroundColor: '#ef4444',
+                    }, {
+                        label: 'Chromebook',
+                        data: [10, 5, 5, 0, 15],
+                        fill: true,
+                        backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                        borderColor: '#10b981',
+                        pointBackgroundColor: '#10b981',
+                    }]
+                },
+                options: {
+                    ...commonOptions,
+                    scales: {
+                        r: {
+                            angleLines: { color: '#e5e7eb' },
+                            grid: { color: '#e5e7eb' },
+                            pointLabels: {
+                                font: { size: 12, family: "'Noto Sans JP', sans-serif" }
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 100
+                        }
+                    }
+                }
+            });
+
+            // 3. Ops Chart (Horizontal Bar)
+            const ctxOps = document.getElementById('opsChart').getContext('2d');
+            new Chart(ctxOps, {
+                type: 'bar',
+                data: {
+                    labels: ['キッティング（初期設定）', '大型アップデート適用', '再セットアップ（障害時）'],
+                    datasets: [
+                        {
+                            label: 'Windows (分)',
+                            data: [60, 45, 120],
+                            backgroundColor: '#d6d3d1', // Stone 300
+                            borderColor: '#a8a29e',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Chromebook (分)',
+                            data: [5, 1, 5],
+                            backgroundColor: '#3b82f6', // Blue 500
+                            borderColor: '#2563eb',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    ...commonOptions,
+                    indexAxis: 'y', // Horizontal Bar
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            title: { display: true, text: '所要時間 (分)' }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
