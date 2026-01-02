@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>初心者向け：ChatGPTの使い方ガイド</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: #fdfbf7; /* Warm neutral background */
+            color: #4a4a4a;
+        }
+        h1, h2, h3, .brand-font {
+            font-family: 'Zen Maru Gothic', sans-serif;
+        }
+        .chat-bubble {
+            position: relative;
+            max-width: 80%;
+            padding: 1rem;
+            border-radius: 1rem;
+            margin-bottom: 1rem;
+            animation: fadeIn 0.3s ease-out;
+            line-height: 1.6;
+        }
+        .user-bubble {
+            background-color: #e0f2fe; /* Light blue */
+            color: #0c4a6e;
+            margin-left: auto;
+            border-bottom-right-radius: 0.25rem;
+        }
+        .ai-bubble {
+            background-color: #ffffff;
+            border: 1px solid #e5e7eb;
+            color: #374151;
+            margin-right: auto;
+            border-bottom-left-radius: 0.25rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .typing-indicator span {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            background-color: #9ca3af;
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out both;
+            margin: 0 2px;
+        }
+        .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+        .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+
+        .step-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .step-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Custom scrollbar for chat area */
+        .chat-scroll::-webkit-scrollbar {
+            width: 8px;
+        }
+        .chat-scroll::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+            border-radius: 4px;
+        }
+        .chat-scroll::-webkit-scrollbar-thumb {
+            background: #d1d5db; 
+            border-radius: 4px;
+        }
+    </style>
+    <!-- Chosen Palette: Warm Neutrals (Background #fdfbf7), Soft Blue (#e0f2fe/0c4a6e), Friendly Orange (#f97316), Clean White (#ffffff) -->
+    <!-- Application Structure Plan: 
+         1. Hero Section: Introduces ChatGPT as a "Robot Secretary" (Concept).
+         2. "How it Works" Steps: Simple visual breakdown of the 3-step process.
+         3. Interactive Simulator (The Core): A safe, fake chat interface allowing users to click "Preset Scenarios" (Recipe, Email, Explanation) to see the AI in action without signing up. This directly addresses the "What can it do?" question.
+         4. "Pro Tips" Analysis: Uses a Chart.js bar chart to visually compare "Bad Prompts" vs "Good Prompts" effectiveness, reinforcing the "Specific/Role" advice.
+         5. Safety & Warnings: Clear, accordion-style warnings about hallucinations and privacy.
+         6. Conclusion: A warm closing encouraging the first step.
+         Why: This structure moves from Concept -> Action -> Refinement -> Safety, mirroring the learning curve of a beginner.
+    -->
+    <!-- Visualization & Content Choices:
+         - Concept: Text & Icons.
+         - Usage Demo: Custom JS Chat Simulator. Allows active exploration of the 3 key use cases from the report.
+         - Effectiveness Analysis: Bar Chart (Chart.js). visually demonstrates why "being specific" matters (Slide 7 content).
+         - Warnings: Alert Boxes. High contrast for importance.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+<body class="text-gray-700">
+
+    <!-- Navbar -->
+    <nav class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <span class="text-2xl">🤖</span>
+                <span class="font-bold text-xl text-gray-800 brand-font">ChatGPT入門</span>
+            </div>
+            <div class="hidden md:flex space-x-6 text-sm font-medium text-gray-500">
+                <a href="#concept" class="hover:text-blue-500 transition">基本概念</a>
+                <a href="#simulator" class="hover:text-blue-500 transition">体験する</a>
+                <a href="#tips" class="hover:text-blue-500 transition">コツ</a>
+                <a href="#safety" class="hover:text-blue-500 transition">注意点</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="bg-gradient-to-b from-blue-50 to-[#fdfbf7] py-16 px-4 text-center">
+        <div class="max-w-3xl mx-auto">
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-6 leading-tight">
+                AIは、あなたの<br><span class="text-blue-600">「ロボット秘書」</span>です
+            </h1>
+            <p class="text-lg md:text-xl text-gray-600 mb-8 leading-relaxed">
+                「難しそう」と思っていませんか？<br>
+                実は、LINEのように話しかけるだけで、献立相談からメール作成まで何でも手伝ってくれます。
+            </p>
+            <a href="#simulator" class="inline-block bg-blue-600 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:bg-blue-700 transition transform hover:-translate-y-1">
+                まずは体験してみる
+            </a>
+        </div>
+    </header>
+
+    <!-- Section 1: Concept & Basic Steps -->
+    <section id="concept" class="py-16 px-4 max-w-6xl mx-auto">
+        <div class="mb-12">
+            <h2 class="text-3xl font-bold text-center brand-font mb-6">基本の使い方：たったの3ステップ</h2>
+            <p class="text-center text-gray-600 max-w-2xl mx-auto">
+                ChatGPTは検索エンジンではありません。キーワードではなく「会話」で答えてくれます。<br>
+                使い方は驚くほどシンプルです。
+            </p>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-8">
+            <!-- Step 1 -->
+            <div class="step-card bg-white p-8 rounded-2xl shadow-sm border border-gray-100 text-center">
+                <div class="text-5xl mb-4">✍️</div>
+                <h3 class="text-xl font-bold mb-3 brand-font">1. 話しかける</h3>
+                <p class="text-gray-600">
+                    画面下の入力欄に、友達に送るように文章を入力します。<br>
+                    「タメ口」でも「丁寧語」でもOK！
+                </p>
+            </div>
+            <!-- Step 2 -->
+            <div class="step-card bg-white p-8 rounded-2xl shadow-sm border border-gray-100 text-center">
+                <div class="text-5xl mb-4">🚀</div>
+                <h3 class="text-xl font-bold mb-3 brand-font">2. 送信する</h3>
+                <p class="text-gray-600">
+                    紙飛行機マーク（送信ボタン）を押します。<br>
+                    複雑な操作は一切ありません。
+                </p>
+            </div>
+            <!-- Step 3 -->
+            <div class="step-card bg-white p-8 rounded-2xl shadow-sm border border-gray-100 text-center">
+                <div class="text-5xl mb-4">⏳</div>
+                <h3 class="text-xl font-bold mb-3 brand-font">3. 待つ</h3>
+                <p class="text-gray-600">
+                    数秒待つだけで、AIから返信が届きます。<br>
+                    気に入らなければ「書き直して」と言えば何度でも修正します。
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 2: Interactive Simulator -->
+    <section id="simulator" class="py-16 px-4 bg-white">
+        <div class="max-w-5xl mx-auto">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-bold brand-font mb-4">実際の会話をシミュレーション</h2>
+                <p class="text-gray-600">
+                    レポートにある「3つの活用例」をここで体験できます。<br>
+                    下のボタンから、お願いしたい内容を選んでみてください。
+                </p>
+            </div>
+
+            <div class="flex flex-col lg:flex-row gap-8 items-start h-[600px]">
+                
+                <!-- Sidebar / Controls -->
+                <div class="w-full lg:w-1/3 space-y-4">
+                    <p class="font-bold text-gray-700 mb-2">何をお願いする？</p>
+                    
+                    <button onclick="runScenario('recipe')" class="w-full text-left p-4 rounded-xl border-2 border-orange-100 hover:border-orange-400 bg-orange-50 hover:bg-orange-100 transition group relative overflow-hidden">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="font-bold text-orange-800">🍳 献立の相談</span>
+                            <span class="text-xs bg-orange-200 text-orange-800 px-2 py-1 rounded-full">日常</span>
+                        </div>
+                        <p class="text-sm text-gray-600">冷蔵庫の余り物（キャベツ・卵）でレシピを考えてもらう。</p>
+                    </button>
+
+                    <button onclick="runScenario('email')" class="w-full text-left p-4 rounded-xl border-2 border-blue-100 hover:border-blue-400 bg-blue-50 hover:bg-blue-100 transition group">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="font-bold text-blue-800">✉️ メールの作成</span>
+                            <span class="text-xs bg-blue-200 text-blue-800 px-2 py-1 rounded-full">仕事</span>
+                        </div>
+                        <p class="text-sm text-gray-600">会議の日程変更をお詫びする丁寧なメールを書いてもらう。</p>
+                    </button>
+
+                    <button onclick="runScenario('explain')" class="w-full text-left p-4 rounded-xl border-2 border-green-100 hover:border-green-400 bg-green-50 hover:bg-green-100 transition group">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="font-bold text-green-800">🎓 要約・解説</span>
+                            <span class="text-xs bg-green-200 text-green-800 px-2 py-1 rounded-full">学習</span>
+                        </div>
+                        <p class="text-sm text-gray-600">「円安」などの難しいニュース用語を小学生向けに解説してもらう。</p>
+                    </button>
+                    
+                    <div class="bg-gray-50 p-4 rounded-xl mt-4 text-sm text-gray-500 border border-gray-200">
+                        <p>💡 <strong>ヒント：</strong> 実際のChatGPTアプリでも、これと同じように入力するだけです。</p>
+                    </div>
+                </div>
+
+                <!-- Chat Interface -->
+                <div class="w-full lg:w-2/3 h-full bg-gray-50 border border-gray-200 rounded-2xl shadow-inner flex flex-col relative overflow-hidden">
+                    <!-- Chat Header -->
+                    <div class="bg-white p-4 border-b flex items-center gap-3">
+                        <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white text-xl">🤖</div>
+                        <div>
+                            <p class="font-bold text-gray-800">ChatGPT</p>
+                            <p class="text-xs text-green-600 flex items-center gap-1">
+                                <span class="w-2 h-2 bg-green-500 rounded-full"></span> Online
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Messages Area -->
+                    <div id="chat-messages" class="flex-1 p-6 overflow-y-auto chat-scroll space-y-4">
+                        <div class="ai-bubble chat-bubble">
+                            こんにちは！私はあなたのAIアシスタントです。<br>
+                            何かお手伝いできることはありますか？<br>
+                            左のメニューから試したいことを選んでくださいね。
+                        </div>
+                    </div>
+
+                    <!-- Input Area (Visual only) -->
+                    <div class="p-4 bg-white border-t">
+                        <div class="flex gap-2">
+                            <input type="text" id="fake-input" placeholder="メッセージを入力..." class="flex-1 border rounded-full px-4 py-2 bg-gray-50 text-gray-500 focus:outline-none cursor-not-allowed" readonly>
+                            <button class="bg-blue-500 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-md">
+                                ➤
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 3: Pro Tips & Chart -->
+    <section id="tips" class="py-16 px-4 max-w-6xl mx-auto">
+        <div class="mb-12 text-center">
+            <h2 class="text-3xl font-bold brand-font mb-4">上手に使うための3つのコツ</h2>
+            <p class="text-gray-600">ただ話しかけるだけでも答えてくれますが、<br>少し工夫するだけで回答の質（満足度）が劇的に変わります。</p>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-12 items-center">
+            <!-- Chart Container -->
+            <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
+                <h3 class="text-center font-bold text-gray-700 mb-4">指示の具体性と満足度の関係</h3>
+                <div class="chart-container">
+                    <canvas id="qualityChart"></canvas>
+                </div>
+                <p class="text-xs text-center text-gray-400 mt-4">※概念的なイメージグラフです</p>
+            </div>
+
+            <!-- Tips Content -->
+            <div class="space-y-6">
+                <div class="flex gap-4 items-start">
+                    <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center text-2xl flex-shrink-0">🎯</div>
+                    <div>
+                        <h4 class="text-xl font-bold text-gray-800 mb-2">1. 具体的に伝える</h4>
+                        <p class="text-gray-600 mb-2">×「京都の観光教えて」<br>⚪︎「<span class="font-bold text-indigo-600">70代の両親と</span>、<span class="font-bold text-indigo-600">あまり歩かずに</span>楽しめる京都の観光コースを教えて」</p>
+                        <p class="text-sm text-gray-500">「誰と・どこへ・何をする」を詳しく伝えると、あなたにぴったりの回答になります。</p>
+                    </div>
+                </div>
+
+                <div class="flex gap-4 items-start">
+                    <div class="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center text-2xl flex-shrink-0">🗣️</div>
+                    <div>
+                        <h4 class="text-xl font-bold text-gray-800 mb-2">2. 会話を続ける</h4>
+                        <p class="text-gray-600">一度の回答で満足できなくても大丈夫。「もっと詳しく教えて」「もう少し簡単な言葉にして」と会話を重ねることで、理想の答えに近づきます。</p>
+                    </div>
+                </div>
+
+                <div class="flex gap-4 items-start">
+                    <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center text-2xl flex-shrink-0">🎭</div>
+                    <div>
+                        <h4 class="text-xl font-bold text-gray-800 mb-2">3. 役割を与える</h4>
+                        <p class="text-gray-600">「プロの旅行ガイドとして」「ベテラン編集者として」と役割を指定すると、AIはその道のプロになりきって答えてくれます。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 4: Safety Warnings -->
+    <section id="safety" class="py-16 px-4 bg-red-50">
+        <div class="max-w-4xl mx-auto">
+            <h2 class="text-3xl font-bold brand-font text-center mb-8 text-gray-800">これだけは注意してください⚠️</h2>
+            <div class="grid md:grid-cols-2 gap-6">
+                
+                <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-red-500">
+                    <h3 class="text-xl font-bold text-red-600 mb-3 flex items-center gap-2">
+                        <span>🤥</span> たまに嘘をつきます
+                    </h3>
+                    <p class="text-gray-700 mb-4">
+                        もっともらしい顔をして、間違った情報を自信満々に答えることがあります（ハルシネーション）。
+                    </p>
+                    <div class="bg-red-50 p-3 rounded text-sm text-red-800 font-bold">
+                        対策：重要な数字や事実は、必ず自分で裏取り（確認）をしましょう。
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-red-500">
+                    <h3 class="text-xl font-bold text-red-600 mb-3 flex items-center gap-2">
+                        <span>🔒</span> 秘密は話さない
+                    </h3>
+                    <p class="text-gray-700 mb-4">
+                        入力した内容はAIの学習に使われる可能性があります。
+                    </p>
+                    <div class="bg-red-50 p-3 rounded text-sm text-red-800 font-bold">
+                        対策：個人情報（住所・電話番号）や、会社の機密情報は絶対に入力しないでください。
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Conclusion -->
+    <section class="py-20 px-4 text-center bg-white">
+        <div class="max-w-2xl mx-auto">
+            <h2 class="text-3xl font-bold brand-font mb-6">まずは、気軽な一言から</h2>
+            <p class="text-xl text-gray-600 mb-8">
+                AIは完璧ではありませんが、使いこなせれば<br>あなたの時間を生み出す強力なパートナーになります。
+            </p>
+            <div class="inline-block bg-blue-50 border-2 border-blue-200 p-6 rounded-2xl mb-8">
+                <p class="font-bold text-blue-800 text-lg mb-2">おすすめの最初の一言</p>
+                <p class="text-2xl font-bold text-gray-800">「今日のお昼、何がいいかな？」</p>
+            </div>
+            <p class="text-gray-500 text-sm">ここから、あなたのAIライフを始めてみましょう。</p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-gray-300 py-8 text-center">
+        <p class="mb-2">初心者向け：ChatGPTの使い方ガイド</p>
+        <p class="text-xs text-gray-500">Based on the provided presentation script.</p>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- State Management ---
+        const state = {
+            isTyping: false
+        };
+
+        // --- Data: Scenarios from Presentation ---
+        const scenarios = {
+            recipe: {
+                user: "冷蔵庫にキャベツと卵があるんだけど、これで作れる和食のメインおかずを考えて。和食がいいな。",
+                ai: "キャベツと卵ですね！それなら**「キャベツと卵の甘辛味噌炒め」**はいかがでしょうか？\n\n**材料：**\n- キャベツ：1/4個\n- 卵：2個\n- 味噌、砂糖、酒：各スプーン1杯\n\n**作り方：**\n1. 卵を炒めて一度取り出す。\n2. キャベツを炒めて、しんなりしたら卵を戻す。\n3. 調味料を絡めて完成！\n\nご飯が進む一品ですよ🍚 他の食材があれば教えてくださいね。",
+                placeholder: "例：冷蔵庫に○○があるからレシピ考えて..."
+            },
+            email: {
+                user: "お客様に『明日の会議の日程を変更してほしい』という丁寧なお詫びメールを書きたいです。下書きを作って。",
+                ai: "承知いたしました。以下のような文面はいかがでしょうか。\n\n**件名：【重要】会議日程変更のお願いとお詫び**\n\n〇〇様\n\nいつも大変お世話になっております。\n〇〇株式会社の佐藤です。\n\n明日予定しておりましたお打ち合わせの件ですが、急な社用により、誠に勝手ながら日程の変更をお願いしたくご連絡いたしました。\n\n直前のご連絡となり、多大なるご迷惑をおかけしますことを深くお詫び申し上げます。\n\nもし可能でしたら、以下の日程で再調整をお願いできませんでしょうか。\n[日程候補]\n\nご検討のほど、何卒よろしくお願い申し上げます。",
+                placeholder: "例：謝罪メールの下書きを作って..."
+            },
+            explain: {
+                user: "『円安』ってどういうこと？小学生でもわかるように説明して。",
+                ai: "はい、解説しますね！\n\n「円安」とは、**日本の「円」の力が弱くなって、外国のものが高く感じること**です。\n\nたとえば：\nアメリカで1個1ドルのハンバーガーを買うとします。\n\n- **今まで：** 100円で買えた\n- **円安になると：** 150円出さないと買えない！\n\nこれが円安です。海外旅行に行くとお金がたくさんかかりますが、逆に日本の車などが海外で売れやすくなることもあるんですよ。",
+                placeholder: "例：〇〇って何？わかりやすく教えて..."
+            }
+        };
+
+        // --- Core Interaction Handling: Chat Simulator ---
+        function runScenario(type) {
+            if (state.isTyping) return; // Prevent double clicks
+            
+            const chatBox = document.getElementById('chat-messages');
+            const inputField = document.getElementById('fake-input');
+            const data = scenarios[type];
+
+            // 1. Clear previous chat (optional, but cleaner for demo)
+            // chatBox.innerHTML = ''; 
+            // Or keep history? Let's keep history but add a separator if needed. 
+            // For a clean demo, let's reset to initial state + new conversation.
+            chatBox.innerHTML = `<div class="ai-bubble chat-bubble text-gray-400 text-sm text-center">--- 新しい会話 ---</div>`;
+
+            // 2. Set input value visually
+            inputField.value = data.user;
+            state.isTyping = true;
+
+            // 3. Simulate User Sending (Delay)
+            setTimeout(() => {
+                // Add User Bubble
+                chatBox.innerHTML += `
+                    <div class="user-bubble chat-bubble">
+                        ${data.user}
+                    </div>
+                `;
+                inputField.value = '';
+                scrollToBottom();
+
+                // 4. Simulate AI Thinking (Typing Indicator)
+                setTimeout(() => {
+                    const typingId = 'typing-' + Date.now();
+                    chatBox.innerHTML += `
+                        <div id="${typingId}" class="ai-bubble chat-bubble typing-indicator">
+                            <span></span><span></span><span></span>
+                        </div>
+                    `;
+                    scrollToBottom();
+
+                    // 5. Show AI Response
+                    setTimeout(() => {
+                        document.getElementById(typingId).remove();
+                        // Format line breaks for HTML
+                        const formattedResponse = data.ai.replace(/\n/g, '<br>');
+                        chatBox.innerHTML += `
+                            <div class="ai-bubble chat-bubble">
+                                ${formattedResponse}
+                            </div>
+                        `;
+                        scrollToBottom();
+                        state.isTyping = false;
+                    }, 1500); // 1.5s thinking time
+
+                }, 500); // 0.5s before thinking starts
+
+            }, 800); // 0.8s user "typing" time
+        }
+
+        function scrollToBottom() {
+            const chatBox = document.getElementById('chat-messages');
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // --- Chart.js Implementation ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const ctx = document.getElementById('qualityChart').getContext('2d');
+            
+            // Chart Data: Visualizing Slide 7 (Generic vs Specific vs Role)
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['単語のみ\n(京都 観光)', '文章で聞く\n(京都のおすすめ教えて)', '具体的に+役割\n(70代と行く京都...)'],
+                    datasets: [{
+                        label: '回答の満足度（イメージ）',
+                        data: [30, 60, 95],
+                        backgroundColor: [
+                            'rgba(209, 213, 219, 0.7)', // Gray
+                            'rgba(147, 197, 253, 0.7)', // Blue
+                            'rgba(249, 115, 22, 0.7)'   // Orange (Hero)
+                        ],
+                        borderColor: [
+                            'rgba(209, 213, 219, 1)',
+                            'rgba(147, 197, 253, 1)',
+                            'rgba(249, 115, 22, 1)'
+                        ],
+                        borderWidth: 1,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const comments = [
+                                        "一般的すぎる回答になりがち...",
+                                        "これでもOKですが、修正が必要かも",
+                                        "ドンピシャな回答が返ってきます！"
+                                    ];
+                                    return comments[context.dataIndex];
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                display: false // Hide numbers for "conceptual" feel
+                            },
+                            grid: {
+                                display: false
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                font: {
+                                    size: 11
+                                }
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 2000,
+                        easing: 'easeOutQuart'
+                    }
+                }
+            });
+        });
+
+    </script>
+</body>
+</html>
