@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025年 食のトレンド調査レポート：ウェルパと楽しさの融合</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: #faf9f6; /* Warm off-white */
+            color: #4a5568;
+        }
+        h1, h2, h3, .rounded-font {
+            font-family: 'M PLUS Rounded 1c', sans-serif;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .active-tab {
+            background-color: #ed8936;
+            color: white;
+        }
+        .inactive-tab {
+            background-color: #edf2f7;
+            color: #4a5568;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .transition-all-300 {
+            transition: all 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+    <!-- Chosen Palette: Warm Neutrals with Orange Accent (Energy/Food) and Green (Health) -->
+    <!-- Application Structure Plan: 
+        1. Hero Section: Introduces "Wellpa" concept with a comparative Radar Chart (2024 vs 2025 values).
+        2. Trend Dashboard: A grid of interactive cards representing the 3 main sub-trends (Seiro, Spice, Sweets).
+        3. Detailed Exploration:
+           - Seiro: Focus on Efficiency vs Health using a Bar Chart.
+           - Spice (Malatang): Interactive ingredient selector showing the "Customization" aspect.
+           - Sweets: Texture toggle (Crunchy vs Chewy) with descriptive visuals.
+        4. Summary/Takeaway: Final synthesis of the "Experience" value.
+        Why this structure: It starts with the abstract concept (Wellpa), breaks it down into tangible trends, and allows users to explore the specific examples (Sweets, Spice) interactively, mirroring the report's flow from macro to micro.
+    -->
+    <!-- Visualization & Content Choices:
+        - Radar Chart: Ideal for showing the multi-dimensional shift from "Taipa/Cospa" to "Wellpa" (Health/Mental Satisfaction).
+        - Stacked Bar Chart: To visualize the "Seiro" benefit of combining multiple nutritional elements in one "time-slot".
+        - Dynamic Text/Lists: For "Malatang" and "Sweets" to simulate the "selection/customization" experience mentioned in the report without needing complex graphics.
+        - Interaction: Tabs and clickable cards to encourage active exploration of the trends.
+        - Justification: Keeping it simple and text-rich for the qualitative parts, using charts only where quantitative or comparative concepts (like the value shift) need reinforcement.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <span class="text-2xl font-bold text-orange-500 rounded-font">2025 食トレンド</span>
+                </div>
+                <div class="hidden md:flex items-center space-x-8">
+                    <button onclick="scrollToSection('hero')" class="text-gray-600 hover:text-orange-500 font-medium">ウェルパとは</button>
+                    <button onclick="scrollToSection('seiro')" class="text-gray-600 hover:text-orange-500 font-medium">せいろ蒸し</button>
+                    <button onclick="scrollToSection('spice')" class="text-gray-600 hover:text-orange-500 font-medium">スパイス＆中華</button>
+                    <button onclick="scrollToSection('sweets')" class="text-gray-600 hover:text-orange-500 font-medium">スイーツ</button>
+                </div>
+                <!-- Mobile menu button placeholder (simplified) -->
+                <div class="md:hidden flex items-center">
+                    <button class="text-gray-500 hover:text-orange-500 focus:outline-none" onclick="toggleMobileMenu()">
+                        <span class="text-2xl">☰</span>
+                    </button>
+                </div>
+            </div>
+            <!-- Mobile Menu -->
+            <div id="mobile-menu" class="hidden md:hidden pb-4">
+                <button onclick="scrollToSection('hero')" class="block py-2 text-gray-600 hover:text-orange-500 w-full text-left">ウェルパとは</button>
+                <button onclick="scrollToSection('seiro')" class="block py-2 text-gray-600 hover:text-orange-500 w-full text-left">せいろ蒸し</button>
+                <button onclick="scrollToSection('spice')" class="block py-2 text-gray-600 hover:text-orange-500 w-full text-left">スパイス＆中華</button>
+                <button onclick="scrollToSection('sweets')" class="block py-2 text-gray-600 hover:text-orange-500 w-full text-left">スイーツ</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-grow">
+        
+        <!-- Hero Section: The Rise of Wellpa -->
+        <section id="hero" class="bg-white py-12 md:py-20">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                    <div>
+                        <span class="inline-block px-3 py-1 bg-orange-100 text-orange-600 rounded-full text-sm font-semibold mb-4">2025年のキーワード</span>
+                        <h1 class="text-4xl md:text-5xl font-extrabold text-gray-800 mb-6 leading-tight">
+                            健康志向と楽しさの融合<br>
+                            <span class="text-orange-500">「ウェルパ」</span>の時代へ
+                        </h1>
+                        <p class="text-lg text-gray-600 mb-6 leading-relaxed">
+                            2025年、食のトレンドは大きく変化しました。「タイパ（時間対効果）」や「コスパ（費用対効果）」だけでなく、
+                            <strong>「心と体がどれだけ満たされるか」</strong>という「ウェルビーイング・パフォーマンス（ウェルパ）」が新たな基準となっています。
+                            無理なく続けられる健康食や、エンタメ性のある食体験が支持された1年でした。
+                        </p>
+                        <div class="bg-orange-50 p-6 rounded-xl border border-orange-100">
+                            <h3 class="font-bold text-orange-700 mb-2">💡 ウェルパ（Well-being Performance）とは？</h3>
+                            <p class="text-sm text-gray-700">
+                                効率よく健康的で、かつ美味しいものを求める姿勢。ただの時短ではなく、「準備は楽だが、体験としては豊か」であることを重視する価値観です。
+                            </p>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 p-6 rounded-2xl shadow-inner">
+                        <h3 class="text-center font-bold text-gray-700 mb-4">価値観のシフト：2024 vs 2025</h3>
+                        <div class="chart-container">
+                            <canvas id="wellpaChart"></canvas>
+                        </div>
+                        <p class="text-xs text-center text-gray-500 mt-4">※チャートはトレンドの傾向を視覚化したイメージです</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Trend 1: Seiro (Steamer) -->
+        <section id="seiro" class="py-16 bg-stone-50">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center max-w-3xl mx-auto mb-12">
+                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 text-green-600 mb-4 text-3xl">♨️</div>
+                    <h2 class="text-3xl font-bold text-gray-800 mb-4">1. 2025年の象徴「ワンプレートせいろ」</h2>
+                    <p class="text-gray-600">
+                        クックパッドの「食トレンド大賞2025」にも選ばれた「せいろ蒸し」。
+                        「丁寧な暮らし」への憧れと、現実的な「時短ニーズ」を見事に両立させた点が最大の勝因です。
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Feature Cards -->
+                    <div class="grid grid-cols-1 gap-4">
+                        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 card-hover transition-all-300">
+                            <h3 class="font-bold text-lg text-gray-800 mb-2 flex items-center">
+                                <span class="text-green-500 mr-2">●</span> ヘルシー＆栄養
+                            </h3>
+                            <p class="text-gray-600 text-sm">油を使わず、蒸気で加熱するため栄養素が逃げにくい。肉、魚、野菜をバランスよく摂取できます。</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 card-hover transition-all-300">
+                            <h3 class="font-bold text-lg text-gray-800 mb-2 flex items-center">
+                                <span class="text-blue-500 mr-2">●</span> 究極のタイパ
+                            </h3>
+                            <p class="text-gray-600 text-sm">食材を切って入れるだけ。調理中はずっと見ている必要がなく、そのまま食卓に出せるので洗い物も激減します。</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 card-hover transition-all-300">
+                            <h3 class="font-bold text-lg text-gray-800 mb-2 flex items-center">
+                                <span class="text-orange-500 mr-2">●</span> 映える食卓
+                            </h3>
+                            <p class="text-gray-600 text-sm">SNSでの投稿が急増。湯気が立ち上る様子や、蓋を開けた瞬間の彩りが「丁寧な暮らし」を演出します。</p>
+                        </div>
+                    </div>
+
+                    <!-- Chart Section -->
+                    <div class="bg-white p-6 rounded-xl shadow-md flex flex-col justify-center">
+                        <h3 class="text-center font-bold text-gray-700 mb-4">調理プロセスにおける「手間」の比較</h3>
+                        <div class="chart-container">
+                            <canvas id="seiroChart"></canvas>
+                        </div>
+                        <p class="text-center text-sm text-gray-500 mt-2">せいろは「食べる時間」と「自由時間」を最大化します</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Trend 2: Spice & Customization -->
+        <section id="spice" class="py-16 bg-orange-50">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                    <div class="lg:col-span-1">
+                        <h2 class="text-3xl font-bold text-gray-800 mb-4">2. 健康 × スパイス<br><span class="text-red-500 text-2xl">「麻辣湯」と「ガチ中華」</span></h2>
+                        <p class="text-gray-600 mb-6">
+                            春雨や野菜など、好きな具材を選べる「麻辣湯（マーラータン）」が大ヒット。
+                            Z世代を中心に「推し具材」をカスタムする楽しさと、スパイスによる発汗・健康効果が支持されています。
+                            本場の味「ガチ中華」や、和食をアレンジした「ネオ和食」も人気です。
+                        </p>
+                        <div class="bg-white p-6 rounded-xl shadow-sm">
+                            <h3 class="font-bold text-gray-800 mb-3">人気の理由</h3>
+                            <ul class="space-y-3">
+                                <li class="flex items-start">
+                                    <span class="text-red-500 mr-2">✔</span>
+                                    <span class="text-sm"><strong>自分だけのカスタム</strong>：その日の気分や体調に合わせて具材を選べる</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="text-red-500 mr-2">✔</span>
+                                    <span class="text-sm"><strong>罪悪感なし</strong>：春雨や大量の野菜でヘルシーに満腹になれる</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="text-red-500 mr-2">✔</span>
+                                    <span class="text-sm"><strong>エンタメ性</strong>：選ぶ工程自体が楽しい体験になる</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- Interactive Ingredient Selector -->
+                    <div class="lg:col-span-2 bg-white p-8 rounded-2xl shadow-lg border border-orange-100">
+                        <h3 class="text-xl font-bold text-gray-800 mb-6 text-center">🍲 あなたなら何を入れる？カスタム体験</h3>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8" id="ingredient-buttons">
+                            <!-- JS generates buttons here -->
+                        </div>
+                        
+                        <div id="ingredient-display" class="bg-gray-50 p-6 rounded-xl border border-gray-200 min-h-[150px] flex items-center justify-center text-center transition-all-300">
+                            <p class="text-gray-500">上の具材をクリックして、特徴をチェック！</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Trend 3: Hybrid Sweets -->
+        <section id="sweets" class="py-16 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center max-w-3xl mx-auto mb-10">
+                    <span class="text-pink-500 font-bold tracking-wider uppercase text-sm">Sweets Trend 2025</span>
+                    <h2 class="text-3xl font-bold text-gray-800 mb-4 mt-2">3. 食感が命の「ハイブリッド・スイーツ」</h2>
+                    <p class="text-gray-600">
+                        2025年のスイーツは「味」以上に<strong>「食感」</strong>がトレンド。
+                        ASMR映えする「ザクザク」や、濃厚な「もちもち・クリーミー」など、極端な食感がSNSで爆発的に拡散されました。
+                    </p>
+                </div>
+
+                <!-- Texture Toggle Interaction -->
+                <div class="max-w-4xl mx-auto">
+                    <div class="flex justify-center mb-8 bg-gray-100 p-1 rounded-full w-fit mx-auto">
+                        <button id="btn-zaku" onclick="showTexture('zaku')" class="px-8 py-3 rounded-full text-lg font-bold transition-all-300 active-tab shadow-md">
+                            ザクザク派
+                        </button>
+                        <button id="btn-mochi" onclick="showTexture('mochi')" class="px-8 py-3 rounded-full text-lg font-bold text-gray-500 hover:text-gray-700 transition-all-300">
+                            もちもち・濃厚派
+                        </button>
+                    </div>
+
+                    <div id="texture-content" class="bg-pink-50 rounded-2xl p-8 border border-pink-100 shadow-sm transition-all-300">
+                        <!-- Content injected by JS -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Trend 4: Gut Health & Summary -->
+        <section class="py-16 bg-stone-100">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4">4. 「腸活」のパーソナライズ化</h2>
+                        <p class="text-gray-600 mb-6">
+                            「ウェルパ」意識の高まりとともに、腸内環境を整える「腸活」も進化しました。
+                            一律の健康法ではなく、発酵性食物繊維の摂取や、自分に合ったグラノーラを選ぶサービスなど、
+                            より<strong>パーソナライズ（個人化）</strong>されたアプローチが定着しています。
+                        </p>
+                        <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-green-500">
+                            <h4 class="font-bold text-gray-800 mb-2">ポイント</h4>
+                            <p class="text-sm text-gray-600">「なんとなく良さそう」から「自分に合っているから選ぶ」へ。<br>納得感のある健康消費がスタンダードに。</p>
+                        </div>
+                    </div>
+                    <div>
+                         <h2 class="text-2xl font-bold text-gray-800 mb-4">まとめ：2025年の食</h2>
+                         <div class="bg-white p-8 rounded-2xl shadow-md h-full flex flex-col justify-center items-center text-center">
+                             <div class="text-4xl mb-4">⚖️</div>
+                             <h3 class="text-xl font-bold text-gray-800 mb-2">準備は楽に、体験は豊かに</h3>
+                             <p class="text-gray-600 mb-4">
+                                 単に美味しいだけでなく、<br>
+                                 <span class="font-bold text-orange-500">「それを食べることで心や体がどう整うか」</span><br>
+                                 という視点が重要視された1年でした。
+                             </p>
+                             <div class="w-full bg-gray-100 rounded-full h-2 mb-2 overflow-hidden">
+                                 <div class="bg-gradient-to-r from-green-400 to-orange-400 h-2 rounded-full" style="width: 100%"></div>
+                             </div>
+                             <p class="text-xs text-gray-400">Health & Entertainment Balance</p>
+                         </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-gray-800 text-white py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <p class="text-gray-400 text-sm">Based on 2025 Food Trends Survey Report</p>
+            <p class="text-gray-500 text-xs mt-2">© 2026 Interactive Report Demo</p>
+        </div>
+    </footer>
+
+    <script>
+        // --- Data & State ---
+        const malatangIngredients = [
+            { name: "春雨", icon: "🍜", benefit: "つるっとした食感で低GI。麻辣湯の主役。", type: "carb" },
+            { name: "青梗菜", icon: "🥬", benefit: "ビタミン豊富。シャキシャキ食感がアクセント。", type: "veg" },
+            { name: "キクラゲ", icon: "🍄", benefit: "食物繊維の王様。コリコリ食感が楽しい。", type: "veg" },
+            { name: "羊肉", icon: "🍖", benefit: "L-カルニチンで脂肪燃焼効果も期待。", type: "meat" },
+            { name: "湯葉", icon: "🥢", benefit: "高タンパクでスープをよく吸う人気具材。", type: "soy" },
+            { name: "レンコン", icon: "🥔", benefit: "ビタミンCと食物繊維。歯ごたえ抜群。", type: "veg" }
+        ];
+
+        const sweetsData = {
+            zaku: {
+                title: "ドバイチョコレート",
+                desc: "中東発のトレンドスイーツ。ピスタチオクリームと「カダイフ（極細の麺状生地）」をチョコで包んだ一品。",
+                keywords: ["#ASMR", "#ザクザク", "#ピスタチオ", "#極厚"],
+                icon: "🍫",
+                color: "bg-amber-100 border-amber-200 text-amber-800"
+            },
+            mochi: {
+                title: "グリークヨーグルト & もっちりドーナツ",
+                desc: "水切り製法の濃厚ヨーグルトや、カヌレ×チュロスのような進化系ドーナツ。濃厚で満たされる食感。",
+                keywords: ["#もっちり", "#クリーミー", "#ヘルシー", "#ボウル"],
+                icon: "🥣",
+                color: "bg-blue-100 border-blue-200 text-blue-800"
+            }
+        };
+
+        // --- Core Interactions ---
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        function scrollToSection(id) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+                // Close mobile menu if open
+                document.getElementById('mobile-menu').classList.add('hidden');
+            }
+        }
+
+        // Malatang Ingredient Selector
+        function renderIngredients() {
+            const container = document.getElementById('ingredient-buttons');
+            container.innerHTML = malatangIngredients.map((ing, index) => `
+                <button onclick="selectIngredient(${index})" 
+                    class="flex flex-col items-center justify-center p-4 bg-gray-50 rounded-lg hover:bg-orange-100 hover:border-orange-300 border border-transparent transition-all duration-200 group">
+                    <span class="text-3xl mb-2 group-hover:scale-110 transition-transform">${ing.icon}</span>
+                    <span class="font-bold text-gray-700 text-sm">${ing.name}</span>
+                </button>
+            `).join('');
+        }
+
+        function selectIngredient(index) {
+            const ing = malatangIngredients[index];
+            const display = document.getElementById('ingredient-display');
+            
+            // Animate out
+            display.style.opacity = '0';
+            
+            setTimeout(() => {
+                display.innerHTML = `
+                    <div class="animate-fade-in">
+                        <div class="text-4xl mb-2">${ing.icon}</div>
+                        <h4 class="text-xl font-bold text-gray-800 mb-1">${ing.name}</h4>
+                        <p class="text-gray-600 font-medium">${ing.benefit}</p>
+                        <span class="inline-block mt-3 px-3 py-1 bg-white text-orange-500 text-xs font-bold rounded-full border border-orange-200">
+                            カスタム満足度 UP!
+                        </span>
+                    </div>
+                `;
+                display.style.opacity = '1';
+                // Add highlight class to display to visually indicate change
+                display.classList.remove('bg-gray-50');
+                display.classList.add('bg-orange-50', 'border-orange-200');
+            }, 300);
+        }
+
+        // Sweets Texture Toggle
+        function showTexture(type) {
+            const content = document.getElementById('texture-content');
+            const btnZaku = document.getElementById('btn-zaku');
+            const btnMochi = document.getElementById('btn-mochi');
+            const data = sweetsData[type];
+
+            // Update Buttons
+            if (type === 'zaku') {
+                btnZaku.classList.add('active-tab', 'shadow-md');
+                btnZaku.classList.remove('text-gray-500', 'hover:text-gray-700');
+                btnMochi.classList.remove('active-tab', 'shadow-md');
+                btnMochi.classList.add('text-gray-500', 'hover:text-gray-700');
+            } else {
+                btnMochi.classList.add('active-tab', 'shadow-md');
+                btnMochi.classList.remove('text-gray-500', 'hover:text-gray-700');
+                btnZaku.classList.remove('active-tab', 'shadow-md');
+                btnZaku.classList.add('text-gray-500', 'hover:text-gray-700');
+            }
+
+            // Animate Content
+            content.style.opacity = '0';
+            
+            setTimeout(() => {
+                content.innerHTML = `
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+                        <div class="md:col-span-1 text-center">
+                            <div class="text-8xl mb-4 animate-bounce-slow">${data.icon}</div>
+                        </div>
+                        <div class="md:col-span-2">
+                            <h3 class="text-2xl font-bold text-gray-800 mb-2">${data.title}</h3>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                ${data.keywords.map(k => `<span class="px-2 py-1 bg-white rounded text-xs font-bold text-gray-500 shadow-sm">${k}</span>`).join('')}
+                            </div>
+                            <p class="text-gray-700 leading-relaxed text-lg">${data.desc}</p>
+                        </div>
+                    </div>
+                `;
+                content.className = `rounded-2xl p-8 border shadow-sm transition-all-300 ${data.color}`;
+                content.style.opacity = '1';
+            }, 200);
+        }
+
+        // --- Chart Initialization ---
+
+        function initCharts() {
+            // 1. Radar Chart: Wellpa Concept
+            const ctxRadar = document.getElementById('wellpaChart').getContext('2d');
+            new Chart(ctxRadar, {
+                type: 'radar',
+                data: {
+                    labels: ['健康 (Health)', '心の満足 (Mental)', '時短 (Time)', 'コスパ (Cost)', '映え (Visual)'],
+                    datasets: [{
+                        label: '2024年 (タイパ・コスパ重視)',
+                        data: [60, 50, 90, 90, 70],
+                        fill: true,
+                        backgroundColor: 'rgba(156, 163, 175, 0.2)',
+                        borderColor: 'rgb(156, 163, 175)',
+                        pointBackgroundColor: 'rgb(156, 163, 175)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgb(156, 163, 175)'
+                    }, {
+                        label: '2025年 (ウェルパ重視)',
+                        data: [90, 95, 80, 75, 85],
+                        fill: true,
+                        backgroundColor: 'rgba(237, 137, 54, 0.2)',
+                        borderColor: 'rgb(237, 137, 54)',
+                        pointBackgroundColor: 'rgb(237, 137, 54)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgb(237, 137, 54)'
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: { color: '#e5e7eb' },
+                            grid: { color: '#e5e7eb' },
+                            pointLabels: {
+                                font: { size: 12, family: "'Noto Sans JP', sans-serif" },
+                                color: '#4b5563'
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 100
+                        }
+                    },
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+
+            // 2. Bar Chart: Seiro Efficiency
+            const ctxBar = document.getElementById('seiroChart').getContext('2d');
+            new Chart(ctxBar, {
+                type: 'bar',
+                data: {
+                    labels: ['一般的な夕食調理', 'ワンプレートせいろ'],
+                    datasets: [
+                        {
+                            label: '準備・調理作業 (Labor)',
+                            data: [45, 10], // Minutes of active work
+                            backgroundColor: 'rgba(239, 68, 68, 0.7)', // Red
+                        },
+                        {
+                            label: '待ち時間・自分時間 (Free Time)',
+                            data: [15, 30], // Minutes waiting (can do other things)
+                            backgroundColor: 'rgba(34, 197, 94, 0.7)', // Green
+                        },
+                        {
+                            label: '片付け時間 (Cleanup)',
+                            data: [20, 5], // Minutes
+                            backgroundColor: 'rgba(59, 130, 246, 0.7)', // Blue
+                        }
+                    ]
+                },
+                options: {
+                    indexAxis: 'y', // Horizontal bar
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            stacked: true,
+                            title: { display: true, text: '所要時間 (分)' }
+                        },
+                        y: {
+                            stacked: true
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                footer: function(tooltipItems) {
+                                    if(tooltipItems[0].dataIndex === 1) {
+                                        return "★洗い物が少なく、調理中も自由！";
+                                    }
+                                    return "";
+                                }
+                            }
+                        },
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        }
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            initCharts();
+            renderIngredients();
+            showTexture('zaku'); // Default view
+        });
+
+    </script>
+</body>
+</html>
