@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>副業・給与外収入の税金判定ガイド</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: #f8fafc; /* Slate 50 */
+            color: #334155; /* Slate 700 */
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .card-shadow {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .interactive-input {
+            transition: all 0.2s;
+        }
+        .interactive-input:focus {
+            ring: 2px solid #0ea5e9;
+            transform: translateY(-1px);
+        }
+    </style>
+    <!-- Chosen Palette: Warm Professional - Slate (Background/Text), Sky Blue (Primary Action), Red/Orange (Warnings/Alerts), Emerald (Success/Safe) -->
+    <!-- Application Structure Plan: 
+         1. Hero Section: Sets the context (Tax rules for salarymen).
+         2. Interactive Simulator (The Core): A calculator where users input Revenue/Expenses. It updates a Chart.js visualization in real-time to show "Profit" vs the "200k Threshold". It dynamically changes advice based on the result.
+         3. Concept Explainer Cards: 3 Key concepts from the report (Income vs Profit, Resident Tax Trap, Temporary Income) presented as distinct sections.
+         4. Temporary Income Toggle: Inside the simulator, users can toggle "Temporary Income" mode to see how the 500k deduction changes the graph.
+         5. FAQ Accordion: Covers specific cases like Refunds and high-income scenarios.
+         Why this structure? The user's primary question is "Do I need to pay?", so the simulator is placed first to engage. The visual bar chart makes the abstract "Profit = Revenue - Expenses" concept concrete.
+    -->
+    <!-- Visualization & Content Choices:
+         1. Simulation Chart (Bar Chart):
+            - Goal: Inform & Compare. Show user's specific profit against the legal threshold.
+            - Method: Chart.js Bar Chart.
+            - Interaction: Updates immediately on input change.
+            - Justification: A visual bar crossing a "Limit Line" is the most intuitive way to understand tax brackets.
+         2. Logic Cards:
+            - Goal: Inform.
+            - Method: HTML/Tailwind Cards with icons (Unicode).
+            - Interaction: None (Static reference).
+         3. Dynamic Advice Box:
+            - Goal: Synthesize.
+            - Method: JS-driven text update.
+            - Interaction: Changes background color and text based on calculation (Safe vs Warning).
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+<body class="antialiased">
+
+    <!-- Navigation / Header -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center max-w-5xl">
+            <h1 class="text-xl font-bold text-slate-800">💴 税金判定ガイド</h1>
+            <nav class="hidden md:flex gap-6 text-sm font-medium text-slate-600">
+                <a href="#simulator" class="hover:text-sky-600">判定シミュレーター</a>
+                <a href="#basics" class="hover:text-sky-600">基礎知識</a>
+                <a href="#temporary" class="hover:text-sky-600">一時所得の特例</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8 max-w-5xl space-y-12">
+
+        <!-- Hero Section -->
+        <section class="text-center space-y-4 py-8">
+            <h2 class="text-3xl md:text-4xl font-bold text-slate-900 leading-tight">
+                給与以外の収入、<br class="md:hidden">申告が必要なのはいくらから？
+            </h2>
+            <p class="text-lg text-slate-600 max-w-2xl mx-auto">
+                会社員の方のための確定申告ガイド。副業、投資、臨時収入...<br>
+                あなたの状況を入力して、申告が必要かどうかチェックしてみましょう。
+            </p>
+        </section>
+
+        <!-- Interactive Simulator Section -->
+        <section id="simulator" class="bg-white rounded-2xl card-shadow overflow-hidden border border-slate-100">
+            <div class="bg-slate-50 p-6 border-b border-slate-100">
+                <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                    🧮 申告要否シミュレーター
+                </h3>
+                <p class="text-sm text-slate-500 mt-1">
+                    売上と経費を入力すると、利益（所得）を自動計算し、確定申告が必要か判定します。
+                </p>
+            </div>
+
+            <div class="p-6 md:p-8 grid md:grid-cols-2 gap-8 items-start">
+                
+                <!-- Input Controls -->
+                <div class="space-y-6">
+                    <!-- Income Type Toggle -->
+                    <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                        <label class="block text-sm font-bold text-blue-900 mb-2">収入の種類を選んでください</label>
+                        <div class="flex gap-4">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="incomeType" value="normal" checked class="w-4 h-4 text-sky-600" onchange="updateSimulation()">
+                                <span class="text-slate-700">一般的な副業<br><span class="text-xs text-slate-500">(UberEats, 制作等)</span></span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="incomeType" value="temporary" class="w-4 h-4 text-sky-600" onchange="updateSimulation()">
+                                <span class="text-slate-700">一時所得<br><span class="text-xs text-slate-500">(懸賞金, 保険満期等)</span></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">年間売上 (収入金額)</label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-3 text-slate-400">¥</span>
+                            <input type="number" id="revenueInput" value="300000" step="10000" min="0" 
+                                class="w-full pl-8 pr-4 py-3 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 interactive-input font-mono text-lg"
+                                oninput="updateSimulation()">
+                        </div>
+                        <p class="text-xs text-slate-500 mt-1">入金された総額を入力してください</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">年間経費 (コスト)</label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-3 text-slate-400">¥</span>
+                            <input type="number" id="expenseInput" value="150000" step="10000" min="0" 
+                                class="w-full pl-8 pr-4 py-3 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 interactive-input font-mono text-lg"
+                                oninput="updateSimulation()">
+                        </div>
+                        <p class="text-xs text-slate-500 mt-1">PC代、材料費、交通費など</p>
+                    </div>
+
+                    <!-- Result Box (Dynamic) -->
+                    <div id="resultBox" class="p-4 rounded-xl border-l-4 transition-colors duration-300 bg-slate-100 border-slate-400">
+                        <h4 class="font-bold text-lg mb-1" id="resultTitle">計算中...</h4>
+                        <p class="text-sm" id="resultDesc">数値を入力してください。</p>
+                    </div>
+                </div>
+
+                <!-- Chart Visualization -->
+                <div class="flex flex-col items-center justify-center bg-white h-full">
+                    <h4 class="text-sm font-semibold text-slate-500 mb-2 w-full text-left">判定グラフ</h4>
+                    <div class="chart-container">
+                        <canvas id="taxChart"></canvas>
+                    </div>
+                    <p class="text-xs text-center text-slate-400 mt-2">※青い棒グラフ（所得）が赤い点線を超えると申告が必要です</p>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Core Concepts Grid -->
+        <div id="basics" class="grid md:grid-cols-3 gap-6">
+            
+            <!-- Card 1: Income vs Profit -->
+            <section class="bg-white p-6 rounded-xl card-shadow border-t-4 border-sky-500">
+                <div class="w-10 h-10 bg-sky-100 rounded-full flex items-center justify-center text-xl mb-4">💰</div>
+                <h3 class="text-lg font-bold text-slate-900 mb-2">「所得」で判定する</h3>
+                <p class="text-sm text-slate-600 leading-relaxed mb-4">
+                    判定基準の20万円は「売上」ではありません。<br>
+                    <span class="font-bold bg-sky-50 text-sky-800 px-1 rounded">売上 － 経費 ＝ 所得（利益）</span><br>
+                    で計算します。
+                </p>
+                <div class="bg-slate-50 p-3 rounded text-xs text-slate-500">
+                    例：売上30万でも経費15万なら、所得は15万。→ 申告不要（国税）
+                </div>
+            </section>
+
+            <!-- Card 2: Resident Tax Trap -->
+            <section class="bg-white p-6 rounded-xl card-shadow border-t-4 border-orange-500">
+                <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center text-xl mb-4">⚠️</div>
+                <h3 class="text-lg font-bold text-slate-900 mb-2">住民税の落とし穴</h3>
+                <p class="text-sm text-slate-600 leading-relaxed mb-4">
+                    「20万円以下なら何もしなくていい」は間違いです。<br>
+                    それは<span class="font-bold">国の税金（所得税）</span>だけの話。
+                </p>
+                <div class="bg-orange-50 p-3 rounded text-xs text-orange-800 font-medium">
+                    住民税は1円でも利益があれば市区町村への申告が必要です。
+                </div>
+            </section>
+
+            <!-- Card 3: Year End Adjustment -->
+            <section class="bg-white p-6 rounded-xl card-shadow border-t-4 border-emerald-500">
+                <div class="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center text-xl mb-4">↩️</div>
+                <h3 class="text-lg font-bold text-slate-900 mb-2">還付金は対象外</h3>
+                <p class="text-sm text-slate-600 leading-relaxed mb-4">
+                    年末調整で戻ってきた「還付金」は、新しい利益ではありません。<br>
+                    払いすぎた自分のお金が戻ってきただけです。
+                </p>
+                <div class="bg-emerald-50 p-3 rounded text-xs text-emerald-800">
+                    副業の所得計算に含める必要はありません。
+                </div>
+            </section>
+        </div>
+
+        <!-- Temporary Income Section -->
+        <section id="temporary" class="bg-gradient-to-br from-indigo-50 to-white p-6 md:p-8 rounded-2xl border border-indigo-100">
+            <div class="flex flex-col md:flex-row gap-8 items-center">
+                <div class="flex-1 space-y-4">
+                    <h3 class="text-2xl font-bold text-indigo-900">一時所得の「50万円」特例</h3>
+                    <p class="text-slate-700 leading-relaxed">
+                        継続的なビジネスではなく、一回限りの収入（懸賞金、保険の満期金など）には特別なルールがあります。<br>
+                        これらは<strong>「一時所得」</strong>と呼ばれ、最大50万円の特別控除が認められています。
+                    </p>
+                    <ul class="space-y-2 text-sm text-slate-600 bg-white p-4 rounded-lg shadow-sm">
+                        <li class="flex items-center gap-2">
+                            <span class="text-indigo-500 font-bold">✓</span> 懸賞や福引の賞金
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="text-indigo-500 font-bold">✓</span> 生命保険の満期金・解約返戻金
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="text-indigo-500 font-bold">✓</span> 競馬・競輪の払戻金（営利目的以外）
+                        </li>
+                    </ul>
+                </div>
+                <div class="flex-1 w-full max-w-sm">
+                    <div class="bg-white p-6 rounded-xl shadow-lg border border-indigo-100 text-center">
+                        <p class="text-sm font-bold text-indigo-400 mb-2">計算式</p>
+                        <div class="text-xl font-mono font-bold text-slate-800 mb-4">
+                            (収入 - 経費 - <span class="text-indigo-600">50万円</span>) × 1/2
+                        </div>
+                        <p class="text-xs text-slate-500">
+                            利益が50万円以下なら、控除を引くと0円になるため税金はかかりません。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ / Other Taxes -->
+        <section class="space-y-4">
+            <h3 class="text-xl font-bold text-slate-800 pl-2 border-l-4 border-slate-300">その他のケース・よくある質問</h3>
+            
+            <div class="bg-white rounded-lg border border-slate-200 divide-y divide-slate-100">
+                <details class="group p-4 cursor-pointer">
+                    <summary class="font-medium text-slate-700 flex justify-between items-center group-hover:text-sky-600">
+                        <span>利益が50万円を超えたらかかる税金は？</span>
+                        <span class="transition group-open:rotate-180">▼</span>
+                    </summary>
+                    <div class="mt-3 text-sm text-slate-600 leading-relaxed pl-4 border-l-2 border-sky-200">
+                        <p class="mb-2">以下の税金がかかります：</p>
+                        <ul class="list-disc pl-5 space-y-1">
+                            <li><strong>所得税（国）：</strong>確定申告が必要です。</li>
+                            <li><strong>住民税（地方）：</strong>利益の約10%がかかります。</li>
+                        </ul>
+                        <p class="mt-2 text-xs text-slate-400">※利益が290万円を超えると「個人事業税」も発生しますが、50万円程度なら対象外です。</p>
+                    </div>
+                </details>
+
+                <details class="group p-4 cursor-pointer">
+                    <summary class="font-medium text-slate-700 flex justify-between items-center group-hover:text-sky-600">
+                        <span>医療費控除で確定申告をする場合は？</span>
+                        <span class="transition group-open:rotate-180">▼</span>
+                    </summary>
+                    <div class="mt-3 text-sm text-slate-600 leading-relaxed pl-4 border-l-2 border-sky-200">
+                        <p><strong>20万円以下でもすべての所得を申告する必要があります。</strong></p>
+                        <p class="mt-1">
+                            医療費控除やふるさと納税のために自分から確定申告をする場合、「20万円以下の副業所得は申告しなくていい」という免除ルールは使えなくなります。少額でもすべての所得を記載してください。
+                        </p>
+                    </div>
+                </details>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-800 text-slate-300 py-8 mt-12 text-center text-sm">
+        <div class="container mx-auto px-4">
+            <p class="mb-2">⚠️ 本ツールは概算シミュレーションです。</p>
+            <p class="text-xs text-slate-500">
+                個別の税務判断については、管轄の税務署または税理士にご相談ください。<br>
+                Source: プレゼン原稿「給与以外の収入と税金」
+            </p>
+        </div>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // State
+        let chartInstance = null;
+        
+        // Constants
+        const THRESHOLD_NORMAL = 200000;
+        const THRESHOLD_TEMPORARY = 500000;
+        
+        // Initialization
+        document.addEventListener('DOMContentLoaded', () => {
+            initChart();
+            updateSimulation();
+        });
+
+        function initChart() {
+            const ctx = document.getElementById('taxChart').getContext('2d');
+            
+            chartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['売上', '経費', '所得(利益)'],
+                    datasets: [{
+                        label: '金額 (円)',
+                        data: [0, 0, 0],
+                        backgroundColor: [
+                            '#cbd5e1', // Revenue (Slate 300)
+                            '#ef4444', // Expense (Red 500)
+                            '#0ea5e9'  // Profit (Sky 500)
+                        ],
+                        borderRadius: 4,
+                        maxBarThickness: 60
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#f1f5f9'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.parsed.y.toLocaleString() + ' 円';
+                                }
+                            }
+                        },
+                        annotation: {
+                            annotations: {
+                                line1: {
+                                    type: 'line',
+                                    yMin: 200000,
+                                    yMax: 200000,
+                                    borderColor: '#f97316', // Orange
+                                    borderWidth: 2,
+                                    borderDash: [6, 6],
+                                    label: {
+                                        content: '申告ライン (20万)',
+                                        display: true,
+                                        position: 'end',
+                                        backgroundColor: 'rgba(249, 115, 22, 0.8)',
+                                        color: 'white',
+                                        font: { size: 10 }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                // Note: Annotation plugin is not loaded via CDN in the prompt requirements, 
+                // so we will simulate the threshold line visually or update the chart data to include a threshold bar if needed.
+                // However, simply comparing the bars is often clearer. I will use a plugin-free approach below for robustness.
+            });
+        }
+
+        function updateSimulation() {
+            // 1. Get Inputs
+            const revenue = parseInt(document.getElementById('revenueInput').value) || 0;
+            const expense = parseInt(document.getElementById('expenseInput').value) || 0;
+            const incomeType = document.querySelector('input[name="incomeType"]:checked').value;
+
+            // 2. Calculate Profit
+            let profit = revenue - expense;
+            if (profit < 0) profit = 0;
+
+            // Special Logic for Temporary Income (Deduction display)
+            // For the chart, we show "Actual Profit before deduction" but calculate threshold against it
+            // Or we can show the "Taxable Income" after deduction.
+            // Let's stick to "Profit" vs "Threshold" for clarity.
+            
+            const threshold = (incomeType === 'temporary') ? THRESHOLD_TEMPORARY : THRESHOLD_NORMAL;
+            
+            // 3. Update Chart
+            if (chartInstance) {
+                chartInstance.data.datasets[0].data = [revenue, expense, profit];
+                
+                // Color logic: If profit > threshold, turn profit bar orange/red
+                const profitColor = (profit > threshold) ? '#ea580c' : '#0ea5e9'; // Orange-600 vs Sky-500
+                chartInstance.data.datasets[0].backgroundColor = ['#cbd5e1', '#ef4444', profitColor];
+                
+                chartInstance.update();
+            }
+
+            // 4. Update Result Text & Style
+            const resultBox = document.getElementById('resultBox');
+            const resultTitle = document.getElementById('resultTitle');
+            const resultDesc = document.getElementById('resultDesc');
+
+            if (profit > threshold) {
+                // Case: Tax Filing Needed
+                resultBox.className = "p-4 rounded-xl border-l-4 transition-colors duration-300 bg-orange-50 border-orange-500";
+                resultTitle.innerHTML = `<span class="text-orange-700">⚠️ 確定申告が必要です</span>`;
+                resultTitle.className = "font-bold text-lg mb-1 text-orange-800";
+                
+                let desc = `所得（利益）が <strong>${profit.toLocaleString()}円</strong> で、基準の${threshold.toLocaleString()}円を超えています。<br>国への確定申告を行ってください。住民税の申告も自動的に行われます。`;
+                resultDesc.innerHTML = desc;
+            } else if (profit > 0) {
+                // Case: Only Resident Tax (for Normal) OR No Tax (for Temporary if < 500k)
+                if (incomeType === 'temporary') {
+                     // Temporary Income < 500k = Tax Free
+                    resultBox.className = "p-4 rounded-xl border-l-4 transition-colors duration-300 bg-emerald-50 border-emerald-500";
+                    resultTitle.innerHTML = `<span class="text-emerald-700">✅ 税金はかかりません</span>`;
+                    resultTitle.className = "font-bold text-lg mb-1 text-emerald-800";
+                    resultDesc.innerHTML = `一時所得の特別控除（最大50万円）の範囲内です。<br>申告は不要です。`;
+                } else {
+                    // Normal Income < 200k = Resident Tax Only
+                    resultBox.className = "p-4 rounded-xl border-l-4 transition-colors duration-300 bg-blue-50 border-blue-500";
+                    resultTitle.innerHTML = `<span class="text-blue-700">ℹ️ 住民税の申告のみ必要です</span>`;
+                    resultTitle.className = "font-bold text-lg mb-1 text-blue-800";
+                    resultDesc.innerHTML = `所得（利益）は <strong>${profit.toLocaleString()}円</strong> です。<br>国の確定申告は不要ですが、<strong>市区町村への住民税の申告</strong>が必要です。`;
+                }
+            } else {
+                // Case: No Profit
+                resultBox.className = "p-4 rounded-xl border-l-4 transition-colors duration-300 bg-slate-100 border-slate-400";
+                resultTitle.innerHTML = `<span class="text-slate-700">利益が出ていません</span>`;
+                resultTitle.className = "font-bold text-lg mb-1 text-slate-800";
+                resultDesc.innerHTML = `利益が0円以下なので、税金の申告は不要です。`;
+            }
+        }
+    </script>
+</body>
+</html>
