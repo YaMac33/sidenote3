@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>定年延長制度ナビゲーター | 公務員 vs 民間</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Google Fonts: Noto Sans JP -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Chosen Palette: Warm Professional
+         Background: #fbfbfa (Warm Neutral)
+         Public Sector Theme: #0f4c81 (Classic Blue)
+         Private Sector Theme: #d97706 (Bronze/Orange)
+         Text: #333333 (Dark Grey)
+    -->
+    
+    <!-- Application Structure Plan: 
+         1. Header: Sets the context (Life 100-year era).
+         2. Tab Navigation: Central controller for the SPA. Allows users to jump between "Overview", "Public Sector Details", "Private Sector Details", and "Summary Matrix".
+         3. Dynamic Content Area:
+            - Overview: High-level contrast (Extension vs Re-employment) using large cards.
+            - Public Track: Focuses on the "Schedule" (Step Chart) and "Salary/Role" specifics.
+            - Private Track: Focuses on "Market Reality" (Doughnut Chart) and "Legal Obligations".
+            - Comparison: Side-by-side data table and Salary Chart.
+         4. Footer: Sources and disclaimers.
+    -->
+
+    <!-- Visualization & Content Choices:
+         1. Comparison Intro -> Goal: Inform -> Method: Two distinct cards with icons -> Interaction: Hover effects -> Justification: Immediate visual separation of the two paths.
+         2. Public Schedule -> Goal: Change (Timeline) -> Method: Chart.js Line (Stepped) -> Interaction: Tooltip shows specific birth year/retirement age -> Justification: The "2 years = 1 year extension" rule is confusing in text; a step chart makes it obvious.
+         3. Private Methods -> Goal: Inform (Proportions) -> Method: Chart.js Doughnut -> Interaction: Hover for % -> Justification: Shows that "Re-employment" is the overwhelming majority (67%).
+         4. Salary Gap -> Goal: Compare -> Method: Chart.js Bar -> Interaction: Compare 3 bars -> Justification: Visually demonstrates the 70% vs 50-70% drop-off.
+    -->
+
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <style>
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: #fbfbfa;
+            color: #333;
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+
+        /* Chart Container Utilities */
+        .chart-wrapper {
+            position: relative;
+            width: 100%;
+            height: 300px; /* Default mobile height */
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-wrapper {
+                height: 350px;
+            }
+        }
+        
+        .tab-active {
+            border-bottom: 3px solid #0f4c81;
+            color: #0f4c81;
+            font-weight: 700;
+        }
+        .tab-inactive {
+            border-bottom: 3px solid transparent;
+            color: #64748b;
+        }
+        .tab-inactive:hover {
+            color: #334155;
+            border-bottom: 3px solid #cbd5e1;
+        }
+
+        /* Card Hover Effects */
+        .info-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .info-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+    <!-- Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-20">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-800">🏛️🏢 定年延長制度ナビゲーター</h1>
+                <p class="text-sm text-slate-500">人生100年時代の働き方・ライフプランシミュレーション</p>
+            </div>
+            <div class="mt-2 md:mt-0">
+                <span class="bg-blue-100 text-blue-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded">公務員</span>
+                <span class="bg-orange-100 text-orange-800 text-xs font-medium px-2.5 py-0.5 rounded">民間企業</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="bg-white border-b border-slate-200">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="flex space-x-8 overflow-x-auto">
+                <button onclick="switchTab('overview')" id="tab-overview" class="tab-active py-4 px-2 whitespace-nowrap transition-colors">
+                    基本の違い
+                </button>
+                <button onclick="switchTab('public')" id="tab-public" class="tab-inactive py-4 px-2 whitespace-nowrap transition-colors">
+                    【公務員】制度詳細
+                </button>
+                <button onclick="switchTab('private')" id="tab-private" class="tab-inactive py-4 px-2 whitespace-nowrap transition-colors">
+                    【民間】制度詳細
+                </button>
+                <button onclick="switchTab('comparison')" id="tab-comparison" class="tab-inactive py-4 px-2 whitespace-nowrap transition-colors">
+                    比較・まとめ
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow max-w-6xl mx-auto px-4 py-8 w-full">
+
+        <!-- VIEW: OVERVIEW -->
+        <div id="view-overview" class="block animate-fade-in">
+            <div class="mb-8">
+                <h2 class="text-xl font-bold text-slate-700 mb-2">制度の「基本の形」を知る</h2>
+                <p class="text-slate-600">公務員と民間企業では、60歳以降の働き方の「土台」が全く異なります。まずはこの決定的な違いを理解しましょう。</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8">
+                <!-- Public Card -->
+                <div class="bg-white rounded-xl shadow p-6 border-t-4 border-blue-800 info-card cursor-pointer" onclick="switchTab('public')">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="text-4xl">🏛️</div>
+                        <div class="text-right">
+                            <h3 class="text-xl font-bold text-blue-900">地方公務員</h3>
+                            <span class="text-sm text-slate-500">Local Government</span>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <p class="text-2xl font-bold text-slate-800 mb-1">定年延長</p>
+                        <p class="text-sm bg-blue-50 text-blue-800 inline-block px-2 py-1 rounded">正職員のまま</p>
+                    </div>
+                    <p class="text-slate-600 mb-4">
+                        60歳で退職せず、そのまま定年年齢（最終的に65歳）まで身分が継続します。
+                        <br><span class="text-xs text-slate-400">※役職定年制あり</span>
+                    </p>
+                    <div class="text-blue-600 font-medium text-sm hover:underline">詳しく見る →</div>
+                </div>
+
+                <!-- Private Card -->
+                <div class="bg-white rounded-xl shadow p-6 border-t-4 border-orange-600 info-card cursor-pointer" onclick="switchTab('private')">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="text-4xl">🏢</div>
+                        <div class="text-right">
+                            <h3 class="text-xl font-bold text-orange-800">民間企業</h3>
+                            <span class="text-sm text-slate-500">Private Sector</span>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <p class="text-2xl font-bold text-slate-800 mb-1">再雇用</p>
+                        <p class="text-sm bg-orange-50 text-orange-800 inline-block px-2 py-1 rounded">一度退職→再契約</p>
+                    </div>
+                    <p class="text-slate-600 mb-4">
+                        60歳で一度「定年退職」し、契約社員などとして雇い直されるケースが約67%と主流です。
+                        <br><span class="text-xs text-slate-400">※雇用形態が大きく変わる</span>
+                    </p>
+                    <div class="text-orange-600 font-medium text-sm hover:underline">詳しく見る →</div>
+                </div>
+            </div>
+
+            <!-- Key Takeaway -->
+            <div class="mt-8 bg-slate-100 rounded-lg p-6 flex items-start gap-4">
+                <div class="text-2xl">💡</div>
+                <div>
+                    <h4 class="font-bold text-slate-800">重要ポイント</h4>
+                    <p class="text-slate-600 text-sm mt-1">
+                        公務員は「身分の安定」が維持される一方、給与は一律7割へ。民間は「契約の変更」により、給与や働き方が企業ごとに大きく異なりますが、平均して5〜7割へダウンします。
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW: PUBLIC SECTOR -->
+        <div id="view-public" class="hidden animate-fade-in">
+            <div class="mb-6 border-b border-slate-200 pb-4">
+                <h2 class="text-xl font-bold text-blue-900 flex items-center gap-2">
+                    <span>🏛️</span> 地方公務員の制度詳細
+                </h2>
+                <p class="text-slate-600 mt-2">
+                    「2年に1歳」の段階的な引き上げスケジュールと、独特な給与・役職のルールを解説します。
+                </p>
+            </div>
+
+            <div class="grid lg:grid-cols-3 gap-6">
+                
+                <!-- Schedule Section (Spans 2 cols) -->
+                <div class="lg:col-span-2 bg-white rounded-xl shadow p-6">
+                    <h3 class="font-bold text-slate-800 mb-4">📈 定年引き上げスケジュール (段階的実施)</h3>
+                    <p class="text-sm text-slate-500 mb-4">
+                        いきなり65歳定年ではありません。2031年度の完成に向けて、2年に1歳ずつ階段状に引き上げられます。
+                    </p>
+                    <div class="chart-wrapper">
+                        <canvas id="publicScheduleChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Salary & Role Section (Spans 1 col) -->
+                <div class="flex flex-col gap-6">
+                    <!-- Salary Card -->
+                    <div class="bg-blue-50 rounded-xl p-5 border border-blue-100">
+                        <h4 class="font-bold text-blue-900 mb-2">💰 給与の変化</h4>
+                        <div class="flex items-end gap-2 mb-2">
+                            <span class="text-4xl font-bold text-blue-800">70%</span>
+                            <span class="text-sm text-blue-600 mb-1">水準</span>
+                        </div>
+                        <ul class="text-sm text-slate-700 space-y-2 list-disc pl-4">
+                            <li>60歳時点の給料が基準</li>
+                            <li>ボーナスも連動して減少</li>
+                            <li><strong>生活関連手当</strong>（通勤・住居等）は維持</li>
+                        </ul>
+                    </div>
+
+                    <!-- Role Card -->
+                    <div class="bg-white rounded-xl shadow p-5 border-l-4 border-slate-400">
+                        <h4 class="font-bold text-slate-800 mb-2">👔 役職定年制</h4>
+                        <p class="text-sm text-slate-600 mb-3">
+                            原則 <strong>60歳</strong> で管理職（課長級以上）から外れます。
+                        </p>
+                        <div class="bg-slate-100 p-3 rounded text-xs text-slate-500">
+                            <strong>なぜ？</strong><br>
+                            組織の若返りと、後進の育成のため。60歳以降は専門職やサポート業務へ移行します。
+                        </div>
+                    </div>
+                    
+                    <!-- Severance Card -->
+                    <div class="bg-white rounded-xl shadow p-5">
+                        <h4 class="font-bold text-slate-800 mb-2">🏦 退職金の特例</h4>
+                        <p class="text-sm text-slate-600">
+                            <strong>ピーク時特例</strong>により、「給料が高い60歳時点」をベースに計算。長く働いても退職金が減ることはありません。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW: PRIVATE SECTOR -->
+        <div id="view-private" class="hidden animate-fade-in">
+            <div class="mb-6 border-b border-orange-200 pb-4">
+                <h2 class="text-xl font-bold text-orange-900 flex items-center gap-2">
+                    <span>🏢</span> 民間企業の制度詳細
+                </h2>
+                <p class="text-slate-600 mt-2">
+                    法律（高年齢者雇用安定法）に基づく義務と、企業が実際に選んでいる「3つの選択肢」の実態です。
+                </p>
+            </div>
+
+            <div class="grid lg:grid-cols-2 gap-8">
+                
+                <!-- Adoption Stats -->
+                <div class="bg-white rounded-xl shadow p-6">
+                    <h3 class="font-bold text-slate-800 mb-4">📊 企業の対応実態 (3つの選択肢)</h3>
+                    <p class="text-sm text-slate-500 mb-4">
+                        「再雇用」が圧倒的多数です。定年そのものを延ばす企業はまだ約3割にとどまります。
+                    </p>
+                    <div class="chart-wrapper flex justify-center">
+                         <!-- Limiting width for doughnut chart aesthetics -->
+                        <div class="w-full max-w-sm">
+                            <canvas id="privateMethodChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Salary Reality & Rules -->
+                <div class="flex flex-col gap-6">
+                    <!-- Legal Framework -->
+                    <div class="bg-orange-50 rounded-xl p-6 border border-orange-100">
+                        <h4 class="font-bold text-orange-900 mb-3">⚖️ 法律のルール</h4>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-white p-3 rounded text-center shadow-sm">
+                                <div class="text-lg font-bold text-slate-800">65歳まで</div>
+                                <div class="text-xs font-bold text-white bg-red-500 rounded px-2 py-1 mt-1 inline-block">義務</div>
+                                <p class="text-xs text-slate-500 mt-2">希望者全員を雇用</p>
+                            </div>
+                            <div class="bg-white p-3 rounded text-center shadow-sm opacity-80">
+                                <div class="text-lg font-bold text-slate-800">70歳まで</div>
+                                <div class="text-xs font-bold text-white bg-slate-400 rounded px-2 py-1 mt-1 inline-block">努力義務</div>
+                                <p class="text-xs text-slate-500 mt-2">就業機会の確保</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Salary Impact -->
+                    <div class="bg-white rounded-xl shadow p-6 flex-grow">
+                        <h4 class="font-bold text-slate-800 mb-2">💸 再雇用時の給与実態</h4>
+                        <p class="text-sm text-slate-600 mb-4">
+                            一旦退職するため、給与体系がリセットされることが一般的です。
+                        </p>
+                        <div class="relative pt-1">
+                            <div class="flex mb-2 items-center justify-between">
+                                <div>
+                                    <span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-orange-600 bg-orange-200">
+                                        平均的減少幅
+                                    </span>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-xs font-semibold inline-block text-orange-600">
+                                        現役比 50% - 70%
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="overflow-hidden h-4 mb-4 text-xs flex rounded bg-orange-100">
+                                <div style="width: 60%" class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-orange-500"></div>
+                            </div>
+                            <p class="text-xs text-slate-400">※職務内容が変わらないのに賃金だけ下がるケースは問題視され、改善傾向にあります。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW: COMPARISON & SUMMARY -->
+        <div id="view-comparison" class="hidden animate-fade-in">
+            <div class="mb-6">
+                <h2 class="text-xl font-bold text-slate-800 mb-2">徹底比較とまとめ</h2>
+                <p class="text-slate-600">
+                    定年延長（公務員）と再雇用（民間）の違いを整理し、ライフプランへの影響を考えます。
+                </p>
+            </div>
+
+            <div class="grid lg:grid-cols-12 gap-8">
+                <!-- Comparison Table (8 cols) -->
+                <div class="lg:col-span-8">
+                    <div class="bg-white rounded-xl shadow overflow-hidden">
+                        <table class="w-full text-sm text-left text-slate-600">
+                            <thead class="text-xs text-slate-700 uppercase bg-slate-100 border-b">
+                                <tr>
+                                    <th scope="col" class="px-6 py-4">項目</th>
+                                    <th scope="col" class="px-6 py-4 text-blue-800">地方公務員</th>
+                                    <th scope="col" class="px-6 py-4 text-orange-800">民間企業（再雇用）</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="bg-white border-b hover:bg-slate-50 transition-colors">
+                                    <th scope="row" class="px-6 py-4 font-medium text-slate-900 whitespace-nowrap">60歳以降の身分</th>
+                                    <td class="px-6 py-4">
+                                        <span class="font-bold text-blue-600">正職員のまま</span><br>
+                                        （定年延長）
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <span class="font-bold text-orange-600">非正規雇用が主流</span><br>
+                                        （嘱託・契約社員等）
+                                    </td>
+                                </tr>
+                                <tr class="bg-white border-b hover:bg-slate-50 transition-colors">
+                                    <th scope="row" class="px-6 py-4 font-medium text-slate-900 whitespace-nowrap">給与水準</th>
+                                    <td class="px-6 py-4">
+                                        <span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-xs">一律</span> 
+                                        <strong>約7割</strong>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <span class="bg-orange-100 text-orange-800 px-2 py-0.5 rounded text-xs">会社による</span>
+                                        <strong>5〜7割</strong>
+                                    </td>
+                                </tr>
+                                <tr class="bg-white border-b hover:bg-slate-50 transition-colors">
+                                    <th scope="row" class="px-6 py-4 font-medium text-slate-900 whitespace-nowrap">役職</th>
+                                    <td class="px-6 py-4">
+                                        <strong>役職定年制</strong>で外れる<br>
+                                        （管理職→係長級等）
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        一般的に外れる<br>
+                                        （責任範囲の縮小）
+                                    </td>
+                                </tr>
+                                <tr class="bg-white hover:bg-slate-50 transition-colors">
+                                    <th scope="row" class="px-6 py-4 font-medium text-slate-900 whitespace-nowrap">退職金</th>
+                                    <td class="px-6 py-4 text-green-600 font-medium">
+                                        ピーク時特例あり<br>
+                                        （減らない）
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        60歳で一旦精算<br>
+                                        することが多い
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Call to Action / Advice -->
+                    <div class="mt-8 bg-gradient-to-r from-slate-100 to-white border-l-4 border-slate-500 p-6 rounded-r-lg">
+                        <h4 class="font-bold text-slate-800 mb-2">📝 ライフプラン再設計のアドバイス</h4>
+                        <p class="text-slate-700 mb-4">
+                            どちらの制度でも、<strong>「60歳を境に収入が減少する」</strong>という現実は共通しています。
+                        </p>
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div class="bg-white p-4 rounded shadow-sm border border-slate-200">
+                                <h5 class="font-bold text-sm mb-1">🏠 住宅ローン</h5>
+                                <p class="text-xs text-slate-500">ボーナス返済比率が高い場合は特に危険。60歳以降の手取り額（ボーナス含む）でシミュレーションを。</p>
+                            </div>
+                            <div class="bg-white p-4 rounded shadow-sm border border-slate-200">
+                                <h5 class="font-bold text-sm mb-1">⏱️ 働き方の選択</h5>
+                                <p class="text-xs text-slate-500">フルタイムで稼ぐか、短時間勤務で時間を取るか。公務員にも「定年前再任用短時間勤務」という選択肢があります。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Visual Comparison (4 cols) -->
+                <div class="lg:col-span-4 flex flex-col gap-6">
+                    <div class="bg-white rounded-xl shadow p-6">
+                        <h3 class="font-bold text-slate-800 mb-4">給与イメージ比較</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="salaryComparisonChart"></canvas>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-2 text-center">※50代後半を100とした場合のイメージ</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-800 text-slate-300 py-8 mt-auto">
+        <div class="max-w-6xl mx-auto px-4 text-center">
+            <p class="mb-2">出典：地方公務員法、高年齢者雇用安定法関連資料</p>
+            <p class="text-sm text-slate-500">本シミュレーションは一般的な制度解説です。詳細は所属する自治体や企業の就業規則をご確認ください。</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // State Management
+        let currentTab = 'overview';
+        let chartsInitialized = false;
+
+        // Chart Instances
+        let publicScheduleChartInstance = null;
+        let privateMethodChartInstance = null;
+        let salaryComparisonChartInstance = null;
+
+        // Tab Switching Logic
+        function switchTab(tabId) {
+            // Update Tab Styles
+            const tabs = ['overview', 'public', 'private', 'comparison'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`tab-${t}`);
+                if (t === tabId) {
+                    btn.classList.remove('tab-inactive');
+                    btn.classList.add('tab-active');
+                } else {
+                    btn.classList.remove('tab-active');
+                    btn.classList.add('tab-inactive');
+                }
+            });
+
+            // Update View Visibility
+            tabs.forEach(t => {
+                const view = document.getElementById(`view-${t}`);
+                if (t === tabId) {
+                    view.classList.remove('hidden');
+                    view.classList.add('block');
+                } else {
+                    view.classList.remove('block');
+                    view.classList.add('hidden');
+                }
+            });
+
+            currentTab = tabId;
+
+            // Initialize charts if accessing a view that needs them
+            if (!chartsInitialized && (tabId === 'public' || tabId === 'private' || tabId === 'comparison')) {
+                // Small delay to ensure DOM is visible for Chart.js sizing
+                setTimeout(initCharts, 50);
+                chartsInitialized = true;
+            }
+        }
+
+        // Initialize Charts
+        function initCharts() {
+            // Chart 1: Public Schedule (Step Chart)
+            const ctxPublic = document.getElementById('publicScheduleChart').getContext('2d');
+            publicScheduleChartInstance = new Chart(ctxPublic, {
+                type: 'line',
+                data: {
+                    labels: ['2023', '2024', '2025', '2026', '2027', '2028', '2029', '2030', '2031'],
+                    datasets: [{
+                        label: '定年年齢',
+                        data: [61, 61, 62, 62, 63, 63, 64, 64, 65],
+                        borderColor: '#0f4c81',
+                        backgroundColor: 'rgba(15, 76, 129, 0.1)',
+                        borderWidth: 3,
+                        stepped: true, // Key for step chart
+                        fill: true,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#0f4c81',
+                        pointRadius: 5,
+                        pointHoverRadius: 7
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `定年年齢: ${context.parsed.y}歳`;
+                                },
+                                title: function(context) {
+                                    return `${context[0].label}年度`;
+                                }
+                            }
+                        },
+                        annotation: {
+                            // Note: Annotation plugin not loaded to keep simple, but logic is visual
+                        }
+                    },
+                    scales: {
+                        y: {
+                            min: 60,
+                            max: 66,
+                            ticks: { stepSize: 1 },
+                            title: { display: true, text: '年齢 (歳)' }
+                        },
+                        x: {
+                            title: { display: true, text: '年度 (令和5年度〜13年度)' }
+                        }
+                    }
+                }
+            });
+
+            // Chart 2: Private Methods (Doughnut)
+            const ctxPrivate = document.getElementById('privateMethodChart').getContext('2d');
+            privateMethodChartInstance = new Chart(ctxPrivate, {
+                type: 'doughnut',
+                data: {
+                    labels: ['再雇用制度 (67%)', '定年延長 (29%)', '定年廃止 (4%)'],
+                    datasets: [{
+                        data: [67, 29, 4],
+                        backgroundColor: [
+                            '#d97706', // Re-employment (Main)
+                            '#5b9bd5', // Extension
+                            '#94a3b8'  // Abolition
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { padding: 20 }
+                        }
+                    },
+                    cutout: '60%'
+                }
+            });
+
+            // Chart 3: Salary Comparison (Bar)
+            const ctxSalary = document.getElementById('salaryComparisonChart').getContext('2d');
+            salaryComparisonChartInstance = new Chart(ctxSalary, {
+                type: 'bar',
+                data: {
+                    labels: ['60歳以前', '公務員(60+)', '民間(再雇用)'],
+                    datasets: [{
+                        label: '給与水準 (%)',
+                        data: [100, 70, [50, 70]], // Private is a range [min, max]
+                        backgroundColor: [
+                            '#cbd5e1', // Gray for base
+                            '#0f4c81', // Blue for Public
+                            '#d97706'  // Orange for Private
+                        ],
+                        borderRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    if(Array.isArray(context.raw)) {
+                                        return `水準: ${context.raw[0]}% 〜 ${context.raw[1]}%`;
+                                    }
+                                    return `水準: ${context.raw}%`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 110,
+                            title: { display: true, text: '現役時代を100とした場合' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initialize with default tab
+        // Note: Charts init on tab switch or manual call if Overview had charts.
+        // Since overview has no charts, we wait for user interaction.
+    </script>
+</body>
+</html>
