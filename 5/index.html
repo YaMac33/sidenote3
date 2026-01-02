@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chromebook移行戦略ダッシュボード</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Font Awesome (for icons, replacing SVG) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Placeholder Comments Required by Instructions -->
+    <!-- Chosen Palette: Calm Harmony (Slate/Indigo/Emerald) - Warm neutral background with professional blue accents and green for financial positives. -->
+    <!-- Application Structure Plan: A tab-based SPA structure. 
+         1. 'Vision': High-level objectives and benefits. 
+         2. 'Challenges': Interactive drill-down into the '3 Walls' (Macros, Layout, Apps).
+         3. 'Roadmap': Timeline view of the 3-phase migration strategy.
+         4. 'Simulation': Interactive TCO calculator using Chart.js to visualize savings based on user input (unit count). 
+         This structure moves from 'Why' to 'How' to 'How Much', facilitating a logical decision-making flow. -->
+    <!-- Visualization & Content Choices: 
+         - Vision: Icon cards to summarize the 3 main goals (Cost, Security, Management).
+         - Challenges: Interactive cards that reveal solutions on click. Goal: Address fears directly.
+         - Roadmap: Vertical progress stepper using HTML/CSS. Goal: Show a safe, gradual path.
+         - Simulation: Bar charts (Chart.js) comparing Unit Price and 5-Year TCO. Includes an input field for 'Number of PCs' to dynamically update charts and total savings text. Goal: Demonstrate fiscal impact at scale. 
+         - NO SVG/Mermaid: Used FontAwesome for icons and Chart.js for data. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <style>
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: #f8fafc; /* Slate 50 */
+            color: #334155; /* Slate 700 */
+        }
+
+        /* Chart Container Styling per Requirements */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px; /* max-w-xl equivalent */
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+
+        /* Transitions */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .active-tab {
+            border-bottom: 3px solid #4f46e5; /* Indigo 600 */
+            color: #4f46e5;
+            font-weight: 700;
+        }
+
+        .inactive-tab {
+            border-bottom: 3px solid transparent;
+            color: #64748b; /* Slate 500 */
+        }
+        
+        .inactive-tab:hover {
+            color: #334155;
+            border-bottom: 3px solid #cbd5e1;
+        }
+
+        /* Custom Scrollbar for sleek look */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+    <!-- Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <i class="fa-brands fa-chrome text-indigo-600 text-2xl mr-3"></i>
+                    <h1 class="text-xl font-bold text-slate-800 tracking-tight">移行プロジェクト <span class="text-indigo-600">Vision 2025</span></h1>
+                </div>
+                <!-- Navigation -->
+                <nav class="hidden md:flex space-x-8">
+                    <button onclick="switchTab('vision')" id="tab-vision" class="active-tab px-1 pt-1 text-sm font-medium transition-colors">移行の目的</button>
+                    <button onclick="switchTab('challenges')" id="tab-challenges" class="inactive-tab px-1 pt-1 text-sm font-medium transition-colors">3つの壁と対策</button>
+                    <button onclick="switchTab('roadmap')" id="tab-roadmap" class="inactive-tab px-1 pt-1 text-sm font-medium transition-colors">段階的移行計画</button>
+                    <button onclick="switchTab('financials')" id="tab-financials" class="inactive-tab px-1 pt-1 text-sm font-medium transition-colors">コストシミュレーション</button>
+                </nav>
+                <!-- Mobile Menu Button (Simplified) -->
+                <div class="md:hidden">
+                    <button id="mobile-menu-btn" class="text-slate-500 hover:text-slate-700">
+                        <i class="fa-solid fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Mobile Menu (Hidden by default) -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-slate-100 p-4 shadow-lg absolute w-full">
+            <div class="flex flex-col space-y-4">
+                <button onclick="switchTab('vision'); toggleMobileMenu()" class="text-left text-slate-600 font-medium">移行の目的</button>
+                <button onclick="switchTab('challenges'); toggleMobileMenu()" class="text-left text-slate-600 font-medium">3つの壁と対策</button>
+                <button onclick="switchTab('roadmap'); toggleMobileMenu()" class="text-left text-slate-600 font-medium">段階的移行計画</button>
+                <button onclick="switchTab('financials'); toggleMobileMenu()" class="text-left text-slate-600 font-medium">コストシミュレーション</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+        
+        <!-- VIEW 1: VISION (Objective) -->
+        <section id="view-vision" class="fade-in space-y-8">
+            <div class="text-center max-w-3xl mx-auto mb-12">
+                <h2 class="text-3xl font-bold text-slate-800 mb-4">なぜ、今Chromebookなのか？</h2>
+                <p class="text-lg text-slate-600 leading-relaxed">
+                    Windows環境の維持にかかるコスト増大と管理負担は限界に達しています。
+                    本プロジェクトは単なるOSの変更ではなく、企業の固定費構造を変革し、
+                    セキュリティと生産性を同時に高める戦略的投資です。
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Card 1 -->
+                <div class="bg-white rounded-xl shadow-md p-8 border-t-4 border-emerald-500 hover:shadow-lg transition-shadow">
+                    <div class="w-14 h-14 bg-emerald-50 rounded-full flex items-center justify-center mb-6 mx-auto">
+                        <i class="fa-solid fa-sack-dollar text-2xl text-emerald-600"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-center text-slate-800 mb-3">コストの適正化</h3>
+                    <p class="text-slate-600 text-center text-sm leading-relaxed">
+                        端末単価を半減させ、ライセンス費やセキュリティソフト費用を削減。IT予算を最適化します。
+                    </p>
+                </div>
+                <!-- Card 2 -->
+                <div class="bg-white rounded-xl shadow-md p-8 border-t-4 border-indigo-500 hover:shadow-lg transition-shadow">
+                    <div class="w-14 h-14 bg-indigo-50 rounded-full flex items-center justify-center mb-6 mx-auto">
+                        <i class="fa-solid fa-shield-halved text-2xl text-indigo-600"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-center text-slate-800 mb-3">セキュリティ強化</h3>
+                    <p class="text-slate-600 text-center text-sm leading-relaxed">
+                        OSのサンドボックス構造によりウイルス感染リスクを極小化。高額な防御ソフトへの依存を脱却します。
+                    </p>
+                </div>
+                <!-- Card 3 -->
+                <div class="bg-white rounded-xl shadow-md p-8 border-t-4 border-blue-500 hover:shadow-lg transition-shadow">
+                    <div class="w-14 h-14 bg-blue-50 rounded-full flex items-center justify-center mb-6 mx-auto">
+                        <i class="fa-solid fa-laptop-code text-2xl text-blue-600"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-center text-slate-800 mb-3">管理の簡素化</h3>
+                    <p class="text-slate-600 text-center text-sm leading-relaxed">
+                        更新作業やキッティング業務を自動化。情シス部門を「守り」から「攻め」の業務へシフトさせます。
+                    </p>
+                </div>
+            </div>
+
+            <div class="mt-12 bg-indigo-50 rounded-xl p-6 flex items-start space-x-4">
+                <i class="fa-solid fa-lightbulb text-indigo-600 text-xl mt-1"></i>
+                <div>
+                    <h4 class="font-bold text-indigo-900">重要ポイント</h4>
+                    <p class="text-indigo-800 text-sm mt-1">
+                        「安いから性能が悪い」ではありません。ChromeOSは軽量なため、安価なハードウェアでもWindowsのハイエンド機と同等の快適なレスポンスを実現します。
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 2: CHALLENGES (The 3 Walls) -->
+        <section id="view-challenges" class="hidden fade-in">
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-slate-800 mb-2">移行を阻む「3つの壁」と対策</h2>
+                <p class="text-slate-600">
+                    Windows環境からの移行には明確なハードルがあります。これらを無視せず、具体的な対策を持って乗り越えます。
+                    <span class="text-indigo-600 font-medium">各項目をクリックして解決策を確認してください。</span>
+                </p>
+            </div>
+
+            <div class="space-y-4">
+                <!-- Hurdle 1 -->
+                <div class="bg-white border border-slate-200 rounded-lg overflow-hidden cursor-pointer group" onclick="toggleAccordion('hurdle1')">
+                    <div class="p-6 flex items-center justify-between bg-slate-50 group-hover:bg-slate-100 transition-colors">
+                        <div class="flex items-center space-x-4">
+                            <div class="bg-red-100 text-red-600 w-10 h-10 rounded-full flex items-center justify-center font-bold">1</div>
+                            <h3 class="text-lg font-bold text-slate-700">Excelマクロ (VBA) の非互換</h3>
+                        </div>
+                        <i id="icon-hurdle1" class="fa-solid fa-chevron-down text-slate-400 transition-transform"></i>
+                    </div>
+                    <div id="content-hurdle1" class="hidden p-6 border-t border-slate-100 bg-white">
+                        <div class="flex flex-col md:flex-row gap-6">
+                            <div class="md:w-1/2">
+                                <h4 class="font-bold text-red-600 mb-2">課題詳細</h4>
+                                <p class="text-slate-600 text-sm">経理や生産管理などで使用される複雑なVBAマクロは、Googleスプレッドシートでは動作せず、業務停止のリスクがあります。</p>
+                            </div>
+                            <div class="md:w-1/2">
+                                <h4 class="font-bold text-emerald-600 mb-2">解決策</h4>
+                                <ul class="list-disc list-inside text-slate-600 text-sm space-y-2">
+                                    <li><strong>GASへの書き換え:</strong> Google Apps Scriptへ移行し、クラウドネイティブ化。</li>
+                                    <li><strong>SaaS利用:</strong> 汎用的な業務はクラウド会計ソフト等へ切り替え。</li>
+                                    <li><strong>部分残留:</strong> マクロ必須業務のみWindows端末を残すハイブリッド運用。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hurdle 2 -->
+                <div class="bg-white border border-slate-200 rounded-lg overflow-hidden cursor-pointer group" onclick="toggleAccordion('hurdle2')">
+                    <div class="p-6 flex items-center justify-between bg-slate-50 group-hover:bg-slate-100 transition-colors">
+                        <div class="flex items-center space-x-4">
+                            <div class="bg-orange-100 text-orange-600 w-10 h-10 rounded-full flex items-center justify-center font-bold">2</div>
+                            <h3 class="text-lg font-bold text-slate-700">レイアウト崩れ・互換性</h3>
+                        </div>
+                        <i id="icon-hurdle2" class="fa-solid fa-chevron-down text-slate-400 transition-transform"></i>
+                    </div>
+                    <div id="content-hurdle2" class="hidden p-6 border-t border-slate-100 bg-white">
+                        <div class="flex flex-col md:flex-row gap-6">
+                            <div class="md:w-1/2">
+                                <h4 class="font-bold text-orange-600 mb-2">課題詳細</h4>
+                                <p class="text-slate-600 text-sm">Word/PowerPointファイルをGoogleドキュメント等で開くと、フォントや余白設定の違いで見た目が変わる場合があります。</p>
+                            </div>
+                            <div class="md:w-1/2">
+                                <h4 class="font-bold text-emerald-600 mb-2">解決策</h4>
+                                <ul class="list-disc list-inside text-slate-600 text-sm space-y-2">
+                                    <li><strong>PDF運用徹底:</strong> 社外提出書類（見積書・契約書）は必ずPDF化。</li>
+                                    <li><strong>Office編集機能:</strong> Chromeブラウザ上でOfficeファイルを変換せずに直接編集する機能の活用。</li>
+                                    <li><strong>使い分け:</strong> 閲覧用と編集用でフォーマットを定義。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hurdle 3 -->
+                <div class="bg-white border border-slate-200 rounded-lg overflow-hidden cursor-pointer group" onclick="toggleAccordion('hurdle3')">
+                    <div class="p-6 flex items-center justify-between bg-slate-50 group-hover:bg-slate-100 transition-colors">
+                        <div class="flex items-center space-x-4">
+                            <div class="bg-amber-100 text-amber-600 w-10 h-10 rounded-full flex items-center justify-center font-bold">3</div>
+                            <h3 class="text-lg font-bold text-slate-700">Windows専用アプリ (.exe)</h3>
+                        </div>
+                        <i id="icon-hurdle3" class="fa-solid fa-chevron-down text-slate-400 transition-transform"></i>
+                    </div>
+                    <div id="content-hurdle3" class="hidden p-6 border-t border-slate-100 bg-white">
+                        <div class="flex flex-col md:flex-row gap-6">
+                            <div class="md:w-1/2">
+                                <h4 class="font-bold text-amber-600 mb-2">課題詳細</h4>
+                                <p class="text-slate-600 text-sm">インストール型の会計ソフト、CAD、基幹システムなどはChromebook単体では動作しません。</p>
+                            </div>
+                            <div class="md:w-1/2">
+                                <h4 class="font-bold text-emerald-600 mb-2">解決策</h4>
+                                <ul class="list-disc list-inside text-slate-600 text-sm space-y-2">
+                                    <li><strong>VDI (仮想デスクトップ):</strong> Amazon WorkSpaces等を利用し、クラウド上のWindowsを操作。</li>
+                                    <li><strong>Web版へ移行:</strong> 可能な限りブラウザベースのサービスへリプレース。</li>
+                                    <li><strong>Windows機共有:</strong> 特定業務専用に共用Windows PCを数台設置。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 3: ROADMAP (Strategy) -->
+        <section id="view-roadmap" class="hidden fade-in">
+            <div class="mb-12">
+                <h2 class="text-2xl font-bold text-slate-800 mb-2">失敗しないための「段階的移行」ロードマップ</h2>
+                <p class="text-slate-600">一斉切り替えによる混乱を避けるため、リスクの低い順に3つのフェーズで進行します。</p>
+            </div>
+
+            <div class="relative border-l-4 border-indigo-200 ml-4 md:ml-8 space-y-12">
+                <!-- Phase 1 -->
+                <div class="relative pl-8">
+                    <div class="absolute -left-3 top-0 bg-white border-4 border-indigo-500 rounded-full w-6 h-6"></div>
+                    <h3 class="text-xl font-bold text-indigo-700 mb-1">Phase 1: 現状調査と仕分け</h3>
+                    <p class="text-sm text-slate-500 font-bold mb-4">期間: 1ヶ月目</p>
+                    <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
+                        <h4 class="font-bold text-slate-700 mb-2">主なアクション</h4>
+                        <ul class="list-disc list-inside text-slate-600 space-y-1 text-sm">
+                            <li>全社員のアプリ利用状況アンケート実施</li>
+                            <li>「Web完結型」と「Office依存型」ユーザーの分類</li>
+                            <li>移行困難な業務リストの作成</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Phase 2 -->
+                <div class="relative pl-8">
+                    <div class="absolute -left-3 top-0 bg-white border-4 border-indigo-500 rounded-full w-6 h-6"></div>
+                    <h3 class="text-xl font-bold text-indigo-700 mb-1">Phase 2: パイロット運用</h3>
+                    <p class="text-sm text-slate-500 font-bold mb-4">期間: 2-3ヶ月目</p>
+                    <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
+                        <h4 class="font-bold text-slate-700 mb-2">主なアクション</h4>
+                        <ul class="list-disc list-inside text-slate-600 space-y-1 text-sm">
+                            <li>IT部門と先行ユーザー（数名）による試験導入</li>
+                            <li>複合機（印刷・スキャン）の動作検証</li>
+                            <li>Office編集機能の実務テスト</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Phase 3 -->
+                <div class="relative pl-8">
+                    <div class="absolute -left-3 top-0 bg-white border-4 border-emerald-500 rounded-full w-6 h-6"></div>
+                    <h3 class="text-xl font-bold text-emerald-700 mb-1">Phase 3: ハイブリッド展開</h3>
+                    <p class="text-sm text-slate-500 font-bold mb-4">期間: 4ヶ月目以降</p>
+                    <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
+                        <h4 class="font-bold text-slate-700 mb-2">主なアクション</h4>
+                        <ul class="list-disc list-inside text-slate-600 space-y-1 text-sm">
+                            <li>問題の少ない部署から順次Chromebookへ切り替え</li>
+                            <li>Windows必須業務への対応策（VDI/残存）の確定</li>
+                            <li>旧端末の廃棄・データ消去</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-12 text-center">
+                <p class="text-slate-600 mb-4 font-bold">次のステップ</p>
+                <div class="inline-block bg-slate-800 text-white px-8 py-3 rounded-full shadow-lg">
+                    直ちに「Phase 1: 現状調査」を開始すべきです
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 4: FINANCIALS (Simulation) -->
+        <section id="view-financials" class="hidden fade-in">
+            <div class="mb-8 flex flex-col md:flex-row justify-between items-end">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-800 mb-2">コストシミュレーション</h2>
+                    <p class="text-slate-600 text-sm max-w-2xl">
+                        端末台数を入力して、Windows運用継続とChromebook移行時の5年間総コスト（TCO）を比較してください。<br>
+                        <span class="text-xs text-slate-400">※概算値に基づくシミュレーションです。ライセンス費、端末代、キッティング費、管理工数を含みます。</span>
+                    </p>
+                </div>
+                <div class="mt-4 md:mt-0 bg-white p-4 rounded-lg shadow border border-slate-200">
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">導入台数 (台)</label>
+                    <div class="flex items-center">
+                        <input type="number" id="unit-input" value="100" min="10" step="10" 
+                            class="block w-32 border-slate-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-lg font-bold p-2 border"
+                            onchange="updateCharts()">
+                        <span class="ml-2 text-slate-500">台</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <!-- Chart 1: Unit Price -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <h3 class="text-lg font-bold text-slate-700 mb-4 text-center">1. 初期導入コスト (1台あたり)</h3>
+                    <div class="chart-container">
+                        <canvas id="unitPriceChart"></canvas>
+                    </div>
+                    <p class="mt-4 text-center text-sm text-slate-600">
+                        Chromebookは軽量OSのため、<br><span class="font-bold text-emerald-600">半額以下の端末価格</span>で同等の業務速度を実現します。
+                    </p>
+                </div>
+
+                <!-- Chart 2: TCO -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <h3 class="text-lg font-bold text-slate-700 mb-4 text-center">2. 5年間総コスト (TCO)</h3>
+                    <div class="chart-container">
+                        <canvas id="tcoChart"></canvas>
+                    </div>
+                    <div class="mt-4 text-center">
+                        <p class="text-sm text-slate-600">5年間の削減見込額:</p>
+                        <p id="savings-display" class="text-3xl font-bold text-emerald-600">約 1,410万円</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed Breakdown Table -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="px-6 py-4 border-b border-slate-100 bg-slate-50">
+                    <h3 class="text-lg font-bold text-slate-700">コスト構造の内訳</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-slate-200">
+                        <thead class="bg-slate-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">費目</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Windows PC</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider text-emerald-600">Chromebook</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">削減理由</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-slate-200 text-sm">
+                            <tr>
+                                <td class="px-6 py-4 font-medium text-slate-900">端末代 (スペック)</td>
+                                <td class="px-6 py-4 text-slate-600">Core i5 / 16GB<br>約14万円</td>
+                                <td class="px-6 py-4 text-slate-600">Core i3 / 8GB<br>約7万円</td>
+                                <td class="px-6 py-4 text-slate-500">クラウド処理中心のため低スペックでも快適</td>
+                            </tr>
+                            <tr>
+                                <td class="px-6 py-4 font-medium text-slate-900">キッティング (導入設定)</td>
+                                <td class="px-6 py-4 text-slate-600">マスター作成・個別設定<br>数時間/台</td>
+                                <td class="px-6 py-4 text-slate-600">ゼロタッチ登録<br>数分/台</td>
+                                <td class="px-6 py-4 text-slate-500">ログインするだけで設定完了</td>
+                            </tr>
+                            <tr>
+                                <td class="px-6 py-4 font-medium text-slate-900">セキュリティ対策</td>
+                                <td class="px-6 py-4 text-slate-600">ウイルス対策ソフト必須<br>年額発生</td>
+                                <td class="px-6 py-4 text-emerald-600 font-bold">不要 (0円)</td>
+                                <td class="px-6 py-4 text-slate-500">OS標準の多層防御機能</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-800 text-slate-400 py-6 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p class="text-sm">Chromebook Migration Strategy Project 2025</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- State Management ---
+        const state = {
+            currentTab: 'vision',
+            unitCount: 100
+        };
+
+        // --- Data Constants (Based on Source Report) ---
+        // Prices in 10,000 Yen (Man-en) for simplified calculation
+        const COST_DATA = {
+            windows: {
+                hardware: 14, // Avg 140,000
+                license_mgmt: 7.2, // Intune etc over 5 years
+                security: 2.0, // AV soft over 5 years
+                kitting: 0.8 // Setup cost (approx)
+            },
+            chrome: {
+                hardware: 7, // Avg 70,000
+                license_mgmt: 2.1, // CEU Perpetual
+                security: 0,
+                kitting: 0.1 // Minimal time
+            }
+        };
+
+        // --- Navigation Logic ---
+        function switchTab(tabId) {
+            // Update UI State
+            document.querySelectorAll('nav button, #mobile-menu button').forEach(btn => {
+                btn.classList.remove('active-tab', 'text-indigo-600');
+                btn.classList.add('inactive-tab', 'text-slate-600');
+            });
+            
+            // Highlight active desktop tab
+            const desktopTab = document.getElementById(`tab-${tabId}`);
+            if(desktopTab) {
+                desktopTab.classList.remove('inactive-tab', 'text-slate-600');
+                desktopTab.classList.add('active-tab');
+            }
+
+            // Hide all sections
+            ['vision', 'challenges', 'roadmap', 'financials'].forEach(id => {
+                document.getElementById(`view-${id}`).classList.add('hidden');
+            });
+
+            // Show selected section
+            document.getElementById(`view-${tabId}`).classList.remove('hidden');
+            
+            // Scroll to top
+            window.scrollTo(0, 0);
+
+            // If switching to financials, force chart update/resize
+            if (tabId === 'financials') {
+                setTimeout(updateCharts, 100);
+            }
+
+            state.currentTab = tabId;
+        }
+
+        // --- Mobile Menu Toggle ---
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        // --- Accordion Logic ---
+        function toggleAccordion(id) {
+            const content = document.getElementById(`content-${id}`);
+            const icon = document.getElementById(`icon-${id}`);
+            
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
+            } else {
+                content.classList.add('hidden');
+                icon.classList.add('fa-chevron-down');
+                icon.classList.remove('fa-chevron-up');
+            }
+        }
+
+        // --- Chart.js Initialization & Logic ---
+        let unitPriceChart = null;
+        let tcoChart = null;
+
+        function initCharts() {
+            // Chart 1: Unit Price Comparison
+            const ctx1 = document.getElementById('unitPriceChart').getContext('2d');
+            unitPriceChart = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: ['Windows PC', 'Chromebook'],
+                    datasets: [{
+                        label: '端末単価 (万円)',
+                        data: [14, 7], // Default values
+                        backgroundColor: ['#94a3b8', '#10b981'], // Slate-400, Emerald-500
+                        borderRadius: 6,
+                        barPercentage: 0.6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.parsed.y + '万円';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: '価格 (万円)' }
+                        }
+                    }
+                }
+            });
+
+            // Chart 2: TCO Breakdown (Stacked)
+            const ctx2 = document.getElementById('tcoChart').getContext('2d');
+            tcoChart = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: ['Windows (5年)', 'Chrome (5年)'],
+                    datasets: [
+                        { label: 'ハードウェア', data: [], backgroundColor: '#64748b' },
+                        { label: '管理・ライセンス', data: [], backgroundColor: '#a5b4fc' }, // Indigo-300
+                        { label: 'セキュリティ', data: [], backgroundColor: '#fca5a5' }, // Red-300
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.parsed.y.toLocaleString() + '万円';
+                                },
+                                footer: function(tooltipItems) {
+                                    let sum = 0;
+                                    tooltipItems.forEach(function(tooltipItem) {
+                                        sum += tooltipItem.parsed.y;
+                                    });
+                                    return '合計: ' + sum.toLocaleString() + '万円';
+                                }
+                            }
+                        },
+                        legend: { position: 'bottom' }
+                    },
+                    scales: {
+                        x: { stacked: true },
+                        y: { 
+                            stacked: true,
+                            title: { display: true, text: '総コスト (万円)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateCharts() {
+            const input = document.getElementById('unit-input');
+            let count = parseInt(input.value);
+            if (count < 1 || isNaN(count)) count = 10;
+            state.unitCount = count;
+
+            // Calculate Totals (Unit: 10,000 Yen)
+            // Windows
+            const winHw = COST_DATA.windows.hardware * count;
+            const winLic = (COST_DATA.windows.license_mgmt + COST_DATA.windows.kitting) * count;
+            const winSec = COST_DATA.windows.security * count;
+            const winTotal = winHw + winLic + winSec;
+
+            // Chrome
+            const chrHw = COST_DATA.chrome.hardware * count;
+            const chrLic = (COST_DATA.chrome.license_mgmt + COST_DATA.chrome.kitting) * count;
+            const chrSec = COST_DATA.chrome.security * count; // 0
+            const chrTotal = chrHw + chrLic + chrSec;
+
+            // Savings
+            const savings = winTotal - chrTotal;
+
+            // Update DOM text
+            document.getElementById('savings-display').innerText = `約 ${savings.toLocaleString()} 万円`;
+
+            // Update Chart 1 (Unit Price - Static per unit, but good to refresh)
+            // No change needed for Unit Price chart as it shows per-unit cost.
+
+            // Update Chart 2 (TCO Stacked)
+            if (tcoChart) {
+                tcoChart.data.datasets[0].data = [winHw, chrHw]; // Hardware
+                tcoChart.data.datasets[1].data = [winLic, chrLic]; // License/Mgmt
+                tcoChart.data.datasets[2].data = [winSec, chrSec]; // Security
+                tcoChart.update();
+            }
+        }
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            initCharts();
+            updateCharts(); // Initial calculation
+        });
+
+    </script>
+</body>
+</html>
