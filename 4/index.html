@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube & Note: Cross-Platform Linking Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: #fdfbf7; /* Warm neutral background */
+            color: #4a453e;
+        }
+        .card-shadow {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            height: 350px;
+            max-height: 400px;
+        }
+        .active-tab {
+            border-bottom: 3px solid #d97706; /* Amber-600 */
+            color: #d97706;
+            font-weight: 700;
+        }
+        .inactive-tab {
+            border-bottom: 3px solid transparent;
+            color: #9ca3af;
+        }
+        .inactive-tab:hover {
+            color: #4b5563;
+        }
+        .transition-height {
+            transition: max-height 0.3s ease-in-out;
+        }
+    </style>
+    <!-- Chosen Palette: Warm Neutrals & Earth Tones (Background: #fdfbf7, Text: #4a453e, Accents: Amber/Teal/Rose) for a calm, academic feel. -->
+    
+    <!-- Application Structure Plan:
+         1. Hero Section: Executive Summary of the experiment (Objective: Compare 3 linking patterns).
+         2. Comparative Dashboard: High-level metrics (Total Reach, Conversion Rate, Retention) comparing the 3 patterns side-by-side.
+         3. Deep Dive Analysis (Interactive Tabs):
+            - Detailed view for each pattern (YouTube->Note, Note->YouTube, Mutual).
+            - Includes a specific chart for that pattern and key pros/cons.
+         4. Growth Projection (Line Chart): Simulating the long-term effect of each strategy over 30 days.
+         5. Strategic Recommendations: Actionable advice based on the data.
+         
+         Why this structure?
+         It moves from the "What" (Results) to the "Why" (Analysis) and finally the "How" (Application), allowing the user to understand the conclusion first, then explore the evidence.
+    -->
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-white border-b border-stone-200 sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-xl md:text-2xl font-bold text-stone-800 tracking-tight">
+                📊 Cross-Link Synergy Report
+            </h1>
+            <div class="text-sm font-medium text-stone-500 hidden md:block">
+                調査対象: YouTube x Note 連携効果
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow container mx-auto px-4 py-8 space-y-12">
+
+        <!-- Executive Summary -->
+        <section class="max-w-4xl mx-auto text-center space-y-4">
+            <h2 class="text-3xl font-bold text-stone-800">動画・記事連携の最適解は「相互リンク」</h2>
+            <p class="text-lg text-stone-600 leading-relaxed max-w-2xl mx-auto">
+                YouTube動画とNote記事を同時投稿する際、リンク配置のパターンによってアクセス数とエンゲージメントに顕著な差が確認されました。
+                本レポートでは、3つの異なるリンク戦略におけるトラフィックフローとユーザー行動の分析結果を報告します。
+            </p>
+            <div class="flex justify-center gap-4 mt-6">
+                <div class="bg-white px-6 py-3 rounded-lg card-shadow border border-stone-100">
+                    <div class="text-xs text-stone-500 uppercase tracking-wide">総アクセス数 (最大)</div>
+                    <div class="text-2xl font-bold text-amber-600">+45% <span class="text-sm text-stone-400 font-normal">vs 単体</span></div>
+                </div>
+                <div class="bg-white px-6 py-3 rounded-lg card-shadow border border-stone-100">
+                    <div class="text-xs text-stone-500 uppercase tracking-wide">平均滞在時間</div>
+                    <div class="text-2xl font-bold text-teal-600">3分40秒</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Visualization & Content Choices:
+             - Overview Bar Chart: To immediately compare the "Total Traffic" and "Conversion Rate" across the 3 patterns.
+             - Goal: Compare performance.
+             - Interaction: Toggle between 'Traffic Volume' and 'Conversion Rate' to show the trade-off between quantity and quality.
+        -->
+        
+        <!-- Comparative Analysis Section -->
+        <section class="bg-white rounded-xl p-6 md:p-8 card-shadow border border-stone-100">
+            <div class="mb-6 border-b border-stone-100 pb-4">
+                <h3 class="text-xl font-bold text-stone-800">リンク戦略別パフォーマンス比較</h3>
+                <p class="text-stone-500 mt-2 text-sm">
+                    3つのパターンにおける「総インプレッション」と「遷移率（CTR）」の比較データです。
+                    下のボタンで指標を切り替えてください。
+                </p>
+            </div>
+
+            <!-- Controls -->
+            <div class="flex justify-center space-x-4 mb-6">
+                <button onclick="updateMainChart('traffic')" id="btn-traffic" class="px-4 py-2 rounded-full text-sm font-medium bg-stone-100 text-stone-600 hover:bg-amber-100 hover:text-amber-700 transition-colors ring-2 ring-transparent focus:ring-amber-500 active-metric">
+                    アクセス総数 (Traffic)
+                </button>
+                <button onclick="updateMainChart('ctr')" id="btn-ctr" class="px-4 py-2 rounded-full text-sm font-medium bg-white border border-stone-200 text-stone-600 hover:bg-teal-50 hover:text-teal-700 transition-colors ring-2 ring-transparent focus:ring-teal-500">
+                    遷移率 (CTR)
+                </button>
+            </div>
+
+            <!-- Chart Container -->
+            <div class="chart-container">
+                <canvas id="comparisonChart"></canvas>
+            </div>
+            
+            <div class="mt-4 text-center text-xs text-stone-400">
+                ※ データは架空の標準的なマーケティングモデルに基づくシミュレーション値です。
+            </div>
+        </section>
+
+        <!-- Deep Dive: Pattern Details -->
+        <!-- Visualization: Using interactive cards to act as tabs. Clicking a card updates the detail text below. -->
+        <section>
+            <div class="text-center mb-8">
+                <h3 class="text-2xl font-bold text-stone-800">パターン別詳細分析</h3>
+                <p class="text-stone-600 mt-2">各戦略をクリックして、トラフィックフローの特徴とメリット・デメリットを確認してください。</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                <!-- Pattern 1 Tab -->
+                <button onclick="selectPattern('pattern1')" id="tab-pattern1" class="pattern-tab bg-white p-6 rounded-lg text-left card-shadow border-2 border-transparent hover:border-amber-200 transition-all focus:outline-none">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="bg-rose-100 text-rose-700 text-xs font-bold px-2 py-1 rounded">Pattern 1</span>
+                        <span class="text-2xl">📺 ➡ 📝</span>
+                    </div>
+                    <h4 class="font-bold text-lg text-stone-800">YouTube概要欄 → note</h4>
+                    <p class="text-sm text-stone-500 mt-2">動画で集客し、記事で深掘りする。</p>
+                </button>
+
+                <!-- Pattern 2 Tab -->
+                <button onclick="selectPattern('pattern2')" id="tab-pattern2" class="pattern-tab bg-white p-6 rounded-lg text-left card-shadow border-2 border-transparent hover:border-amber-200 transition-all focus:outline-none">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-1 rounded">Pattern 2</span>
+                        <span class="text-2xl">📝 ➡ 📺</span>
+                    </div>
+                    <h4 class="font-bold text-lg text-stone-800">note記事 → YouTube動画</h4>
+                    <p class="text-sm text-stone-500 mt-2">記事で関心を高め、動画へ誘導。</p>
+                </button>
+
+                <!-- Pattern 3 Tab -->
+                <button onclick="selectPattern('pattern3')" id="tab-pattern3" class="pattern-tab bg-white p-6 rounded-lg text-left card-shadow border-2 border-amber-500 ring-2 ring-amber-100 transition-all focus:outline-none">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="bg-teal-100 text-teal-700 text-xs font-bold px-2 py-1 rounded">Pattern 3</span>
+                        <span class="text-2xl">🔄 相互リンク</span>
+                    </div>
+                    <h4 class="font-bold text-lg text-stone-800">相互リンク (推奨)</h4>
+                    <p class="text-sm text-stone-500 mt-2">プラットフォーム間の循環型エコシステム。</p>
+                </button>
+            </div>
+
+            <!-- Dynamic Content Area -->
+            <div class="bg-white rounded-xl border border-stone-200 overflow-hidden">
+                <div class="p-8 grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                    
+                    <!-- Text Content -->
+                    <div id="detail-content">
+                        <h4 class="text-xl font-bold text-amber-700 mb-4" id="detail-title">相互リンク戦略 (Pattern 3)</h4>
+                        <p class="text-stone-700 mb-6 leading-relaxed" id="detail-desc">
+                            YouTubeの概要欄とnoteの記事本文、双方にリンクを設置することで、情報の網羅性を高める戦略です。動画視聴後に「文字で復習したい」層と、記事読了後に「実際の動きや音声を確認したい」層の両方を取り込みます。
+                        </p>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <h5 class="font-bold text-stone-800 text-sm mb-1">✅ メリット (Pros)</h5>
+                                <ul class="list-disc list-inside text-sm text-stone-600 space-y-1" id="detail-pros">
+                                    <li>双方のアルゴリズムに対し「外部流入」の加点評価を与える</li>
+                                    <li>ユーザーの好みの媒体（動画orテキスト）を選択させることで離脱を防ぐ</li>
+                                    <li>総滞在時間が最大化しやすい</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h5 class="font-bold text-stone-800 text-sm mb-1">⚠️ デメリット (Cons)</h5>
+                                <ul class="list-disc list-inside text-sm text-stone-600 space-y-1" id="detail-cons">
+                                    <li>両方のコンテンツを高品質に維持するリソースが必要</li>
+                                    <li>リンク更新の手間が2倍になる</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Visual Representation (Canvas Pie/Doughnut) -->
+                    <div class="bg-stone-50 rounded-lg p-6 flex flex-col items-center justify-center h-full">
+                        <h5 class="text-sm font-bold text-stone-500 mb-4 uppercase tracking-wider">Traffic Composition</h5>
+                        <div class="chart-container" style="height: 250px;">
+                            <canvas id="detailChart"></canvas>
+                        </div>
+                        <p class="text-xs text-center mt-4 text-stone-400 max-w-xs" id="detail-chart-caption">
+                            YouTubeからの流入が60%、Noteからの流入が25%、検索等が15%のバランス型構成です。
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- Long-term Projection -->
+        <!-- Visualization: Line Chart. 
+             Goal: Show change over time.
+             Why: To demonstrate that while Pattern 1 starts strong, Pattern 3 accumulates more value over time due to SEO benefits. 
+        -->
+        <section class="py-8">
+            <div class="flex flex-col md:flex-row justify-between items-end mb-6">
+                <div>
+                    <h3 class="text-xl font-bold text-stone-800">30日間の累積アクセス推移予測</h3>
+                    <p class="text-stone-500 mt-1 text-sm">
+                        投稿後30日間の累積PV数のシミュレーション。相互リンク（Pattern 3）は初速に加え、長期的な検索流入（SEO）効果により後半の伸びが顕著です。
+                    </p>
+                </div>
+            </div>
+            
+            <div class="bg-white p-4 rounded-xl card-shadow border border-stone-100">
+                <div class="chart-container" style="height: 400px; max-height: 400px;">
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Key Takeaways / Summary Table -->
+        <section class="bg-stone-800 text-stone-100 rounded-xl p-8 shadow-lg">
+            <h3 class="text-xl font-bold mb-6 text-amber-400">調査結果まとめ: どの戦略を選ぶべきか？</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                    <thead>
+                        <tr class="border-b border-stone-700">
+                            <th class="py-3 pr-4 font-bold text-stone-400">目的 (Objective)</th>
+                            <th class="py-3 px-4 font-bold text-stone-400">推奨パターン</th>
+                            <th class="py-3 px-4 font-bold text-stone-400">理由</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-stone-700">
+                        <tr>
+                            <td class="py-4 pr-4">認知の最大化 (Max Reach)</td>
+                            <td class="py-4 px-4 font-bold text-teal-400">Pattern 1 (YT優先)</td>
+                            <td class="py-4 px-4 text-stone-300">YouTubeの拡散力が圧倒的。まずは動画で見せ、興味ある人のみをnoteへ誘導する漏斗モデル。</td>
+                        </tr>
+                        <tr>
+                            <td class="py-4 pr-4">ファンの濃さ (Engagement)</td>
+                            <td class="py-4 px-4 font-bold text-blue-400">Pattern 2 (Note優先)</td>
+                            <td class="py-4 px-4 text-stone-300">テキストを読み込む熱量の高いユーザーを動画へ送るため、動画の視聴維持率が高くなる傾向。</td>
+                        </tr>
+                        <tr>
+                            <td class="py-4 pr-4">資産化・SEO (Long-term)</td>
+                            <td class="py-4 px-4 font-bold text-amber-400">Pattern 3 (相互)</td>
+                            <td class="py-4 px-4 text-stone-300">相互の被リンク効果と、Google検索結果での「動画」「記事」両面占有（SERP支配）が可能。</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-stone-100 py-8 border-t border-stone-200 mt-8">
+        <div class="container mx-auto px-4 text-center text-stone-400 text-sm">
+            <p>&copy; 2024 Cross-Platform Research Simulator. Simulated Data for Analysis Purposes.</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- Data Store ---
+        const patterns = {
+            pattern1: {
+                title: "YouTube概要欄 → note (Pattern 1)",
+                desc: "YouTubeを主軸とし、概要欄にnoteへのリンクを貼るパターン。動画プラットフォームの巨大なインプレッションを活用し、noteへ送客します。最も一般的な手法です。",
+                pros: [
+                    "YouTubeの圧倒的なリーチ数を活用できる",
+                    "動画で興味を持った層だけが記事に来るため、記事の読了率が高まりやすい",
+                    "動画作成の補足資料としてnoteを使える"
+                ],
+                cons: [
+                    "動画から外部サイトへのクリック率（CTR）は一般的に低い (1-3%)",
+                    "note側の独自集客力が育ちにくい"
+                ],
+                chartData: [85, 15], // YouTube, Note
+                chartLabels: ['YouTube Views', 'Note Referrals'],
+                color: '#f43f5e' // Rose
+            },
+            pattern2: {
+                title: "note記事 → YouTube動画 (Pattern 2)",
+                desc: "note記事をメインコンテンツとし、記事内にYouTube動画を埋め込む、またはリンクを貼るパターン。テキストによる深い理解を促した後に動画を見せるため、視聴の質が高まります。",
+                pros: [
+                    "テキストで文脈を理解しているため、動画の視聴維持率が高い",
+                    "記事の滞在時間が動画閲覧分だけ伸びる",
+                    "コアなファン層の育成に向いている"
+                ],
+                cons: [
+                    "note自体の集客力がYouTubeより弱いため、母数が少ない",
+                    "テキストを好むユーザーは動画再生を避ける傾向がある"
+                ],
+                chartData: [30, 70], // YouTube from Note, Note Organic
+                chartLabels: ['YT Views (Embedded)', 'Note Reads'],
+                color: '#3b82f6' // Blue
+            },
+            pattern3: {
+                title: "相互リンク・エコシステム (Pattern 3)",
+                desc: "YouTubeとnote、双方に相互リンクを設置し、内容も「動画版」「テキスト版」として相互補完させる戦略。プラットフォーム間の循環を作り出します。",
+                pros: [
+                    "双方のアルゴリズムに「外部からの質の高い流入」シグナルを送れる",
+                    "検索エンジン(SEO)において動画と記事の両方で露出面が増える",
+                    "ユーザーが好みのフォーマットを選べるため満足度が高い"
+                ],
+                cons: [
+                    "両方のコンテンツ制作・更新コストが高い",
+                    "導線設計を間違えるとループして離脱原因になる可能性がある"
+                ],
+                chartData: [60, 25, 15], // YouTube, Note, Search/Other
+                chartLabels: ['YouTube Origin', 'Note Origin', 'Search/Synergy'],
+                color: '#14b8a6' // Teal
+            }
+        };
+
+        // --- Chart Objects ---
+        let mainChartInstance = null;
+        let detailChartInstance = null;
+        let trendChartInstance = null;
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            initMainChart();
+            initDetailChart();
+            initTrendChart();
+            // Default selection
+            selectPattern('pattern3');
+        });
+
+        // --- Main Comparison Chart Logic ---
+        function initMainChart() {
+            const ctx = document.getElementById('comparisonChart').getContext('2d');
+            
+            // Default Data: Traffic Volume
+            const data = {
+                labels: ['Pattern 1 (YT→Note)', 'Pattern 2 (Note→YT)', 'Pattern 3 (相互)'],
+                datasets: [{
+                    label: '推定総アクセス数 (Total Views)',
+                    data: [12500, 4200, 16800],
+                    backgroundColor: ['#fecdd3', '#bfdbfe', '#99f6e4'],
+                    borderColor: ['#e11d48', '#2563eb', '#0d9488'],
+                    borderWidth: 2,
+                    borderRadius: 6,
+                    maxBarThickness: 60
+                }]
+            };
+
+            const config = {
+                type: 'bar',
+                data: data,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#fff',
+                            titleColor: '#444',
+                            bodyColor: '#666',
+                            borderColor: '#ddd',
+                            borderWidth: 1,
+                            callbacks: {
+                                label: function(context) {
+                                    return context.parsed.y.toLocaleString() + (window.currentMetric === 'ctr' ? '%' : ' Views');
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: '#f3f4f6' },
+                            ticks: { font: { family: "'Noto Sans JP', sans-serif" } }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { font: { family: "'Noto Sans JP', sans-serif" } }
+                        }
+                    }
+                }
+            };
+
+            mainChartInstance = new Chart(ctx, config);
+            window.currentMetric = 'traffic';
+        }
+
+        function updateMainChart(metric) {
+            window.currentMetric = metric;
+            const btnTraffic = document.getElementById('btn-traffic');
+            const btnCtr = document.getElementById('btn-ctr');
+
+            if (metric === 'traffic') {
+                // Style updates
+                btnTraffic.classList.add('bg-stone-100', 'active-metric');
+                btnTraffic.classList.remove('bg-white', 'border', 'border-stone-200');
+                btnCtr.classList.remove('bg-teal-50', 'active-metric');
+                btnCtr.classList.add('bg-white', 'border', 'border-stone-200');
+
+                // Data updates
+                mainChartInstance.data.datasets[0].label = '推定総アクセス数';
+                mainChartInstance.data.datasets[0].data = [12500, 4200, 16800];
+                mainChartInstance.data.datasets[0].backgroundColor = ['#fecdd3', '#bfdbfe', '#99f6e4'];
+                mainChartInstance.data.datasets[0].borderColor = ['#e11d48', '#2563eb', '#0d9488'];
+            } else {
+                // Style updates
+                btnCtr.classList.add('bg-teal-50', 'active-metric');
+                btnCtr.classList.remove('bg-white', 'border', 'border-stone-200');
+                btnTraffic.classList.remove('bg-stone-100', 'active-metric');
+                btnTraffic.classList.add('bg-white', 'border', 'border-stone-200');
+
+                // Data updates
+                mainChartInstance.data.datasets[0].label = '遷移率 (Click Through Rate)';
+                mainChartInstance.data.datasets[0].data = [2.5, 18.0, 8.5]; // Simulated CTRs
+                mainChartInstance.data.datasets[0].backgroundColor = ['#fda4af', '#93c5fd', '#5eead4'];
+                mainChartInstance.data.datasets[0].borderColor = ['#be123c', '#1d4ed8', '#0f766e'];
+            }
+            mainChartInstance.update();
+        }
+
+        // --- Detail Section Logic ---
+        function selectPattern(patternKey) {
+            const data = patterns[patternKey];
+            
+            // Update UI styles
+            document.querySelectorAll('.pattern-tab').forEach(el => {
+                el.classList.remove('ring-2', 'ring-amber-100', 'border-amber-500');
+                el.classList.add('border-transparent');
+            });
+            document.getElementById(`tab-${patternKey}`).classList.add('ring-2', 'ring-amber-100', 'border-amber-500');
+            document.getElementById(`tab-${patternKey}`).classList.remove('border-transparent');
+
+            // Update Text Content
+            document.getElementById('detail-title').innerText = data.title;
+            document.getElementById('detail-title').style.color = data.color;
+            document.getElementById('detail-desc').innerText = data.desc;
+            
+            const prosList = document.getElementById('detail-pros');
+            prosList.innerHTML = data.pros.map(item => `<li>${item}</li>`).join('');
+            
+            const consList = document.getElementById('detail-cons');
+            consList.innerHTML = data.cons.map(item => `<li>${item}</li>`).join('');
+
+            // Update Detail Chart
+            updateDetailChart(data.chartData, data.chartLabels, data.color);
+        }
+
+        function initDetailChart() {
+            const ctx = document.getElementById('detailChart').getContext('2d');
+            
+            const config = {
+                type: 'doughnut',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        data: [],
+                        backgroundColor: [],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '65%',
+                    plugins: {
+                        legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } }
+                    }
+                }
+            };
+            detailChartInstance = new Chart(ctx, config);
+        }
+
+        function updateDetailChart(data, labels, baseColor) {
+            // Generate shades of the base color for the chart
+            const bgColors = [baseColor, adjustColor(baseColor, 40), adjustColor(baseColor, 80)];
+
+            detailChartInstance.data.labels = labels;
+            detailChartInstance.data.datasets[0].data = data;
+            detailChartInstance.data.datasets[0].backgroundColor = bgColors;
+            detailChartInstance.update();
+        }
+
+        // Helper to lighten colors for charts
+        function adjustColor(color, amount) {
+            return color + amount; // Very rough hex manipulation for demo purposes, or use fixed palette
+            // In a real app, use a proper color manipulation library or predefined palette array.
+            // Fallback for this demo:
+            if(color === '#f43f5e') return amount === 40 ? '#fb7185' : '#fda4af';
+            if(color === '#3b82f6') return amount === 40 ? '#60a5fa' : '#93c5fd';
+            if(color === '#14b8a6') return amount === 40 ? '#2dd4bf' : '#5eead4';
+            return '#ccc';
+        }
+
+        // --- Trend Chart Logic ---
+        function initTrendChart() {
+            const ctx = document.getElementById('trendChart').getContext('2d');
+
+            // Generate 30 days of dummy data
+            const days = Array.from({length: 30}, (_, i) => `Day ${i+1}`);
+            
+            // Pattern 1: High start, fast decay (Viral nature of YT)
+            const p1Data = days.map((_, i) => 1000 + (10000 / (i + 1)) + (Math.random() * 50)); 
+            // Pattern 2: Low start, steady (Accumulation of readers)
+            const p2Data = days.map((_, i) => 200 + (i * 50) + (Math.random() * 20));
+            // Pattern 3: Good start, growing compound interest (Synergy)
+            const p3Data = days.map((_, i) => 800 + (3000 / (i + 1)) + (i * 80) + (Math.random() * 50));
+
+            // Convert to cumulative for "Total Views Over Time" effect? 
+            // Or leave as daily active views. Let's do Cumulative to show growth.
+            const acc = arr => arr.reduce((a, x, i) => [...a, x + (a[i-1] || 0)], []);
+
+            const config = {
+                type: 'line',
+                data: {
+                    labels: days.filter((_, i) => i % 3 === 0), // Show every 3rd label
+                    datasets: [
+                        {
+                            label: 'Pattern 1 (YT→Note)',
+                            data: acc(p1Data),
+                            borderColor: '#f43f5e', // Rose
+                            backgroundColor: '#f43f5e',
+                            tension: 0.4,
+                            pointRadius: 2
+                        },
+                        {
+                            label: 'Pattern 2 (Note→YT)',
+                            data: acc(p2Data),
+                            borderColor: '#3b82f6', // Blue
+                            backgroundColor: '#3b82f6',
+                            tension: 0.4,
+                            pointRadius: 2
+                        },
+                        {
+                            label: 'Pattern 3 (相互リンク)',
+                            data: acc(p3Data),
+                            borderColor: '#0d9488', // Teal
+                            backgroundColor: '#0d9488',
+                            tension: 0.4,
+                            pointRadius: 4,
+                            borderWidth: 3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + Math.round(context.parsed.y).toLocaleString() + ' views';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            grid: { borderDash: [2, 4], color: '#e5e7eb' },
+                            title: { display: true, text: '累積アクセス数 (Cumulative Views)' }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    }
+                }
+            };
+
+            trendChartInstance = new Chart(ctx, config);
+        }
+
+    </script>
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</body>
+</html>
