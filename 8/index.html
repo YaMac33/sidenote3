@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>副業の基礎知識・完全ガイド</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Noto Sans JP', sans-serif; background-color: #f8fafc; color: #334155; }
+        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+        .transition-all-300 { transition: all 0.3s ease-in-out; }
+        .active-tab { border-bottom: 4px solid #0f766e; color: #0f766e; font-weight: 700; }
+        .inactive-tab { border-bottom: 4px solid transparent; color: #64748b; }
+        .chart-container { position: relative; width: 100%; height: 100px; max-width: 600px; margin: 0 auto; }
+        .btn-primary { background-color: #0f766e; color: white; }
+        .btn-primary:hover { background-color: #115e59; }
+        .bg-accent-light { background-color: #ffedd5; }
+        .text-accent { color: #c2410c; }
+    </style>
+    <!-- Chosen Palette: Warm Neutrals with Teal (Trust) and Orange (Accent) -->
+    <!-- Application Structure Plan:
+        1. Hero Section: Sets the stage, clear value proposition.
+        2. Definition & Nuance: Interactive tab system to explore the 3 meanings (Side/Parallel/Dual) to clear up ambiguity.
+        3. Work Styles: Card grid explaining the 3 types (Employment/Business/Asset) with pros/cons.
+        4. The "Can I do it?" Core Logic: A high-impact Toggle Section. User selects "Public Servant" or "Private Employee" to see rules specific to them. This solves the complexity of explaining both simultaneously.
+        5. Tax Simulator: An interactive slider and dynamic chart to visualize the "200,000 Yen Wall".
+        6. Summary: Checklist for safe starting.
+    -->
+    <!-- Visualization & Content Choices:
+        - Nuance: Interactive Tabs. Goal: Inform. Method: HTML/JS text swap.
+        - Rules: Toggle Switch. Goal: Compare/Personalize. Method: JS DOM manipulation.
+        - Tax: Dynamic Bar Chart (Chart.js). Goal: Inform/Simulate. Method: Chart updates based on range slider input. Shows the 200k threshold visually.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+<body class="antialiased">
+
+    <!-- Hero Section -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-teal-800"><i class="fa-solid fa-briefcase mr-2"></i>副業の基礎知識ガイド</h1>
+            <nav class="hidden md:flex space-x-6 text-sm font-medium text-slate-600">
+                <a href="#definition" class="hover:text-teal-700">定義と種類</a>
+                <a href="#rules" class="hover:text-teal-700">公務員と会社員</a>
+                <a href="#tax" class="hover:text-teal-700">税金の壁</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-4 py-8 space-y-16">
+
+        <!-- Intro -->
+        <section class="text-center py-10">
+            <h2 class="text-4xl font-bold text-slate-800 mb-6">あなたの「副業」の第一歩を、<br>正しく安全に。</h2>
+            <p class="text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
+                「副業」に興味はあるけれど、何から始めればいいのか、会社のルールはどうなっているのか不安ではありませんか？
+                本サイトでは、法的な定義から職種別のルール、税金のボーダーラインまで、知っておくべき基礎知識をインタラクティブに解説します。
+            </p>
+        </section>
+
+        <!-- Module 1: Definitions & Nuances -->
+        <section id="definition" class="bg-white rounded-2xl shadow-lg p-8">
+            <div class="mb-8 border-b pb-4">
+                <h3 class="text-2xl font-bold text-slate-800 mb-2">1. 「副業」とは何か？</h3>
+                <p class="text-slate-600">
+                    実は「副業」に法律上の明確な定義はありません。一般的には「本業以外の収入を得る活動」全般を指します。
+                    漢字の違いでニュアンスが異なります。下のタブを切り替えて確認してみましょう。
+                </p>
+            </div>
+
+            <!-- Interactive Nuance Tabs -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                <button onclick="updateNuance('side')" id="tab-side" class="nuance-tab p-4 rounded-xl border-2 border-teal-100 bg-teal-50 text-center transition-all-300 hover:border-teal-500 ring-offset-2 focus:ring-2">
+                    <div class="text-3xl font-bold text-teal-700 mb-1">副業</div>
+                    <div class="text-xs text-teal-600 font-bold">SIDE JOB</div>
+                </button>
+                <button onclick="updateNuance('parallel')" id="tab-parallel" class="nuance-tab p-4 rounded-xl border-2 border-slate-100 bg-white text-center transition-all-300 hover:border-orange-400">
+                    <div class="text-3xl font-bold text-slate-700 mb-1">複業</div>
+                    <div class="text-xs text-slate-500 font-bold">PARALLEL WORK</div>
+                </button>
+                <button onclick="updateNuance('dual')" id="tab-dual" class="nuance-tab p-4 rounded-xl border-2 border-slate-100 bg-white text-center transition-all-300 hover:border-blue-400">
+                    <div class="text-3xl font-bold text-slate-700 mb-1">兼業</div>
+                    <div class="text-xs text-slate-500 font-bold">DUAL BUSINESS</div>
+                </button>
+            </div>
+
+            <div class="bg-slate-50 rounded-xl p-6 border border-slate-200">
+                <div id="nuance-content" class="flex flex-col md:flex-row gap-6 items-center">
+                    <div class="text-5xl text-teal-600 w-24 h-24 flex items-center justify-center bg-white rounded-full shadow-sm">
+                        <i class="fa-solid fa-scale-unbalanced"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h4 id="nuance-title" class="text-xl font-bold text-slate-800 mb-2">本業 ＞ サブ</h4>
+                        <p id="nuance-desc" class="text-slate-600 leading-relaxed">
+                            最も一般的なイメージです。本業がメインにあり、あくまで「収入の補助」や「空き時間の活用」として行うスタイルです。<br>
+                            例：週末のアルバイト、単発のイベントスタッフなど。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Module 2: Work Styles (3 Types) -->
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="col-span-1 md:col-span-3">
+                <h3 class="text-2xl font-bold text-slate-800 mb-2">2. 働き方の3つの型</h3>
+                <p class="text-slate-600">契約形態によって税金の手続きや自由度が変わります。</p>
+            </div>
+
+            <!-- Type 1 -->
+            <div class="bg-white p-6 rounded-2xl shadow-md border-t-4 border-blue-500 card-hover transition-all-300">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
+                        <i class="fa-solid fa-id-card"></i>
+                    </div>
+                    <h4 class="font-bold text-lg">雇用型</h4>
+                </div>
+                <ul class="text-sm space-y-2 text-slate-600">
+                    <li><i class="fa-solid fa-check text-blue-500 mr-2"></i><strong>給与所得</strong></li>
+                    <li><i class="fa-solid fa-clock text-slate-400 mr-2"></i>時間の拘束がある</li>
+                    <li><i class="fa-solid fa-building text-slate-400 mr-2"></i>アルバイト・パート</li>
+                </ul>
+            </div>
+
+            <!-- Type 2 -->
+            <div class="bg-white p-6 rounded-2xl shadow-md border-t-4 border-teal-500 card-hover transition-all-300">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 rounded-full bg-teal-100 text-teal-600 flex items-center justify-center">
+                        <i class="fa-solid fa-laptop-code"></i>
+                    </div>
+                    <h4 class="font-bold text-lg">事業型</h4>
+                </div>
+                <ul class="text-sm space-y-2 text-slate-600">
+                    <li><i class="fa-solid fa-check text-teal-500 mr-2"></i><strong>事業・雑所得</strong></li>
+                    <li><i class="fa-solid fa-person-running text-slate-400 mr-2"></i>自分の裁量で働ける</li>
+                    <li><i class="fa-solid fa-pen-nib text-slate-400 mr-2"></i>フリーランス・請負</li>
+                </ul>
+            </div>
+
+            <!-- Type 3 -->
+            <div class="bg-white p-6 rounded-2xl shadow-md border-t-4 border-orange-500 card-hover transition-all-300">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </div>
+                    <h4 class="font-bold text-lg">資産運用型</h4>
+                </div>
+                <ul class="text-sm space-y-2 text-slate-600">
+                    <li><i class="fa-solid fa-check text-orange-500 mr-2"></i><strong>配当・譲渡所得</strong></li>
+                    <li><i class="fa-solid fa-coins text-slate-400 mr-2"></i>お金に働いてもらう</li>
+                    <li><i class="fa-solid fa-house text-slate-400 mr-2"></i>株・不動産投資</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Module 3: Rules (Public vs Private) - The Core Interactive Part -->
+        <section id="rules" class="bg-slate-800 rounded-3xl text-white overflow-hidden shadow-2xl">
+            <div class="p-8 md:p-12 text-center">
+                <h2 class="text-3xl font-bold mb-4">あなたはどちらに該当しますか？</h2>
+                <p class="text-slate-300 mb-8 max-w-2xl mx-auto">
+                    副業のルールは「公務員」か「民間企業の社員」かで天と地ほど違います。<br>
+                    あなたの立場を選んで、正しいルールを確認してください。
+                </p>
+
+                <!-- Toggle Buttons -->
+                <div class="inline-flex bg-slate-700 p-1 rounded-xl">
+                    <button onclick="setRole('civil')" id="btn-civil" class="px-8 py-3 rounded-lg text-sm font-bold transition-all-300 text-slate-300 hover:text-white">
+                        <i class="fa-solid fa-building-columns mr-2"></i>公務員
+                    </button>
+                    <button onclick="setRole('private')" id="btn-private" class="px-8 py-3 rounded-lg text-sm font-bold transition-all-300 bg-teal-500 text-white shadow-lg">
+                        <i class="fa-solid fa-building mr-2"></i>民間企業の社員
+                    </button>
+                </div>
+            </div>
+
+            <!-- Dynamic Content Area -->
+            <div class="bg-white text-slate-800 p-8 md:p-12 min-h-[400px]">
+                
+                <!-- Content: Private Employee -->
+                <div id="content-private" class="block animate-fade-in">
+                    <div class="flex items-center gap-4 mb-6 border-b pb-4">
+                        <div class="bg-teal-100 p-3 rounded-lg text-teal-700"><i class="fa-solid fa-building text-2xl"></i></div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-teal-800">民間企業の社員</h3>
+                            <p class="font-bold text-slate-500">原則：<span class="text-teal-600 text-xl">法律上は自由</span> (ただし就業規則に従う)</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div>
+                            <h4 class="font-bold text-lg mb-4 flex items-center"><i class="fa-solid fa-triangle-exclamation text-orange-500 mr-2"></i>会社が禁止する3つの理由</h4>
+                            <div class="space-y-4">
+                                <div class="bg-slate-50 p-4 rounded-lg border-l-4 border-orange-400">
+                                    <h5 class="font-bold text-slate-700">1. 本業への支障 (過重労働)</h5>
+                                    <p class="text-sm text-slate-600 mt-1">副業の疲れで本業のパフォーマンスが落ちること。</p>
+                                </div>
+                                <div class="bg-slate-50 p-4 rounded-lg border-l-4 border-orange-400">
+                                    <h5 class="font-bold text-slate-700">2. 競業避止 (ライバル協力)</h5>
+                                    <p class="text-sm text-slate-600 mt-1">同業他社で働き、ノウハウが流出すること。</p>
+                                </div>
+                                <div class="bg-slate-50 p-4 rounded-lg border-l-4 border-orange-400">
+                                    <h5 class="font-bold text-slate-700">3. 信用の失墜</h5>
+                                    <p class="text-sm text-slate-600 mt-1">会社のブランドを損なう活動をすること。</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-lg mb-4 flex items-center"><i class="fa-solid fa-key text-teal-500 mr-2"></i>アクションプラン</h4>
+                            <ul class="space-y-4 text-slate-600">
+                                <li class="flex items-start">
+                                    <i class="fa-solid fa-check-circle text-teal-500 mt-1 mr-3"></i>
+                                    <span>まずは<strong>就業規則</strong>を確認する。「許可制」「届出制」などと書かれています。</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fa-solid fa-check-circle text-teal-500 mt-1 mr-3"></i>
+                                    <span>無断で行うと懲戒処分のリスクがあります。バレた時のリスク（信頼喪失）は大きいです。</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fa-solid fa-check-circle text-teal-500 mt-1 mr-3"></i>
+                                    <span>「競業ではない」「本業に支障がない」ことを説明できれば、許可されるケースが増えています。</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Content: Civil Servant -->
+                <div id="content-civil" class="hidden animate-fade-in">
+                    <div class="flex items-center gap-4 mb-6 border-b pb-4">
+                        <div class="bg-slate-200 p-3 rounded-lg text-slate-700"><i class="fa-solid fa-building-columns text-2xl"></i></div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-slate-800">公務員</h3>
+                            <p class="font-bold text-slate-500">原則：<span class="text-red-600 text-xl">法律で禁止</span> (国家公務員法・地方公務員法)</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div>
+                            <h4 class="font-bold text-lg mb-4 text-red-700 flex items-center"><i class="fa-solid fa-gavel mr-2"></i>なぜ禁止なのか？ (3原則)</h4>
+                            <div class="bg-red-50 p-5 rounded-xl border border-red-100 space-y-3">
+                                <div class="flex items-center gap-2">
+                                    <span class="bg-red-200 text-red-800 text-xs font-bold px-2 py-1 rounded">義務1</span>
+                                    <span class="font-bold text-slate-700">信用失墜行為の禁止</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="bg-red-200 text-red-800 text-xs font-bold px-2 py-1 rounded">義務2</span>
+                                    <span class="font-bold text-slate-700">守秘義務 (秘密を守る)</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="bg-red-200 text-red-800 text-xs font-bold px-2 py-1 rounded">義務3</span>
+                                    <span class="font-bold text-slate-700">職務専念の義務</span>
+                                </div>
+                                <p class="text-xs text-slate-500 mt-2 pt-2 border-t border-red-200">
+                                    ※違反すると法律違反として「懲戒免職」「減給」などの厳しい処分を受けます。
+                                </p>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-lg mb-4 text-teal-700 flex items-center"><i class="fa-solid fa-circle-check mr-2"></i>例外：許可されれば可能なこと</h4>
+                            <p class="text-sm text-slate-500 mb-4">「営利目的ではない」「本業に支障がない」場合に限り許可されます。</p>
+                            
+                            <div class="space-y-3">
+                                <div class="flex items-start bg-teal-50 p-3 rounded-lg">
+                                    <i class="fa-solid fa-chart-pie text-teal-600 mt-1 mr-3"></i>
+                                    <div>
+                                        <h5 class="font-bold text-slate-700">資産運用 (許可不要)</h5>
+                                        <p class="text-sm text-slate-600">株、投資信託、NISA、iDeCoなど。<br><span class="text-xs text-red-500">※勤務中の取引は厳禁</span></p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start bg-teal-50 p-3 rounded-lg">
+                                    <i class="fa-solid fa-house-chimney text-teal-600 mt-1 mr-3"></i>
+                                    <div>
+                                        <h5 class="font-bold text-slate-700">小規模な不動産賃貸</h5>
+                                        <p class="text-sm text-slate-600">5棟10室未満、年収500万円未満などの基準あり。</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start bg-teal-50 p-3 rounded-lg">
+                                    <i class="fa-solid fa-hand-holding-heart text-teal-600 mt-1 mr-3"></i>
+                                    <div>
+                                        <h5 class="font-bold text-slate-700">公益活動 (要許可)</h5>
+                                        <p class="text-sm text-slate-600">NPO活動、地域のコーチ、講演・執筆など。</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Module 4: Taxes (200k Wall) -->
+        <section id="tax" class="bg-white rounded-2xl shadow-lg p-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h3 class="text-2xl font-bold text-slate-800 mb-4">4. 税金の壁「20万円」</h3>
+                    <p class="text-slate-600 mb-6">
+                        副業の所得（売上－経費）が年間20万円を超えると、税務署への<strong>確定申告</strong>が必要になります。<br>
+                        スライダーを動かして、必要な手続きを確認しましょう。
+                    </p>
+                    
+                    <!-- Slider Interaction -->
+                    <div class="bg-slate-50 p-6 rounded-xl border border-slate-200">
+                        <label class="block text-sm font-bold text-slate-500 mb-2">年間の副業所得 (予想)</label>
+                        <div class="flex items-center gap-4 mb-4">
+                            <input type="range" id="income-slider" min="0" max="400000" step="10000" value="100000" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-teal-600">
+                            <span class="text-2xl font-bold text-teal-700 w-32 text-right"><span id="income-value">100,000</span>円</span>
+                        </div>
+                        <p class="text-xs text-slate-400 text-center">※ 所得 = 売上 - 必要経費</p>
+                    </div>
+
+                    <!-- Dynamic Result Box -->
+                    <div id="tax-result" class="mt-6 p-4 rounded-lg bg-teal-50 border border-teal-200 transition-colors duration-300">
+                        <div class="flex items-start gap-3">
+                            <i id="result-icon" class="fa-solid fa-circle-check text-teal-600 text-xl mt-1"></i>
+                            <div>
+                                <h4 id="result-title" class="font-bold text-lg text-teal-800">確定申告は不要です</h4>
+                                <p id="result-desc" class="text-sm text-teal-700 mt-1">所得税の確定申告は必要ありません。ただし、お住まいの自治体への<strong>住民税の申告</strong>は必要です。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Visualization -->
+                <div class="bg-slate-50 p-6 rounded-xl border border-slate-100 flex flex-col items-center justify-center">
+                    <h4 class="text-sm font-bold text-slate-500 mb-4">税務署への申告要否メーター</h4>
+                    <div class="chart-container">
+                        <canvas id="taxChart"></canvas>
+                    </div>
+                    <div class="mt-4 flex justify-between w-full text-xs text-slate-400 px-4">
+                        <span>0円</span>
+                        <span class="font-bold text-orange-500">20万円 (境界線)</span>
+                        <span>40万円</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Summary -->
+        <footer class="bg-slate-800 text-slate-300 py-12 rounded-t-3xl mt-12">
+            <div class="max-w-4xl mx-auto px-6 text-center">
+                <h2 class="text-2xl font-bold text-white mb-6">まとめ：安全に始めるためのチェックリスト</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-left max-w-2xl mx-auto">
+                    <div class="flex items-center gap-3 bg-slate-700 p-4 rounded-lg">
+                        <i class="fa-solid fa-check text-teal-400"></i>
+                        <span>自分の就業規則を確認したか？</span>
+                    </div>
+                    <div class="flex items-center gap-3 bg-slate-700 p-4 rounded-lg">
+                        <i class="fa-solid fa-check text-teal-400"></i>
+                        <span>本業に支障が出ない計画か？</span>
+                    </div>
+                    <div class="flex items-center gap-3 bg-slate-700 p-4 rounded-lg">
+                        <i class="fa-solid fa-check text-teal-400"></i>
+                        <span>公務員の場合、許可不要の範囲か？</span>
+                    </div>
+                    <div class="flex items-center gap-3 bg-slate-700 p-4 rounded-lg">
+                        <i class="fa-solid fa-check text-teal-400"></i>
+                        <span>住民税の申告について理解したか？</span>
+                    </div>
+                </div>
+                <p class="mt-8 text-sm text-slate-500">
+                    副業は正しくルールを知って行えば、収入だけでなくスキルや経験も得られます。<br>
+                    無理のない範囲でチャレンジしてみましょう。
+                </p>
+            </div>
+        </footer>
+
+    </main>
+
+    <script>
+        // --- DATA & STATE ---
+        const nuanceData = {
+            side: {
+                title: "本業 ＞ サブ",
+                desc: "最も一般的なイメージです。本業がメインにあり、あくまで「収入の補助」や「空き時間の活用」として行うスタイルです。<br>例：週末のアルバイト、ウーバーイーツなど。",
+                icon: "fa-scale-unbalanced",
+                color: "teal"
+            },
+            parallel: {
+                title: "本業 ＝ 本業",
+                desc: "「パラレルワーク」とも呼ばれます。複数の仕事を並行して行い、どれもメインの仕事として捉える働き方です。<br>例：エンジニア 兼 ライター。",
+                icon: "fa-scale-balanced",
+                color: "orange"
+            },
+            dual: {
+                title: "事業を行う",
+                desc: "副業とほぼ同義ですが、自ら事業を営む（農業や自営業など）場合や、役員などを兼任する場合に使われやすい言葉です。",
+                icon: "fa-briefcase",
+                color: "blue"
+            }
+        };
+
+        // --- NUANCE TABS LOGIC ---
+        function updateNuance(type) {
+            // Update Text
+            const data = nuanceData[type];
+            const contentDiv = document.getElementById('nuance-content');
+            const titleEl = document.getElementById('nuance-title');
+            const descEl = document.getElementById('nuance-desc');
+            const iconContainer = contentDiv.querySelector('div:first-child');
+            
+            // Fade out
+            contentDiv.style.opacity = '0.5';
+            
+            setTimeout(() => {
+                titleEl.textContent = data.title;
+                descEl.innerHTML = data.desc;
+                iconContainer.className = `text-5xl text-${data.color}-600 w-24 h-24 flex items-center justify-center bg-white rounded-full shadow-sm transition-all-300`;
+                iconContainer.innerHTML = `<i class="fa-solid ${data.icon}"></i>`;
+                contentDiv.style.opacity = '1';
+            }, 150);
+
+            // Update Tabs Styles
+            document.querySelectorAll('.nuance-tab').forEach(btn => {
+                btn.className = 'nuance-tab p-4 rounded-xl border-2 border-slate-100 bg-white text-center transition-all-300 hover:border-slate-300 text-slate-500'; // reset
+                btn.querySelector('div:first-child').className = 'text-3xl font-bold text-slate-700 mb-1';
+            });
+
+            // Activate current
+            const activeBtn = document.getElementById(`tab-${type}`);
+            let activeColorClass = '';
+            if(type === 'side') activeColorClass = 'border-teal-500 bg-teal-50 text-teal-700';
+            if(type === 'parallel') activeColorClass = 'border-orange-500 bg-orange-50 text-orange-700';
+            if(type === 'dual') activeColorClass = 'border-blue-500 bg-blue-50 text-blue-700';
+
+            activeBtn.className = `nuance-tab p-4 rounded-xl border-2 text-center transition-all-300 ring-offset-2 focus:ring-2 ${activeColorClass}`;
+            activeBtn.querySelector('div:first-child').className = `text-3xl font-bold mb-1 text-${data.color}-700`;
+        }
+
+        // --- PUBLIC vs PRIVATE TOGGLE LOGIC ---
+        function setRole(role) {
+            const btnCivil = document.getElementById('btn-civil');
+            const btnPrivate = document.getElementById('btn-private');
+            const contentCivil = document.getElementById('content-civil');
+            const contentPrivate = document.getElementById('content-private');
+
+            if (role === 'civil') {
+                // Style Buttons
+                btnCivil.classList.add('bg-teal-500', 'text-white', 'shadow-lg');
+                btnCivil.classList.remove('text-slate-300');
+                btnPrivate.classList.remove('bg-teal-500', 'text-white', 'shadow-lg');
+                btnPrivate.classList.add('text-slate-300');
+
+                // Toggle Content
+                contentPrivate.classList.add('hidden');
+                contentCivil.classList.remove('hidden');
+            } else {
+                // Style Buttons
+                btnPrivate.classList.add('bg-teal-500', 'text-white', 'shadow-lg');
+                btnPrivate.classList.remove('text-slate-300');
+                btnCivil.classList.remove('bg-teal-500', 'text-white', 'shadow-lg');
+                btnCivil.classList.add('text-slate-300');
+
+                // Toggle Content
+                contentCivil.classList.add('hidden');
+                contentPrivate.classList.remove('hidden');
+            }
+        }
+
+        // --- TAX CHART LOGIC ---
+        const ctx = document.getElementById('taxChart').getContext('2d');
+        const taxChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['所得金額'],
+                datasets: [{
+                    label: '現在の所得',
+                    data: [100000],
+                    backgroundColor: '#0d9488', // teal-600
+                    borderRadius: 10,
+                    barThickness: 40
+                },
+                {
+                    label: '壁まで',
+                    data: [100000], // 200k - current
+                    backgroundColor: '#e2e8f0', // slate-200
+                    borderRadius: 10,
+                    barThickness: 40
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                maintainAspectRatio: false,
+                responsive: true,
+                scales: {
+                    x: {
+                        stacked: true,
+                        min: 0,
+                        max: 400000,
+                        grid: { display: false },
+                        ticks: { display: false } // Hide numbers, use custom labels
+                    },
+                    y: {
+                        stacked: true,
+                        display: false
+                    }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { enabled: false },
+                    annotation: {
+                        // Chart.js annotation plugin usually required for lines, simulating with HTML/CSS overlay or simpler logic
+                    }
+                }
+            }
+        });
+
+        // Add a vertical line plugin manually for the 200k mark
+        const verticalLinePlugin = {
+            id: 'verticalLine',
+            afterDraw: (chart) => {
+                const ctx = chart.ctx;
+                const xAxis = chart.scales.x;
+                const yAxis = chart.scales.y;
+                const x = xAxis.getPixelForValue(200000);
+                
+                ctx.save();
+                ctx.beginPath();
+                ctx.moveTo(x, yAxis.top);
+                ctx.lineTo(x, yAxis.bottom);
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = '#f97316'; // orange-500
+                ctx.setLineDash([5, 5]);
+                ctx.stroke();
+                ctx.restore();
+            }
+        };
+        Chart.register(verticalLinePlugin);
+
+
+        // --- SLIDER EVENT LISTENER ---
+        const slider = document.getElementById('income-slider');
+        const valueDisplay = document.getElementById('income-value');
+        const resultBox = document.getElementById('tax-result');
+        const resultTitle = document.getElementById('result-title');
+        const resultDesc = document.getElementById('result-desc');
+        const resultIcon = document.getElementById('result-icon');
+
+        slider.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            valueDisplay.textContent = val.toLocaleString();
+
+            // Logic: 200,000 threshold
+            const isOver = val > 200000;
+
+            // Update Chart Data
+            taxChart.data.datasets[0].data = [val];
+            taxChart.data.datasets[1].data = [Math.max(0, 400000 - val)]; // Fill remaining space purely for visual consistency
+            
+            // Color Logic
+            if (isOver) {
+                taxChart.data.datasets[0].backgroundColor = '#ef4444'; // Red
+                
+                // Update Text Box
+                resultBox.className = "mt-6 p-4 rounded-lg bg-red-50 border border-red-200 transition-colors duration-300";
+                resultTitle.className = "font-bold text-lg text-red-800";
+                resultTitle.textContent = "確定申告が必要です！";
+                resultDesc.className = "text-sm text-red-700 mt-1";
+                resultDesc.innerHTML = "年間所得が20万円を超えました。<br><strong>所得税の確定申告</strong>と住民税の申告の両方が必要です。";
+                resultIcon.className = "fa-solid fa-triangle-exclamation text-red-600 text-xl mt-1";
+            } else {
+                taxChart.data.datasets[0].backgroundColor = '#0d9488'; // Teal
+                
+                // Update Text Box
+                resultBox.className = "mt-6 p-4 rounded-lg bg-teal-50 border border-teal-200 transition-colors duration-300";
+                resultTitle.className = "font-bold text-lg text-teal-800";
+                resultTitle.textContent = "確定申告は不要です";
+                resultDesc.className = "text-sm text-teal-700 mt-1";
+                resultDesc.innerHTML = "所得税の確定申告は必要ありません。<br>ただし、お住まいの自治体への<strong>住民税の申告</strong>は必要です。";
+                resultIcon.className = "fa-solid fa-circle-check text-teal-600 text-xl mt-1";
+            }
+
+            taxChart.update();
+        });
+
+        // Initialize logic on load
+        setRole('private'); // Default view
+        updateNuance('side'); // Default Nuance
+    </script>
+</body>
+</html>
