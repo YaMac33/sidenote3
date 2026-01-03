@@ -1,0 +1,423 @@
+<!-- Chosen Palette: Rice Paper & Gold (Warm Neutrals) - Background: #fdfbf7, Text: #2d3748, Primary Accent: #d69e2e (Gold), Secondary: #4299e1 (Blue), Alert: #e53e3e -->
+<!-- Application Structure Plan: A 'Deep Dive' Dashboard structure. 
+     1. Header: High-impact title and quick summary of the policy context.
+     2. 'The Core Conflict' (Interactive Tabs): Users explore the three main pillars of criticism (Cost, Local Rebellion, Usability). This allows focused reading without overwhelming text.
+     3. 'Consumer Impact Simulator' (Interactive Calculator): A slider-based tool to demonstrate the 'Usability' argument (Out-of-pocket expense) with a real-time Doughnut chart. This makes the "financial burden" abstract concept concrete.
+     4. 'Regional Fragmentation' (Status Board): A visual breakdown of how different municipalities are reacting (Cash vs Coupon vs Utility), visualized with a Pie chart to show the political split.
+     5. Conclusion: Summary of future outlook.
+     Why? The source material is a debate/issue analysis. A dashboard allows users to jump between the 'Political' (Local Gov), 'Economic' (Cost), and 'Personal' (Usability) aspects easily. -->
+<!-- Visualization & Content Choices:
+     1. Policy Context: Text cards. Goal: Inform.
+     2. Cost Comparison (Chart.js Bar): Goal: Compare. Compares the theoretical administrative burden of Coupons vs Cash to visualize the 'Waste' argument.
+     3. Consumer Burden (Chart.js Doughnut): Goal: Inform/Change. Updates dynamically as user adjusts 'Rice Price' slider. Visualizes the 'Out of Pocket' expense, making the '3000 yen limit' tangible.
+     4. Municipality Response (Chart.js Pie): Goal: Relationships/Proportion. Visualizes the fragmentation of responses (Coupon vs Cash vs Utility Cuts) to highlight the 'Rebellion'.
+     5. Interaction: Vanilla JS for tab switching and slider logic.
+     Confirmation: NO SVG graphics used. NO Mermaid JS used. -->
+<!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>コメ券問題：徹底解説ダッシュボード</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Noto Sans JP', sans-serif; background-color: #fdfbf7; color: #2d3748; }
+        .chart-container { position: relative; width: 100%; max-width: 500px; margin: 0 auto; height: 300px; max-height: 300px; }
+        .card { background-color: white; border-radius: 0.75rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); transition: transform 0.2s; }
+        .card:hover { transform: translateY(-2px); }
+        .tab-active { border-bottom: 3px solid #d69e2e; color: #d69e2e; font-weight: 700; }
+        .tab-inactive { color: #718096; hover:text-gray-700; }
+        /* Range Slider Styling */
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%; background: #d69e2e; cursor: pointer; margin-top: -8px; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #e2e8f0; border-radius: 2px; }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <span class="text-3xl">🍚</span>
+                <div>
+                    <h1 class="text-xl md:text-2xl font-bold text-gray-800 tracking-tight">コメ券問題 <span class="text-yellow-600">徹底解説</span></h1>
+                    <p class="text-xs text-gray-500 hidden md:block">令和のコメ騒動？その背景と課題を3分で理解する</p>
+                </div>
+            </div>
+            <button onclick="window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'})" class="bg-yellow-600 hover:bg-yellow-700 text-white text-sm px-4 py-2 rounded-full font-bold transition">
+                最新状況を確認
+            </button>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-6xl mx-auto px-4 py-8 space-y-12 w-full">
+
+        <!-- Intro Section -->
+        <section class="grid md:grid-cols-2 gap-8 items-center">
+            <div class="space-y-4">
+                <div class="inline-block bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full">2026年春 実施予定</div>
+                <h2 class="text-3xl md:text-4xl font-bold leading-tight">なぜ今、<br>「おこめ券」なのか？</h2>
+                <p class="text-lg text-gray-600 leading-relaxed">
+                    2025年末、政府は物価高騰対策として<span class="font-bold text-gray-900 border-b-2 border-yellow-400">住民1人あたり約3,000円相当</span>のおこめ券（またはデジタルクーポン）配布を決定しました。しかし、この政策は発表直後から「コスト」「自治体の反乱」「使い勝手」の3つの視点で猛烈な批判を浴びています。
+                </p>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="card p-6 text-center border-t-4 border-yellow-500">
+                    <div class="text-3xl mb-2">💰</div>
+                    <div class="text-sm text-gray-500 font-bold">支援額</div>
+                    <div class="text-2xl font-bold text-gray-800">3,000円<span class="text-sm font-normal">相当</span></div>
+                </div>
+                <div class="card p-6 text-center border-t-4 border-blue-500">
+                    <div class="text-3xl mb-2">📅</div>
+                    <div class="text-sm text-gray-500 font-bold">配布開始</div>
+                    <div class="text-2xl font-bold text-gray-800">2026年春</div>
+                </div>
+                <div class="card p-6 text-center border-t-4 border-red-500 col-span-2">
+                    <div class="text-3xl mb-2">⚠️</div>
+                    <div class="text-sm text-gray-500 font-bold">懸念点</div>
+                    <div class="text-lg font-bold text-gray-800">経費・実用性・自治体負担</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interactive Explorer: The 3 Problems -->
+        <section class="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
+            <div class="p-8 pb-0">
+                <h3 class="text-2xl font-bold mb-2">批判の核心：3つの論点</h3>
+                <p class="text-gray-600 mb-6">なぜこれほど議論になっているのか？タブを切り替えて各視点の詳細とデータを分析します。</p>
+                
+                <!-- Tab Navigation -->
+                <div class="flex border-b border-gray-200 overflow-x-auto">
+                    <button id="tab-cost" onclick="switchTab('cost')" class="flex-1 py-4 px-6 text-center focus:outline-none whitespace-nowrap tab-active transition-colors">
+                        ① コストと利権
+                    </button>
+                    <button id="tab-local" onclick="switchTab('local')" class="flex-1 py-4 px-6 text-center focus:outline-none whitespace-nowrap tab-inactive transition-colors">
+                        ② 自治体の反乱
+                    </button>
+                    <button id="tab-user" onclick="switchTab('user')" class="flex-1 py-4 px-6 text-center focus:outline-none whitespace-nowrap tab-inactive transition-colors">
+                        ③ 使い勝手
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tab Content Area -->
+            <div class="p-8 bg-gray-50 min-h-[400px]">
+                
+                <!-- CONTENT: COST -->
+                <div id="content-cost" class="grid md:grid-cols-2 gap-8 items-center animate-fade-in">
+                    <div>
+                        <h4 class="text-xl font-bold text-gray-800 mb-4">莫大な事務経費と「中抜き」疑惑</h4>
+                        <ul class="space-y-3 mb-6">
+                            <li class="flex items-start"><span class="text-red-500 mr-2">●</span><span>紙の券の印刷・封入・郵送にかかるコストが甚大。</span></li>
+                            <li class="flex items-start"><span class="text-red-500 mr-2">●</span><span>「現金を振り込んだ方が、早くて安上がり」という指摘。</span></li>
+                            <li class="flex items-start"><span class="text-red-500 mr-2">●</span><span>発行業務を請け負う特定の業界団体への利益誘導（中抜き）ではないかとの批判。</span></li>
+                        </ul>
+                        <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4">
+                            <p class="text-sm text-yellow-800"><strong>ポイント:</strong> 政策の目的が「国民支援」なのか「業界支援」なのかが問われています。</p>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="chart-container">
+                            <canvas id="costChart"></canvas>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2 text-center">※概念図：現金給付と現物支給の一般的コスト比較イメージ</p>
+                    </div>
+                </div>
+
+                <!-- CONTENT: LOCAL GOV -->
+                <div id="content-local" class="hidden grid md:grid-cols-2 gap-8 items-center animate-fade-in">
+                    <div>
+                        <h4 class="text-xl font-bold text-gray-800 mb-4">現場からの「NO」突き上げ</h4>
+                        <p class="text-gray-700 mb-4">
+                            「事務負担が無駄に大きい」として、政府の方針に異議を唱える首長が続出しています。国と地方の対立構図が鮮明になりました。
+                        </p>
+                        <div class="space-y-4">
+                            <div class="bg-white p-4 rounded-lg shadow border-l-4 border-blue-500">
+                                <h5 class="font-bold text-blue-900">大阪府 交野市など</h5>
+                                <p class="text-sm text-gray-600">配布を拒否。独自の現金給付へ切り替え方針。</p>
+                            </div>
+                            <div class="bg-white p-4 rounded-lg shadow border-l-4 border-green-500">
+                                <h5 class="font-bold text-green-900">静岡県 富士市など</h5>
+                                <p class="text-sm text-gray-600">おこめ券ではなく、水道料金の減免などの生活支援策を検討。</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="chart-container">
+                            <canvas id="localChart"></canvas>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2 text-center">自治体対応の分断状況（イメージ）</p>
+                    </div>
+                </div>
+
+                <!-- CONTENT: USER -->
+                <div id="content-user" class="hidden grid md:grid-cols-2 gap-8 items-center animate-fade-in">
+                    <div>
+                        <h4 class="text-xl font-bold text-gray-800 mb-4">消費者にとっての「3つの壁」</h4>
+                        <div class="grid gap-4">
+                            <div class="bg-white p-4 rounded border border-gray-200">
+                                <span class="font-bold block mb-1">💸 持ち出し発生</span>
+                                <p class="text-sm text-gray-600">コメ価格高騰中。3,000円分の券では5kgのコメは買えず、現金の追加が必要。</p>
+                            </div>
+                            <div class="bg-white p-4 rounded border border-gray-200">
+                                <span class="font-bold block mb-1">⏳ 期限と不便さ</span>
+                                <p class="text-sm text-gray-600">お釣りが出ない。2026年9月末の使用期限があり、使い忘れリスクも。</p>
+                            </div>
+                            <div class="bg-white p-4 rounded border border-gray-200">
+                                <span class="font-bold block mb-1">🍞 不公平感</span>
+                                <p class="text-sm text-gray-600">お米を食べない家庭、アレルギーのある家庭には恩恵がない。</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Simulation Interactive -->
+                    <div class="bg-white p-6 rounded-xl shadow-inner border border-gray-200 w-full">
+                        <h5 class="font-bold text-gray-800 text-center mb-4">シミュレーション：実際いくらかかる？</h5>
+                        
+                        <div class="mb-6">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">お米(5kg)の店頭価格: <span id="price-display" class="text-blue-600 text-lg">3,500</span>円</label>
+                            <input type="range" min="2000" max="5000" step="100" value="3500" id="ricePriceSlider" class="w-full">
+                            <div class="flex justify-between text-xs text-gray-400 mt-1">
+                                <span>2,000円</span>
+                                <span>5,000円</span>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between items-center bg-gray-50 p-4 rounded-lg">
+                            <div class="text-center">
+                                <p class="text-xs text-gray-500">おこめ券</p>
+                                <p class="font-bold text-yellow-600 text-xl">3,000円</p>
+                            </div>
+                            <div class="text-gray-300 font-bold text-xl">-</div>
+                            <div class="text-center">
+                                <p class="text-xs text-gray-500">あなたの負担</p>
+                                <p id="burden-display" class="font-bold text-red-600 text-xl">500円</p>
+                            </div>
+                        </div>
+                        <div class="chart-container mt-4" style="height: 150px; max-height: 150px;">
+                            <canvas id="userChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Future Outlook Section -->
+        <section class="mb-12">
+            <div class="mb-6">
+                <h3 class="text-2xl font-bold mb-2">今後の見通し：あなたの街はどうなる？</h3>
+                <p class="text-gray-600">自治体の反乱により、対応は全国でバラバラになる見込みです。</p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-6">
+                <!-- Scenario A -->
+                <div class="card p-6 border-t-4 border-yellow-500 flex flex-col items-center text-center">
+                    <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center text-3xl mb-4">🎫</div>
+                    <h4 class="font-bold text-lg mb-2">おこめ券が届く</h4>
+                    <p class="text-sm text-gray-600 mb-4">政府方針通りに実施する自治体。</p>
+                    <span class="mt-auto text-xs bg-gray-100 px-2 py-1 rounded">2026年春以降〜</span>
+                </div>
+                
+                <!-- Scenario B -->
+                <div class="card p-6 border-t-4 border-blue-500 flex flex-col items-center text-center">
+                    <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center text-3xl mb-4">💴</div>
+                    <h4 class="font-bold text-lg mb-2">現金が振り込まれる</h4>
+                    <p class="text-sm text-gray-600 mb-4">交野市などのように、コスト削減と利便性を優先する自治体。</p>
+                    <span class="mt-auto text-xs bg-gray-100 px-2 py-1 rounded">独自給付</span>
+                </div>
+
+                <!-- Scenario C -->
+                <div class="card p-6 border-t-4 border-green-500 flex flex-col items-center text-center">
+                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center text-3xl mb-4">💧</div>
+                    <h4 class="font-bold text-lg mb-2">公共料金が安くなる</h4>
+                    <p class="text-sm text-gray-600 mb-4">富士市などのように、水道基本料金の減免などで還元する自治体。</p>
+                    <span class="mt-auto text-xs bg-gray-100 px-2 py-1 rounded">申請不要な場合も</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Conclusion -->
+        <footer class="bg-gray-800 text-white rounded-2xl p-8 text-center">
+            <h3 class="text-xl font-bold mb-4">まとめ：混乱は続く見込み</h3>
+            <p class="max-w-2xl mx-auto text-gray-300 mb-6">
+                「コメ券問題」は、単なるクーポンの是非を超え、政府のコスト感覚や地方自治のあり方を問う大きな議論となっています。
+                お住まいの地域がどのような対応をとるか、自治体のホームページで最新情報を確認することをお勧めします。
+            </p>
+            <div class="flex justify-center space-x-4">
+                <button class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-bold transition">
+                    自治体HPを検索
+                </button>
+                <button class="bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-bold transition">
+                    ニュース詳細を見る
+                </button>
+            </div>
+        </footer>
+
+    </main>
+
+    <script>
+        // State
+        let currentTab = 'cost';
+        const couponValue = 3000;
+        
+        // Chart Instances
+        let costChartInstance = null;
+        let localChartInstance = null;
+        let userChartInstance = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initCostChart();
+            // Initial Tab setup
+            switchTab('cost');
+            
+            // Slider Event Listener
+            const slider = document.getElementById('ricePriceSlider');
+            slider.addEventListener('input', updateSimulation);
+        });
+
+        // Tab Switching Logic
+        function switchTab(tabId) {
+            // Update Tab Styles
+            ['cost', 'local', 'user'].forEach(id => {
+                const btn = document.getElementById(`tab-${id}`);
+                const content = document.getElementById(`content-${id}`);
+                
+                if (id === tabId) {
+                    btn.classList.remove('tab-inactive');
+                    btn.classList.add('tab-active');
+                    content.classList.remove('hidden');
+                    // Initialize charts when tab becomes visible (needed for Chart.js responsiveness in hidden divs)
+                    if (id === 'local' && !localChartInstance) initLocalChart();
+                    if (id === 'user') {
+                        if (!userChartInstance) initUserChart();
+                        updateSimulation(); // Ensure correct initial state
+                    }
+                } else {
+                    btn.classList.remove('tab-active');
+                    btn.classList.add('tab-inactive');
+                    content.classList.add('hidden');
+                }
+            });
+            currentTab = tabId;
+        }
+
+        // Simulation Logic
+        function updateSimulation() {
+            const price = parseInt(document.getElementById('ricePriceSlider').value);
+            const burden = Math.max(0, price - couponValue);
+            
+            document.getElementById('price-display').innerText = price.toLocaleString();
+            document.getElementById('burden-display').innerText = burden.toLocaleString() + '円';
+
+            if (userChartInstance) {
+                userChartInstance.data.datasets[0].data = [couponValue, burden];
+                // Update color if burden is high
+                userChartInstance.update();
+            }
+        }
+
+        // --- Charts ---
+
+        // Chart 1: Cost Comparison (Bar)
+        function initCostChart() {
+            const ctx = document.getElementById('costChart').getContext('2d');
+            costChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['現金給付', 'おこめ券配布'],
+                    datasets: [
+                        {
+                            label: '事務経費 (推計イメージ)',
+                            data: [30, 90], // Conceptual data: Cash is cheaper, Coupon is expensive
+                            backgroundColor: ['#4299e1', '#e53e3e'],
+                            borderRadius: 6,
+                        },
+                        {
+                            label: '国民への還元額',
+                            data: [100, 100], // Same value
+                            backgroundColor: '#e2e8f0',
+                            borderRadius: 6,
+                            hidden: true // Hide to focus on cost difference
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        title: { display: true, text: '事務経費の比較イメージ' },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.label + ': ' + (context.dataIndex === 1 ? '高コスト（印刷・郵送）' : '低コスト（振込）');
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: { display: false, beginAtZero: true },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        // Chart 2: Municipality Split (Pie)
+        function initLocalChart() {
+            const ctx = document.getElementById('localChart').getContext('2d');
+            localChartInstance = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['おこめ券配布', '現金給付へ変更', '公共料金減免', '未定'],
+                    datasets: [{
+                        data: [40, 25, 15, 20], // Conceptual split
+                        backgroundColor: ['#d69e2e', '#4299e1', '#48bb78', '#cbd5e0'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right' },
+                        title: { display: true, text: '自治体の対応予測' }
+                    }
+                }
+            });
+        }
+
+        // Chart 3: User Burden (Doughnut)
+        function initUserChart() {
+            const ctx = document.getElementById('userChart').getContext('2d');
+            userChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['クーポン利用', '自己負担'],
+                    datasets: [{
+                        data: [3000, 500],
+                        backgroundColor: ['#d69e2e', '#e53e3e'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { enabled: false }
+                    }
+                }
+            });
+        }
+
+    </script>
+</body>
+</html>
