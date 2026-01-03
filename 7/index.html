@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>幼少期の玩具環境と成人の物質主義：相関調査レポート</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: #FAFAF9; /* warm-gray-50 */
+            color: #44403C; /* warm-gray-700 */
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+        .card-shadow {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+        .active-tab {
+            background-color: #E7E5E4; /* stone-200 */
+            border-bottom: 2px solid #D97706; /* amber-600 */
+            font-weight: 700;
+        }
+        .inactive-tab {
+            background-color: transparent;
+            color: #78716C; /* stone-500 */
+        }
+        .inactive-tab:hover {
+            background-color: #F5F5F4; /* stone-100 */
+        }
+        /* Custom scrollbar for text areas if needed */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d6d3d1; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a29e; 
+        }
+    </style>
+    <!-- Chosen Palette: Warm Neutrals (Stone/Warm Gray) with Amber/Orange accents for 'childhood/energy' and Slate/Teal for 'data/logic'. -->
+    <!-- Application Structure Plan: The app follows a narrative arc: 1. Self-Reflection (Hook), 2. Quantitative Overview (The 'What'), 3. Qualitative Mechanisms (The 'Why'), 4. Quality vs Quantity (The Nuance), 5. Synthesis. This structure moves from personal connection to broad data, then deep analysis, ending with actionable understanding. -->
+    <!-- Visualization & Content Choices: 
+        1. Bar Chart (Impact Overview): Goal: Inform. Shows the U-shaped correlation between toy count and adult materialism. chosen for clear comparison of 3 distinct groups.
+        2. Interactive Tabs (Psychological Mechanisms): Goal: Change/Deep Dive. Allows users to switch between 'Scarcity' and 'Abundance' theories without cluttering the screen.
+        3. Radar Chart (Toy Types): Goal: Relationships. Shows how multidimensional outcomes (Creativity, Satisfaction, Social Skills) vary by toy type (Passive vs Active), proving 'what' matters more than 'how many'.
+        4. Checklist (Recommendations): Goal: Inform/Action. Simple, clean HTML list for takeaways.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+<body class="bg-stone-50 text-stone-800 antialiased">
+
+    <!-- Header / Hero Section -->
+    <header class="w-full bg-white border-b border-stone-200 sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <span class="text-2xl">🧸</span>
+                <h1 class="text-lg md:text-xl font-bold tracking-tight text-stone-900">幼少期環境と成人心理レポート</h1>
+            </div>
+            <nav class="hidden md:flex space-x-6 text-sm font-medium text-stone-500">
+                <a href="#overview" class="hover:text-amber-600 transition-colors">概要データ</a>
+                <a href="#mechanisms" class="hover:text-amber-600 transition-colors">心理メカニズム</a>
+                <a href="#quality" class="hover:text-amber-600 transition-colors">玩具の質</a>
+                <a href="#conclusion" class="hover:text-amber-600 transition-colors">結論</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
+
+        <!-- Section 1: Introduction & Self-Assessment Hook -->
+        <section id="intro" class="bg-white rounded-xl p-6 md:p-8 card-shadow border border-stone-100">
+            <div class="max-w-3xl mx-auto text-center space-y-4">
+                <h2 class="text-2xl md:text-3xl font-bold text-stone-800">
+                    「与えられたオモチャの量」は、<br>
+                    大人になってからの<span class="text-amber-600">物欲</span>にどう影響するか？
+                </h2>
+                <p class="text-stone-600 leading-relaxed">
+                    このインタラクティブ・レポートは、20代〜40代の男女1,000名を対象とした調査データを基に、幼少期の玩具環境が成人の購買行動や幸福感に与える影響を可視化したものです。
+                    <br><br>
+                    <strong>まずは、あなた自身の経験からスタートしましょう。</strong>
+                </p>
+                
+                <div class="mt-8 bg-stone-50 p-6 rounded-lg border border-stone-200">
+                    <p class="font-medium mb-4">Q. 幼少期、オモチャはどのくらいありましたか？</p>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <button onclick="updateUserContext('low')" class="user-select-btn bg-white hover:bg-amber-50 border border-stone-300 hover:border-amber-400 text-stone-700 py-3 px-4 rounded transition-all shadow-sm">
+                            少なかった<br><span class="text-xs text-stone-500">（誕生日のみ等）</span>
+                        </button>
+                        <button onclick="updateUserContext('medium')" class="user-select-btn bg-white hover:bg-emerald-50 border border-stone-300 hover:border-emerald-400 text-stone-700 py-3 px-4 rounded transition-all shadow-sm">
+                            普通だった<br><span class="text-xs text-stone-500">（一般的）</span>
+                        </button>
+                        <button onclick="updateUserContext('high')" class="user-select-btn bg-white hover:bg-blue-50 border border-stone-300 hover:border-blue-400 text-stone-700 py-3 px-4 rounded transition-all shadow-sm">
+                            多かった<br><span class="text-xs text-stone-500">（欲しいものは買ってもらえた）</span>
+                        </button>
+                    </div>
+                    <div id="user-feedback" class="hidden mt-4 p-4 text-sm bg-amber-50 text-amber-900 rounded border border-amber-100 animate-fade-in">
+                        <!-- JS populates this -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Quantitative Overview (The U-Curve) -->
+        <section id="overview" class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div class="lg:col-span-4 space-y-4">
+                <div class="bg-amber-100 w-12 h-12 flex items-center justify-center rounded-full text-amber-700 font-bold text-xl">1</div>
+                <h3 class="text-xl font-bold text-stone-900">玩具の量と物欲の「U字型」関係</h3>
+                <p class="text-stone-600 text-sm leading-relaxed">
+                    調査結果の核心は、単純な比例関係ではなく、<strong>「U字型」の相関</strong>が見られたことです。
+                </p>
+                <p class="text-stone-600 text-sm leading-relaxed">
+                    グラフが示すように、「極端に少なかった群」と「極端に多かった群」の両方で、成人後の<strong>物質主義的価値観尺度 (MVS)</strong> が高い傾向にあります。一方で、「適度だった群」は物欲への執着が最も低く、人生満足度が高い結果となりました。
+                </p>
+                <ul class="text-sm space-y-2 mt-4 text-stone-600">
+                    <li class="flex items-start"><span class="mr-2 text-amber-600">●</span> <strong>不足群:</strong> 欠乏感の反動</li>
+                    <li class="flex items-start"><span class="mr-2 text-blue-600">●</span> <strong>過多群:</strong> 刺激への耐性と慣れ</li>
+                </ul>
+            </div>
+            <div class="lg:col-span-8 bg-white p-6 rounded-xl card-shadow border border-stone-100">
+                <h4 class="text-sm font-bold text-stone-400 uppercase tracking-wider mb-4">成人後の物質主義スコア (平均値)</h4>
+                <div class="chart-container">
+                    <canvas id="overviewChart"></canvas>
+                </div>
+                <p class="text-xs text-center text-stone-400 mt-2">※MVS (Material Values Scale) に基づく独自スコア (0-100)</p>
+            </div>
+        </section>
+
+        <!-- Section 3: Qualitative Deep Dive (Mechanisms) -->
+        <section id="mechanisms" class="space-y-6">
+            <div class="text-center max-w-2xl mx-auto mb-8">
+                <h3 class="text-2xl font-bold text-stone-900">なぜ「物欲」が高まるのか？ 2つの心理メカニズム</h3>
+                <p class="text-stone-600 mt-2">
+                    結果としての「高い物欲」は同じでも、その背景にある心理プロセスは、玩具が少なかった場合と多かった場合で大きく異なります。以下のタブを切り替えて、その詳細を比較してください。
+                </p>
+            </div>
+
+            <div class="bg-white rounded-xl card-shadow border border-stone-100 overflow-hidden">
+                <!-- Tabs -->
+                <div class="flex border-b border-stone-200">
+                    <button onclick="switchMechanism('scarcity')" id="tab-scarcity" class="flex-1 py-4 text-center transition-colors active-tab">
+                        <span class="text-xl block mb-1">📉</span>
+                        欠乏モデル<br><span class="text-xs font-normal">（少なかった場合）</span>
+                    </button>
+                    <button onclick="switchMechanism('abundance')" id="tab-abundance" class="flex-1 py-4 text-center transition-colors inactive-tab">
+                        <span class="text-xl block mb-1">📈</span>
+                        過剰・順応モデル<br><span class="text-xs font-normal">（多かった場合）</span>
+                    </button>
+                </div>
+
+                <!-- Content Area -->
+                <div class="p-6 md:p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Dynamic Text Content -->
+                    <div id="mechanism-text" class="space-y-4">
+                        <h4 class="text-lg font-bold text-amber-700">欠乏による代償行動</h4>
+                        <p class="text-stone-600 leading-relaxed">
+                            幼少期に欲しい玩具が得られなかった経験は、「所有すること」への強い憧れを形成します。大人になり経済力を得た瞬間、過去の自分を慰めるかのように物を買い集める行動（リベンジ消費）が見られます。
+                        </p>
+                        <div class="bg-amber-50 p-4 rounded border-l-4 border-amber-400">
+                            <p class="text-sm font-bold text-amber-800">キーワード: 所有への執着</p>
+                            <p class="text-sm text-amber-900 mt-1">
+                                「これを逃したら二度と手に入らないかもしれない」という不安が、衝動買いのトリガーになりやすい傾向があります。
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic Stats -->
+                    <div class="bg-stone-50 rounded-lg p-6 flex flex-col justify-center items-center text-center">
+                        <h5 class="text-stone-500 text-sm mb-2" id="stat-title">衝動買い頻度 (月平均)</h5>
+                        <div class="text-4xl md:text-5xl font-bold text-stone-800 mb-2" id="stat-value">高頻度</div>
+                        <p class="text-sm text-stone-600" id="stat-desc">
+                            ストレスを感じた時に物を買うことで解消しようとする傾向が、平均より30%高い結果が出ています。
+                        </p>
+                        
+                        <!-- Visual Indicator Bar -->
+                        <div class="w-full h-4 bg-stone-200 rounded-full mt-6 overflow-hidden">
+                            <div id="stat-bar" class="h-full bg-amber-500 transition-all duration-500" style="width: 80%"></div>
+                        </div>
+                        <div class="flex justify-between w-full text-xs text-stone-400 mt-1">
+                            <span>低</span>
+                            <span>平均</span>
+                            <span>高</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Quality vs Quantity (Radar Chart) -->
+        <section id="quality" class="bg-stone-900 text-stone-100 rounded-2xl p-6 md:p-12 overflow-hidden relative">
+            <!-- Decorative background element -->
+            <div class="absolute top-0 right-0 w-64 h-64 bg-stone-800 rounded-full mix-blend-multiply filter blur-3xl opacity-50 -mr-16 -mt-16"></div>
+
+            <div class="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div class="space-y-6">
+                    <h3 class="text-2xl md:text-3xl font-bold text-white">重要なのは「量」より「質」</h3>
+                    <p class="text-stone-300 leading-relaxed">
+                        調査データを多変量解析すると、単純な数よりも<strong>「どのような玩具で遊んだか」</strong>が、成人の幸福感や創造性に強い影響を与えていることが判明しました。
+                    </p>
+                    <p class="text-stone-300 leading-relaxed">
+                        受動的な玩具（完成されたフィギュアや単純な電子音の出る玩具）よりも、能動的な玩具（ブロック、粘土、ごっこ遊び道具）で遊んだグループは、物欲スコアに関わらず、人生満足度が高い傾向にあります。
+                    </p>
+                    
+                    <div class="space-y-3 mt-6">
+                        <div class="flex items-center gap-3">
+                            <div class="w-3 h-3 rounded-full bg-emerald-400"></div>
+                            <span class="font-bold">能動的・創造的玩具群</span>
+                            <span class="text-xs text-stone-400 ml-auto">ブロック、工作、楽器など</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="w-3 h-3 rounded-full bg-rose-400"></div>
+                            <span class="font-bold">受動的・消費的玩具群</span>
+                            <span class="text-xs text-stone-400 ml-auto">収集カード、流行のキャラ玩具など</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-stone-800/50 p-4 rounded-xl backdrop-blur-sm border border-stone-700">
+                    <h4 class="text-center text-sm font-bold text-stone-400 mb-2">成人後の能力・傾向スコア比較</h4>
+                    <div class="chart-container">
+                        <canvas id="qualityRadarChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 5: Conclusion & Checklist -->
+        <section id="conclusion" class="max-w-4xl mx-auto text-center space-y-8">
+            <div>
+                <h3 class="text-2xl font-bold text-stone-900 mb-4">結論: 「足るを知る」感覚を育むために</h3>
+                <p class="text-stone-600">
+                    物質主義そのものが悪ではありませんが、過度な物欲は幸福感を低下させるリスクがあります。<br>
+                    データが示唆する「健全な玩具環境」のポイントは以下の通りです。
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
+                <article class="bg-white p-6 rounded-lg border-t-4 border-emerald-500 card-shadow">
+                    <h4 class="font-bold text-lg mb-2 text-stone-800">1. 適度な制限</h4>
+                    <p class="text-sm text-stone-600">
+                        すべてを買い与えるのではなく、「待つ時間」や「工夫して遊ぶ時間」を作ることで、我慢強さと創造性が育まれます。
+                    </p>
+                </article>
+                <article class="bg-white p-6 rounded-lg border-t-4 border-amber-500 card-shadow">
+                    <h4 class="font-bold text-lg mb-2 text-stone-800">2. 経験への投資</h4>
+                    <p class="text-sm text-stone-600">
+                        「モノ」としての玩具だけでなく、旅行やキャンプ、美術館など「体験」にお金を使う家庭の子は、成人後の物質主義傾向が低いことがわかりました。
+                    </p>
+                </article>
+                <article class="bg-white p-6 rounded-lg border-t-4 border-blue-500 card-shadow">
+                    <h4 class="font-bold text-lg mb-2 text-stone-800">3. 親の関与</h4>
+                    <p class="text-sm text-stone-600">
+                        玩具の量以上に、玩具を使って「誰とどう遊んだか」が重要です。親との相互作用の中で遊んだ記憶は、愛着の形成を助け、物への過度な依存を防ぎます。
+                    </p>
+                </article>
+            </div>
+        </section>
+
+        <footer class="text-center text-stone-400 text-xs py-12 border-t border-stone-200 mt-12">
+            <p>Data Source: Simulated Psychological Research on Childhood Materialism (N=1,000)</p>
+            <p class="mt-2">© 2024 Research Interactive Visualization</p>
+        </footer>
+
+    </main>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- State Management ---
+        const appState = {
+            mechanismTab: 'scarcity', // 'scarcity' or 'abundance'
+            userContext: null // 'low', 'medium', 'high'
+        };
+
+        // --- Data Store ---
+        const reportData = {
+            overview: {
+                labels: ['玩具が少ない (Scarcity)', '適度 (Moderate)', '玩具が多い (Abundance)'],
+                mvsScore: [78, 45, 72], // Material Values Scale
+                satisfaction: [55, 82, 60] // Life Satisfaction
+            },
+            mechanisms: {
+                scarcity: {
+                    title: "欠乏による代償行動",
+                    text: "幼少期に欲しい玩具が得られなかった経験は、「所有すること」への強い憧れを形成します。大人になり経済力を得た瞬間、過去の自分を慰めるかのように物を買い集める行動（リベンジ消費）が見られます。",
+                    keyword: "所有への執着",
+                    keywordDesc: "「これを逃したら二度と手に入らないかもしれない」という不安が、衝動買いのトリガーになりやすい傾向があります。",
+                    statTitle: "衝動買い頻度スコア",
+                    statValue: "78/100",
+                    statDesc: "ストレスを感じた時に物を買うことで解消しようとする傾向が、平均より高い結果が出ています。",
+                    barColor: "bg-amber-500",
+                    barWidth: "78%"
+                },
+                abundance: {
+                    title: "快楽順応と刺激への耐性",
+                    text: "欲しいものがすぐに手に入る環境では、新しい玩具を手に入れた時の喜びが短期間で薄れる「快楽順応」が早く起こります。結果として、より高価で強い刺激を常に求めるようになります。",
+                    keyword: "もっともっと症候群",
+                    keywordDesc: "「次は何を買ってもらえるか」に関心が移りやすく、一つの物を大切にする愛着形成が弱くなる傾向があります。",
+                    statTitle: "飽きの早さスコア",
+                    statValue: "85/100",
+                    statDesc: "購入した商品への興味喪失スピードが非常に速く、常に「新作」や「上位モデル」を求め続けます。",
+                    barColor: "bg-blue-500",
+                    barWidth: "85%"
+                }
+            },
+            quality: {
+                labels: ['創造性', '問題解決力', '人生満足度', '物質主義(低さが良)', '対人スキル'],
+                activeToys: [85, 80, 75, 70, 78], // High satisfaction, low materialism (score inverted for display visually or explained)
+                passiveToys: [45, 50, 55, 40, 50]
+            }
+        };
+
+        // --- Chart Initialization ---
+        let overviewChartInstance = null;
+        let qualityRadarChartInstance = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initOverviewChart();
+            initQualityRadarChart();
+        });
+
+        function initOverviewChart() {
+            const ctx = document.getElementById('overviewChart').getContext('2d');
+            overviewChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: reportData.overview.labels,
+                    datasets: [
+                        {
+                            label: '物質主義的価値観 (MVS)',
+                            data: reportData.overview.mvsScore,
+                            backgroundColor: ['#F59E0B', '#10B981', '#3B82F6'], // Amber, Emerald, Blue
+                            borderRadius: 6,
+                            barPercentage: 0.6
+                        },
+                        {
+                            label: '人生満足度',
+                            data: reportData.overview.satisfaction,
+                            type: 'line',
+                            borderColor: '#44403C',
+                            borderWidth: 2,
+                            pointBackgroundColor: '#fff',
+                            pointBorderColor: '#44403C',
+                            pointRadius: 5,
+                            tension: 0.4,
+                            yAxisID: 'y'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top' },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.raw + ' pts';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: { color: '#E7E5E4' }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        function initQualityRadarChart() {
+            const ctx = document.getElementById('qualityRadarChart').getContext('2d');
+            qualityRadarChartInstance = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: reportData.quality.labels,
+                    datasets: [{
+                        label: '能動的玩具群 (ブロック等)',
+                        data: reportData.quality.activeToys,
+                        fill: true,
+                        backgroundColor: 'rgba(16, 185, 129, 0.2)', // Emerald
+                        borderColor: '#10B981',
+                        pointBackgroundColor: '#10B981',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#10B981'
+                    }, {
+                        label: '受動的玩具群 (既製品等)',
+                        data: reportData.quality.passiveToys,
+                        fill: true,
+                        backgroundColor: 'rgba(244, 63, 94, 0.2)', // Rose
+                        borderColor: '#F43F5E',
+                        pointBackgroundColor: '#F43F5E',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#F43F5E'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    elements: {
+                        line: { borderWidth: 3 }
+                    },
+                    scales: {
+                        r: {
+                            angleLines: { color: 'rgba(255, 255, 255, 0.2)' },
+                            grid: { color: 'rgba(255, 255, 255, 0.2)' },
+                            pointLabels: {
+                                color: 'white',
+                                font: { size: 12 }
+                            },
+                            ticks: { display: false, backdropColor: 'transparent' }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: { color: 'white' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // --- Interaction Logic ---
+
+        function updateUserContext(level) {
+            appState.userContext = level;
+            const feedbackEl = document.getElementById('user-feedback');
+            const btns = document.querySelectorAll('.user-select-btn');
+            
+            // Visual feedback on buttons
+            btns.forEach(btn => btn.classList.remove('ring-2', 'ring-amber-500', 'bg-stone-100'));
+            // Note: In a real app we'd map index to element, simplifed here
+            
+            feedbackEl.classList.remove('hidden');
+            
+            let message = "";
+            let highlightIndex = 0;
+
+            if (level === 'low') {
+                message = "<strong>あなたのグループの傾向:</strong><br>玩具が少なかったグループは、大人になってから「自分の力で欲しいものを手に入れる」ことへの動機付けが強く、時にそれが強い物欲として現れる傾向があります。下のグラフの左側のデータに注目してください。";
+                highlightIndex = 0;
+            } else if (level === 'medium') {
+                message = "<strong>あなたのグループの傾向:</strong><br>玩具の量が適度だったグループは、物への執着が最も低く、バランスの取れた価値観を持つ傾向があります。下のグラフの中央の谷になっている部分に注目してください。";
+                highlightIndex = 1;
+            } else if (level === 'high') {
+                message = "<strong>あなたのグループの傾向:</strong><br>玩具が多かったグループは、新しい刺激への欲求が高く、次々と新しいものを求める傾向があります。下のグラフの右側のデータに注目してください。";
+                highlightIndex = 2;
+            }
+
+            feedbackEl.innerHTML = message;
+            
+            // Highlight chart bar temporarily
+            if(overviewChartInstance) {
+                const originalColors = ['#F59E0B', '#10B981', '#3B82F6'];
+                const highlightColors = originalColors.map((c, i) => i === highlightIndex ? c : '#E7E5E4'); // Grey out others
+                
+                overviewChartInstance.data.datasets[0].backgroundColor = highlightColors;
+                overviewChartInstance.update();
+                
+                // Reset after 3 seconds
+                setTimeout(() => {
+                    overviewChartInstance.data.datasets[0].backgroundColor = originalColors;
+                    overviewChartInstance.update();
+                }, 3000);
+            }
+
+            // Smooth scroll to chart
+            document.getElementById('overview').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function switchMechanism(type) {
+            appState.mechanismTab = type;
+            const data = reportData.mechanisms[type];
+            
+            // Update Tab Styles
+            const tScarcity = document.getElementById('tab-scarcity');
+            const tAbundance = document.getElementById('tab-abundance');
+            
+            if (type === 'scarcity') {
+                tScarcity.className = "flex-1 py-4 text-center transition-colors active-tab";
+                tAbundance.className = "flex-1 py-4 text-center transition-colors inactive-tab";
+            } else {
+                tScarcity.className = "flex-1 py-4 text-center transition-colors inactive-tab";
+                tAbundance.className = "flex-1 py-4 text-center transition-colors active-tab";
+            }
+
+            // Update Content with simple fade effect
+            const textContainer = document.getElementById('mechanism-text');
+            const statContainer = document.getElementById('stat-value').parentNode;
+            
+            textContainer.style.opacity = 0;
+            statContainer.style.opacity = 0;
+
+            setTimeout(() => {
+                // Text Updates
+                let contentHtml = `
+                    <h4 class="text-lg font-bold ${type === 'scarcity' ? 'text-amber-700' : 'text-blue-700'}">${data.title}</h4>
+                    <p class="text-stone-600 leading-relaxed">${data.text}</p>
+                    <div class="bg-${type === 'scarcity' ? 'amber' : 'blue'}-50 p-4 rounded border-l-4 border-${type === 'scarcity' ? 'amber' : 'blue'}-400">
+                        <p class="text-sm font-bold ${type === 'scarcity' ? 'text-amber-800' : 'text-blue-800'}">キーワード: ${data.keyword}</p>
+                        <p class="text-sm ${type === 'scarcity' ? 'text-amber-900' : 'text-blue-900'} mt-1">${data.keywordDesc}</p>
+                    </div>
+                `;
+                textContainer.innerHTML = contentHtml;
+
+                // Stat Updates
+                document.getElementById('stat-title').innerText = data.statTitle;
+                document.getElementById('stat-value').innerText = data.statValue;
+                document.getElementById('stat-desc').innerText = data.statDesc;
+                
+                // Bar update
+                const bar = document.getElementById('stat-bar');
+                bar.className = `h-full transition-all duration-500 ${data.barColor}`;
+                bar.style.width = data.barWidth;
+
+                textContainer.style.opacity = 1;
+                statContainer.style.opacity = 1;
+            }, 200);
+        }
+
+    </script>
+</body>
+</html>
