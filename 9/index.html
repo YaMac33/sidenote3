@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTuberのための収入と税金ガイド - インタラクティブ・ダッシュボード</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- FontAwesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: #f8fafc; /* Cool neutral background */
+            color: #334155;
+        }
+
+        /* Chart Container Styles - Strictly Enforced */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            height: 300px;
+            margin: 0 auto;
+        }
+        
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+
+        /* Custom Scrollbar for clean look */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        .btn-primary {
+            background-color: #ef4444; /* YouTube Red-ish */
+            color: white;
+            transition: background-color 0.2s;
+        }
+        .btn-primary:hover {
+            background-color: #dc2626;
+        }
+    </style>
+
+    <!-- Chosen Palette: Warm Neutrals with "YouTuber Red" Accents -->
+    <!-- Application Structure Plan: 
+         1. Hero/Intro: Hooks the user with the importance of money management.
+         2. Simulation Zone (Income vs Profit): Interactive calculator to demonstrate the core formula (Slide 2).
+         3. The Rules (Accrual & Gross): Interactive toggle cards to explain complex accounting rules (Slides 3-4).
+         4. Expense Judgment Game: Interactive quiz to clarify deductible vs non-deductible items (Slides 5-6).
+         5. Tax Filing Guide: Comparison of Blue/White return and a timeline stepper (Slides 7-8).
+         6. Advanced Zone: Consumption tax checker (Slide 9).
+         7. Automation Tip: Footer takeaway (Slide 10).
+         This structure moves from "Understanding the math" to "Learning the rules" to "Taking Action".
+    -->
+    <!-- Visualization & Content Choices:
+         1. Calculator Chart (Bar): Visually proves that "Sales != Profit". User inputs numbers, chart updates. (Goal: Inform/Compare)
+         2. Gross Revenue Chart (Doughnut): Shows the "Hidden" fee portion that must be recorded. (Goal: Inform)
+         3. Expense Quiz (Interactive List): User selects items, JS gives immediate feedback based on report criteria. (Goal: Engagement/Education)
+         4. Timeline (Styled HTML): Visualizes the 4 steps of filing. (Goal: Process Flow)
+         5. Comparison Table (HTML): Blue vs White return. (Goal: Compare)
+         All choices avoid SVG/Mermaid, using standard HTML/CSS and Chart.js.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+</head>
+<body class="antialiased">
+
+    <!-- Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <i class="fa-brands fa-youtube text-red-600 text-3xl"></i>
+                <h1 class="text-xl font-bold text-slate-800">YouTuber税金ガイド</h1>
+            </div>
+            <nav class="hidden md:flex space-x-6 text-sm font-medium text-slate-600">
+                <a href="#simulator" class="hover:text-red-600 transition">収益シミュレーター</a>
+                <a href="#rules" class="hover:text-red-600 transition">重要ルール</a>
+                <a href="#expenses" class="hover:text-red-600 transition">経費チェック</a>
+                <a href="#filing" class="hover:text-red-600 transition">確定申告</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
+
+        <!-- Intro Section -->
+        <section class="text-center py-10 bg-gradient-to-br from-white to-slate-100 rounded-3xl shadow-sm border border-slate-200">
+            <h2 class="text-3xl md:text-4xl font-bold text-slate-800 mb-4">再生数と同じくらい大切な「お金」の話</h2>
+            <p class="text-lg text-slate-600 max-w-3xl mx-auto leading-relaxed">
+                動画投稿を始めると、再生数や登録者数は気になりますが、税金のことは後回しにしがちです。<br>
+                しかし、知らないと損をするルールがたくさんあります。<br>
+                このガイドで、YouTuber特有の収入計算と確定申告の基礎をマスターしましょう。
+            </p>
+        </section>
+
+        <!-- 1. Income Simulator Section -->
+        <section id="simulator" class="scroll-mt-24">
+            <div class="mb-6">
+                <h3 class="text-2xl font-bold text-slate-800 flex items-center">
+                    <span class="bg-red-100 text-red-600 w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm">1</span>
+                    収入と所得のシミュレーション
+                </h3>
+                <p class="text-slate-600 mt-2">
+                    税金は「入金された額」ではなく、経費を引いた「所得（利益）」にかかります。<br>
+                    以下のフォームに想定数値を入力して、課税対象となる「所得」がどう変わるか見てみましょう。
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Inputs -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <h4 class="font-bold text-lg mb-4 text-slate-700 border-b pb-2">月間収支入力</h4>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">動画広告収益 (円)</label>
+                            <input type="number" id="input-ad-revenue" value="300000" class="w-full rounded-md border-slate-300 shadow-sm focus:border-red-500 focus:ring-red-500 p-2 border">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">スパチャ・メンバーシップ (手数料引前・円)</label>
+                            <input type="number" id="input-superchat" value="50000" class="w-full rounded-md border-slate-300 shadow-sm focus:border-red-500 focus:ring-red-500 p-2 border">
+                            <p class="text-xs text-slate-500 mt-1">※手数料30%と仮定して経費計算します</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">企業案件 (円)</label>
+                            <input type="number" id="input-pr" value="100000" class="w-full rounded-md border-slate-300 shadow-sm focus:border-red-500 focus:ring-red-500 p-2 border">
+                        </div>
+
+                        <div class="pt-4 border-t">
+                            <label class="block text-sm font-medium text-slate-700 mb-1">経費：機材・外注費など (円)</label>
+                            <input type="number" id="input-expenses-direct" value="80000" class="w-full rounded-md border-slate-300 shadow-sm focus:border-red-500 focus:ring-red-500 p-2 border">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">経費：家賃・ネット代 (全額・円)</label>
+                            <div class="flex gap-2">
+                                <input type="number" id="input-rent-total" value="100000" class="w-2/3 rounded-md border-slate-300 shadow-sm focus:border-red-500 focus:ring-red-500 p-2 border" placeholder="金額">
+                                <input type="number" id="input-rent-percent" value="30" class="w-1/3 rounded-md border-slate-300 shadow-sm focus:border-red-500 focus:ring-red-500 p-2 border" placeholder="%">
+                            </div>
+                            <p class="text-xs text-slate-500 mt-1">※事業使用割合（家事按分）を入力</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Visualization -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col items-center justify-center">
+                    <h4 class="font-bold text-lg mb-4 text-slate-700 w-full text-center">収入 vs 経費 vs 所得</h4>
+                    <div class="chart-container">
+                        <canvas id="incomeChart"></canvas>
+                    </div>
+                    <div class="mt-4 w-full bg-blue-50 p-4 rounded-lg text-center">
+                        <p class="text-sm text-blue-800">あなたの課税対象となる「所得」</p>
+                        <p class="text-3xl font-bold text-blue-600" id="display-profit">¥0</p>
+                    </div>
+                    <p class="text-xs text-slate-400 mt-2">※単純計算です。実際の税額は控除等により異なります。</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. The Rules Section -->
+        <section id="rules" class="scroll-mt-24 bg-slate-50 p-8 rounded-3xl border border-slate-200">
+            <div class="mb-6">
+                <h3 class="text-2xl font-bold text-slate-800 flex items-center">
+                    <span class="bg-red-100 text-red-600 w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm">2</span>
+                    初心者が間違えやすい2つの鉄則
+                </h3>
+                <p class="text-slate-600 mt-2">
+                    「いつ記録するか」「いくらで記録するか」には明確なルールがあります。ここを間違えると税務調査で指摘される可能性があります。
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Rule 1: Accrual Basis -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm card-hover">
+                    <div class="flex items-center mb-4">
+                        <div class="bg-orange-100 p-2 rounded-lg text-orange-600 mr-3">
+                            <i class="fa-regular fa-calendar-check text-xl"></i>
+                        </div>
+                        <h4 class="font-bold text-xl">発生主義</h4>
+                    </div>
+                    <p class="text-sm text-slate-600 mb-4">
+                        入金日ではなく、<strong>収益が確定した日</strong>に計上します。<br>
+                        12月の収益が翌年1月に振り込まれる場合でも、「今年の売上」になります。
+                    </p>
+                    <!-- Visual Timeline -->
+                    <div class="relative pt-6 pb-2 px-2">
+                        <div class="absolute top-1/2 left-0 w-full h-1 bg-slate-200 -z-10 transform -translate-y-1/2"></div>
+                        <div class="flex justify-between items-center text-center text-xs font-bold">
+                            <div>
+                                <div class="bg-red-500 text-white p-1 px-3 rounded-full mb-2 shadow-md z-10 relative">12月</div>
+                                <div class="text-red-600">動画が再生される<br>(収益確定)</div>
+                            </div>
+                            <div class="text-slate-400">
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </div>
+                            <div>
+                                <div class="bg-slate-500 text-white p-1 px-3 rounded-full mb-2 shadow-md">翌年1月</div>
+                                <div class="text-slate-500">銀行に入金される</div>
+                            </div>
+                        </div>
+                        <div class="mt-4 text-center">
+                            <span class="inline-block bg-red-50 text-red-700 px-3 py-1 rounded-full text-xs font-bold border border-red-200">
+                                <i class="fa-solid fa-check mr-1"></i>12月の売上として申告！
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rule 2: Gross Recording -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm card-hover">
+                    <div class="flex items-center mb-4">
+                        <div class="bg-blue-100 p-2 rounded-lg text-blue-600 mr-3">
+                            <i class="fa-solid fa-calculator text-xl"></i>
+                        </div>
+                        <h4 class="font-bold text-xl">総額主義</h4>
+                    </div>
+                    <p class="text-sm text-slate-600 mb-2">
+                        手数料が引かれた「手取り額」ではなく、<strong>引かれる前の「総額」</strong>を売上とします。手数料は「経費」にします。
+                    </p>
+                    
+                    <div class="flex flex-col items-center">
+                        <div class="chart-container" style="height: 180px; max-width: 250px;">
+                            <canvas id="grossChart"></canvas>
+                        </div>
+                        <p class="text-xs text-center text-slate-500 mt-2">
+                            例：スパチャ1万円の場合、売上は10,000円。<br>
+                            手数料3,000円は「支払手数料」として経費計上。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. Expense Checker Section -->
+        <section id="expenses" class="scroll-mt-24">
+            <div class="mb-6">
+                <h3 class="text-2xl font-bold text-slate-800 flex items-center">
+                    <span class="bg-red-100 text-red-600 w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm">3</span>
+                    経費になる？ならない？チェック
+                </h3>
+                <p class="text-slate-600 mt-2">
+                    「事業に直接必要である」と説明できるかが重要です。以下の項目をクリックして、経費として認められやすいか確認しましょう。
+                </p>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="expense-grid">
+                <!-- JS will populate these buttons -->
+            </div>
+            
+            <div id="expense-feedback" class="mt-4 p-4 rounded-xl bg-slate-100 border border-slate-200 text-center min-h-[80px] flex items-center justify-center transition-all duration-300 hidden">
+                <p class="text-slate-500">項目をクリックして解説を表示</p>
+            </div>
+        </section>
+
+        <!-- 4. Tax Return Type & Process -->
+        <section id="filing" class="scroll-mt-24 grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left: Blue vs White -->
+            <div class="lg:col-span-1 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 h-full">
+                <h3 class="font-bold text-xl mb-4 text-slate-800">青色申告のススメ</h3>
+                <p class="text-sm text-slate-600 mb-6">継続的に稼ぐなら、節税メリットの大きい「青色申告」が断然お得です。</p>
+                
+                <div class="overflow-hidden rounded-xl border border-slate-200">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-slate-50 text-slate-700">
+                            <tr>
+                                <th class="px-4 py-3">項目</th>
+                                <th class="px-4 py-3 text-blue-600">青色</th>
+                                <th class="px-4 py-3 text-slate-500">白色</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            <tr>
+                                <td class="px-4 py-3 font-medium">特別控除</td>
+                                <td class="px-4 py-3 font-bold text-blue-600">最大65万円</td>
+                                <td class="px-4 py-3">0円</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-3 font-medium">赤字繰越</td>
+                                <td class="px-4 py-3">3年間OK</td>
+                                <td class="px-4 py-3">不可</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-3 font-medium">帳簿</td>
+                                <td class="px-4 py-3">複式簿記</td>
+                                <td class="px-4 py-3">単式簿記</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-4 p-3 bg-blue-50 text-blue-800 text-xs rounded-lg">
+                    <i class="fa-solid fa-info-circle mr-1"></i>
+                    事前に「開業届」と「青色申告承認申請書」の提出が必要です。
+                </div>
+            </div>
+
+            <!-- Right: 4 Steps Flow -->
+            <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 h-full">
+                <h3 class="font-bold text-xl mb-6 text-slate-800">確定申告の4ステップ</h3>
+                
+                <div class="relative">
+                    <!-- Vertical line -->
+                    <div class="absolute left-6 top-0 h-full w-1 bg-slate-100"></div>
+                    
+                    <!-- Steps -->
+                    <div class="space-y-8">
+                        <div class="relative flex items-start">
+                            <div class="absolute left-0 bg-slate-800 text-white w-12 h-12 rounded-full flex items-center justify-center font-bold border-4 border-white shadow-sm z-10">1</div>
+                            <div class="ml-16 pt-2">
+                                <h4 class="font-bold text-lg text-slate-800">届出を出す</h4>
+                                <p class="text-sm text-slate-600">税務署に「開業届」と「青色申告承認申請書」を提出します。会計ソフトの無料ツールなどで簡単に作成できます。</p>
+                            </div>
+                        </div>
+
+                        <div class="relative flex items-start">
+                            <div class="absolute left-0 bg-slate-800 text-white w-12 h-12 rounded-full flex items-center justify-center font-bold border-4 border-white shadow-sm z-10">2</div>
+                            <div class="ml-16 pt-2">
+                                <h4 class="font-bold text-lg text-slate-800">日々の記帳と領収書保存</h4>
+                                <p class="text-sm text-slate-600">レシートは必ず保管。クラウド会計ソフトと銀行口座・カードを連携して、自動で取り込むのが一番楽です。</p>
+                            </div>
+                        </div>
+
+                        <div class="relative flex items-start">
+                            <div class="absolute left-0 bg-slate-800 text-white w-12 h-12 rounded-full flex items-center justify-center font-bold border-4 border-white shadow-sm z-10">3</div>
+                            <div class="ml-16 pt-2">
+                                <h4 class="font-bold text-lg text-slate-800">決算書の作成（翌年2〜3月）</h4>
+                                <p class="text-sm text-slate-600">1月1日〜12月31日の売上と経費を集計し、損益計算書（と貸借対照表）を作成します。</p>
+                            </div>
+                        </div>
+
+                        <div class="relative flex items-start">
+                            <div class="absolute left-0 bg-red-600 text-white w-12 h-12 rounded-full flex items-center justify-center font-bold border-4 border-white shadow-sm z-10">4</div>
+                            <div class="ml-16 pt-2">
+                                <h4 class="font-bold text-lg text-slate-800">申告・納税</h4>
+                                <p class="text-sm text-slate-600">2月16日〜3月15日にe-Taxなどで提出。期限を過ぎると青色申告の控除額が減ることもあるので注意！</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. Consumption Tax Warning -->
+        <section class="bg-amber-50 p-6 rounded-2xl border border-amber-200">
+            <h3 class="font-bold text-lg text-amber-900 mb-2">
+                <i class="fa-solid fa-triangle-exclamation mr-2"></i>消費税の「1,000万円の壁」
+            </h3>
+            <div class="flex flex-col md:flex-row gap-4 text-sm text-amber-800">
+                <p class="flex-1">
+                    Google AdSense収益は海外取引のため基本的に消費税対象外ですが、<strong>国内企業からのPR案件</strong>などは課税対象です。
+                </p>
+                <div class="bg-white p-3 rounded-lg border border-amber-100 shadow-sm flex-1">
+                    <p class="font-bold mb-1">チェックポイント</p>
+                    <p>課税売上が年間1,000万円を超えると、その2年後から消費税を納める義務が発生します。</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer / Automation Tip -->
+        <footer class="bg-slate-800 text-white rounded-3xl p-8 text-center mt-12 mb-8">
+            <h3 class="text-2xl font-bold mb-4">経理は「自動化」が鍵</h3>
+            <p class="text-slate-300 mb-6 max-w-2xl mx-auto">
+                クリエイターの本分は動画を作ること。面倒な経理作業はクラウド会計ソフトに任せましょう。<br>
+                「事業用口座」と「事業用カード」を作り、ソフトと連携させるだけで、確定申告の手間は劇的に減ります。
+            </p>
+            <div class="flex justify-center gap-4 text-2xl text-slate-400">
+                <i class="fa-solid fa-cloud"></i>
+                <i class="fa-solid fa-link"></i>
+                <i class="fa-solid fa-file-invoice"></i>
+            </div>
+        </footer>
+
+    </main>
+
+    <script>
+        // --- DATA & STATE ---
+        const expenseItems = [
+            { name: "カメラ・マイク", isExpense: true, desc: "⭕ 機材費：事業に直接必要なのでOK。10万円以上は減価償却が必要な場合も。" },
+            { name: "動画編集ソフト", isExpense: true, desc: "⭕ 消耗品費/通信費：必須ツールなのでOK。" },
+            { name: "撮影部屋の家賃", isExpense: true, desc: "⭕ 地代家賃：ただし、事業で使っている面積分だけの「家事按分」が必要です。" },
+            { name: "プライベートな服", isExpense: false, desc: "❌ NG：私生活でも着られる服は、衣装として認められにくいです。" },
+            { name: "友人とのランチ", isExpense: false, desc: "❌ NG：撮影が伴わない単なる食事は経費になりません。" },
+            { name: "外注編集費", isExpense: true, desc: "⭕ 外注費：依頼の記録や請求書を必ず保存しましょう。" },
+            { name: "企画用移動費", isExpense: true, desc: "⭕ 旅費交通費：動画企画と結びついている証拠を残せばOK。" },
+            { name: "自宅のネット代", isExpense: true, desc: "⭕ 通信費：家賃同様、使用時間の割合などで「家事按分」します。" }
+        ];
+
+        // --- CHART INITIALIZATION ---
+        let incomeChart, grossChart;
+
+        function initCharts() {
+            // 1. Income Simulator Chart
+            const ctx1 = document.getElementById('incomeChart').getContext('2d');
+            incomeChart = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: ['収入(売上)', '経費', '所得(利益)'],
+                    datasets: [{
+                        label: '金額 (円)',
+                        data: [0, 0, 0],
+                        backgroundColor: [
+                            'rgba(59, 130, 246, 0.7)', // Blue for Income
+                            'rgba(239, 68, 68, 0.7)',  // Red for Expense
+                            'rgba(16, 185, 129, 0.7)'  // Green for Profit
+                        ],
+                        borderColor: [
+                            'rgb(59, 130, 246)',
+                            'rgb(239, 68, 68)',
+                            'rgb(16, 185, 129)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return '¥' + context.raw.toLocaleString();
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '¥' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 2. Gross vs Net Chart
+            const ctx2 = document.getElementById('grossChart').getContext('2d');
+            grossChart = new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: ['手取り額', '手数料(経費)'],
+                    datasets: [{
+                        data: [70, 30],
+                        backgroundColor: [
+                            'rgba(59, 130, 246, 0.6)',
+                            'rgba(239, 68, 68, 0.6)'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.label + ': ' + context.raw + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // --- SIMULATOR LOGIC ---
+        function updateSimulator() {
+            // Get inputs
+            const adRevenue = Number(document.getElementById('input-ad-revenue').value) || 0;
+            const superChat = Number(document.getElementById('input-superchat').value) || 0;
+            const prRevenue = Number(document.getElementById('input-pr').value) || 0;
+            const directExpenses = Number(document.getElementById('input-expenses-direct').value) || 0;
+            const rentTotal = Number(document.getElementById('input-rent-total').value) || 0;
+            const rentPercent = Number(document.getElementById('input-rent-percent').value) || 0;
+
+            // Calculations
+            // Note: SuperChat input is "Gross" as per instruction. 
+            // We estimate 30% fee as expense for the simulation.
+            const platformFee = Math.round(superChat * 0.3); 
+            
+            const totalIncome = adRevenue + superChat + prRevenue;
+            const apportionedRent = Math.round(rentTotal * (rentPercent / 100));
+            const totalExpenses = directExpenses + apportionedRent + platformFee;
+            const profit = totalIncome - totalExpenses;
+
+            // Update DOM
+            const profitDisplay = document.getElementById('display-profit');
+            profitDisplay.textContent = '¥' + profit.toLocaleString();
+            if (profit < 0) {
+                profitDisplay.classList.remove('text-blue-600');
+                profitDisplay.classList.add('text-red-600');
+            } else {
+                profitDisplay.classList.remove('text-red-600');
+                profitDisplay.classList.add('text-blue-600');
+            }
+
+            // Update Chart
+            incomeChart.data.datasets[0].data = [totalIncome, totalExpenses, profit];
+            incomeChart.update();
+        }
+
+        // --- EXPENSE CHECKER LOGIC ---
+        function renderExpenseGrid() {
+            const grid = document.getElementById('expense-grid');
+            const feedbackBox = document.getElementById('expense-feedback');
+
+            expenseItems.forEach(item => {
+                const btn = document.createElement('button');
+                btn.className = "p-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition font-medium text-slate-700 shadow-sm";
+                btn.textContent = item.name;
+                
+                btn.onclick = () => {
+                    // Update visual feedback
+                    feedbackBox.classList.remove('hidden');
+                    feedbackBox.innerHTML = `<p class="${item.isExpense ? 'text-green-700' : 'text-red-600'} font-bold text-lg">${item.desc}</p>`;
+                    
+                    // Button style update (toggle active state logic could be added here)
+                    // Reset all buttons
+                    Array.from(grid.children).forEach(b => b.classList.remove('ring-2', 'ring-blue-400', 'bg-blue-50'));
+                    // Highlight clicked
+                    btn.classList.add('ring-2', 'ring-blue-400', 'bg-blue-50');
+                };
+
+                grid.appendChild(btn);
+            });
+        }
+
+        // --- EVENT LISTENERS ---
+        document.addEventListener('DOMContentLoaded', () => {
+            initCharts();
+            renderExpenseGrid();
+            updateSimulator(); // Initial run
+
+            // Attach listeners to inputs
+            const inputs = document.querySelectorAll('input');
+            inputs.forEach(input => {
+                input.addEventListener('input', updateSimulator);
+            });
+        });
+
+    </script>
+</body>
+</html>
