@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>睡眠パフォーマンス・オプティマイザー</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Custom Chart Container Styling */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        
+        /* Smooth transitions */
+        .transition-all-300 {
+            transition: all 0.3s ease-in-out;
+        }
+        
+        /* Timeline specific styles */
+        .timeline-node {
+            transition: transform 0.2s, background-color 0.3s;
+        }
+        .timeline-node:hover {
+            transform: scale(1.1);
+        }
+        .timeline-node.active {
+            transform: scale(1.2);
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+        }
+    </style>
+    <!-- Chosen Palette: Midnight & Dawn (Warm Neutrals with Deep Blue & Soft Yellow Accents) -->
+    <!-- Application Structure Plan: 
+         1. Header: Hook the user with the concept of sleep as "preparation" not "rest".
+         2. Section 1 (The "Why"): Interactive Simulation of Sleep Debt. Users toggle between "Healthy" and "Sleep Deprived" states to see the impact on a Chart.js visualization of cognitive performance (referencing Slide 2 & 3).
+         3. Section 2 (The "How"): Circadian Rhythm Timeline. An interactive horizontal flow where users select Morning/Noon/Night phases to reveal specific actionable advice (Sunlight, Caffeine, Bath) from Slides 4, 5, 6.
+         4. Section 3 (Environment): Bedroom Configurator. Toggles for Lighting and Temperature to demonstrate Slide 7's points about blue light and environment.
+         5. Section 4 (Action): Commitment Checklist based on Slide 8.
+         Rationale: This structure moves from problem awareness (Impact) to solution implementation (Timeline/Environment), ending with a concrete call to action, promoting active learning over passive reading.
+    -->
+    <!-- Visualization & Content Choices:
+         1. Impact Simulation: Bar Chart (Chart.js) to visually quantify the "invisible" decline of cognitive function (6h sleep = intoxication). Goal: Inform/Compare.
+         2. Rhythm Timeline: Interactive HTML/CSS Flex layout with JS state updates. Clickable time-blocks reveal text content. Goal: Change/Process.
+         3. Environment Configurator: HTML Toggles/Switches that update a status text area. Goal: Inform/Organize.
+         4. Commitment Card: Dynamic list selection. Goal: Engagement.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+<body class="bg-stone-50 text-slate-800 font-sans leading-relaxed">
+
+    <!-- Header Section -->
+    <header class="bg-slate-900 text-stone-100 py-12 px-4 shadow-lg">
+        <div class="max-w-4xl mx-auto text-center">
+            <h1 class="text-3xl md:text-5xl font-bold mb-4">睡眠パフォーマンス・オプティマイザー</h1>
+            <p class="text-lg md:text-xl text-stone-300 mb-6">睡眠は単なる「休憩」ではありません。<br>明日のあなたのパフォーマンスを決める「準備時間」です。</p>
+            <div class="inline-block bg-slate-800 rounded-lg p-4 border border-slate-700">
+                <span class="text-yellow-400 text-2xl mr-2">💡</span>
+                <span class="text-sm md:text-base">科学的データに基づいた、無理なく続けられる睡眠改善メソッドを体験しましょう。</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-5xl mx-auto p-4 md:p-8 space-y-16">
+
+        <!-- Section 1: The Impact of Sleep Deprivation -->
+        <section id="impact-section" class="bg-white rounded-2xl shadow-sm border border-stone-200 p-6 md:p-10">
+            <div class="mb-8 border-b border-stone-100 pb-4">
+                <h2 class="text-2xl md:text-3xl font-bold text-slate-800 mb-3">1. 脳とメンタルへの影響</h2>
+                <p class="text-slate-600">
+                    「6時間睡眠でも大丈夫」と思っていませんか？慢性的な寝不足が脳に与える物理的な影響をシミュレーションしてみましょう。
+                    下のボタンで状態を切り替えて、脳のパフォーマンスの変化を確認してください。
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <!-- Controls -->
+                <div class="space-y-4">
+                    <h3 class="font-bold text-lg text-slate-700 mb-2">状態を選択:</h3>
+                    <div class="flex flex-col gap-3">
+                        <button onclick="updateImpact('healthy')" class="impact-btn bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold py-3 px-4 rounded-lg transition-all-300 text-left flex items-center group w-full border border-emerald-200" id="btn-healthy">
+                            <span class="text-2xl mr-3 group-hover:scale-110 transition-transform">🧠</span>
+                            <div>
+                                <div class="text-sm text-emerald-900">十分な睡眠 (7-8時間)</div>
+                                <div class="text-xs text-emerald-700 font-normal">脳の機能は正常</div>
+                            </div>
+                        </button>
+                        <button onclick="updateImpact('deprived')" class="impact-btn bg-stone-100 hover:bg-stone-200 text-slate-700 font-bold py-3 px-4 rounded-lg transition-all-300 text-left flex items-center group w-full border border-stone-200" id="btn-deprived">
+                            <span class="text-2xl mr-3 group-hover:scale-110 transition-transform">📉</span>
+                            <div>
+                                <div class="text-sm text-slate-900">6時間睡眠 × 2週間</div>
+                                <div class="text-xs text-slate-600 font-normal">徹夜2日と同じレベル</div>
+                            </div>
+                        </button>
+                        <button onclick="updateImpact('drunk')" class="impact-btn bg-stone-100 hover:bg-stone-200 text-slate-700 font-bold py-3 px-4 rounded-lg transition-all-300 text-left flex items-center group w-full border border-stone-200" id="btn-drunk">
+                            <span class="text-2xl mr-3 group-hover:scale-110 transition-transform">🍺</span>
+                            <div>
+                                <div class="text-sm text-slate-900">ほろ酔い状態</div>
+                                <div class="text-xs text-slate-600 font-normal">認知機能の著しい低下</div>
+                            </div>
+                        </button>
+                    </div>
+                    
+                    <!-- Text Details Area -->
+                    <div id="impact-details" class="mt-6 p-4 bg-slate-50 rounded-lg border border-slate-100 min-h-[150px]">
+                        <h4 class="font-bold text-slate-800 mb-2 flex items-center">
+                            <span id="detail-icon" class="mr-2">✨</span>
+                            <span id="detail-title">健康な状態</span>
+                        </h4>
+                        <p id="detail-text" class="text-sm text-slate-600">
+                            脳の「前頭前野」が正常に働き、集中力、判断力、記憶力が最大限に発揮されます。感情のコントロールも安定しています。
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Chart Visualization -->
+                <div class="flex flex-col items-center justify-center w-full">
+                    <div class="chart-container">
+                        <canvas id="impactChart"></canvas>
+                    </div>
+                    <p class="text-xs text-slate-400 mt-2 text-center">※研究データに基づくイメージ比較</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Circadian Rhythm Timeline -->
+        <section id="timeline-section" class="bg-white rounded-2xl shadow-sm border border-stone-200 p-6 md:p-10">
+            <div class="mb-8 border-b border-stone-100 pb-4">
+                <h2 class="text-2xl md:text-3xl font-bold text-slate-800 mb-3">2. 最高の睡眠を作る「1日の流れ」</h2>
+                <p class="text-slate-600">
+                    夜ぐっすり眠るための準備は、実は「朝」から始まっています。
+                    時間帯ごとのアイコンをクリックして、科学的に正しいアクションを確認しましょう。
+                </p>
+            </div>
+
+            <!-- Timeline Navigation -->
+            <div class="relative mb-8 pt-4">
+                <!-- Connecting Line -->
+                <div class="absolute top-1/2 left-0 w-full h-1 bg-stone-200 -translate-y-1/2 z-0 rounded"></div>
+                
+                <div class="relative z-10 flex justify-between items-center max-w-2xl mx-auto px-4">
+                    <!-- Morning Node -->
+                    <button onclick="updateTimeline('morning')" class="timeline-node w-16 h-16 md:w-20 md:h-20 rounded-full bg-orange-100 border-4 border-orange-200 flex items-center justify-center cursor-pointer shadow-sm active" id="node-morning">
+                        <span class="text-2xl md:text-3xl">☀️</span>
+                    </button>
+                    <!-- Noon Node -->
+                    <button onclick="updateTimeline('noon')" class="timeline-node w-16 h-16 md:w-20 md:h-20 rounded-full bg-white border-4 border-stone-200 flex items-center justify-center cursor-pointer shadow-sm" id="node-noon">
+                        <span class="text-2xl md:text-3xl">☕</span>
+                    </button>
+                    <!-- Night Node -->
+                    <button onclick="updateTimeline('night')" class="timeline-node w-16 h-16 md:w-20 md:h-20 rounded-full bg-white border-4 border-stone-200 flex items-center justify-center cursor-pointer shadow-sm" id="node-night">
+                        <span class="text-2xl md:text-3xl">🛁</span>
+                    </button>
+                </div>
+                <div class="flex justify-between max-w-2xl mx-auto px-2 mt-2 text-sm font-bold text-stone-500">
+                    <span class="text-orange-500">朝 (起床時)</span>
+                    <span>昼 (〜15:00)</span>
+                    <span>夜 (就寝前)</span>
+                </div>
+            </div>
+
+            <!-- Timeline Content Area -->
+            <div id="timeline-content" class="bg-orange-50 rounded-xl p-6 md:p-8 border border-orange-100 transition-all-300">
+                <div class="flex flex-col md:flex-row gap-6 items-start">
+                    <div class="text-6xl md:text-8xl opacity-80" id="phase-icon">🌅</div>
+                    <div>
+                        <h3 class="text-xl md:text-2xl font-bold text-slate-800 mb-3" id="phase-title">夜の眠気を「予約」する</h3>
+                        <ul class="space-y-3" id="phase-list">
+                            <li class="flex items-start">
+                                <span class="bg-white rounded-full p-1 mr-3 text-xs border border-orange-200 shadow-sm mt-1">Check</span>
+                                <span class="text-slate-700"><strong>日光を15秒浴びる:</strong> 体内時計をリセットし、約15時間後に眠くなるようタイマーをセットします。</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="bg-white rounded-full p-1 mr-3 text-xs border border-orange-200 shadow-sm mt-1">Check</span>
+                                <span class="text-slate-700"><strong>トリプトファンを摂る:</strong> 朝食に卵、納豆、バナナなどを。これらが夜、睡眠ホルモン（メラトニン）の材料になります。</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Environment Configurator -->
+        <section class="bg-white rounded-2xl shadow-sm border border-stone-200 p-6 md:p-10">
+            <div class="mb-8 border-b border-stone-100 pb-4">
+                <h2 class="text-2xl md:text-3xl font-bold text-slate-800 mb-3">3. 脳をOFFにする環境設定</h2>
+                <p class="text-slate-600">
+                    寝室の環境は脳に直接的な信号を送ります。スイッチを切り替えて、理想的な寝室環境を作ってみましょう。
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                <!-- Interactive Room Settings -->
+                <div class="space-y-6 bg-slate-50 p-6 rounded-xl border border-slate-100">
+                    <div class="flex items-center justify-between">
+                        <label class="font-bold text-slate-700">照明 (スマホ)</label>
+                        <button onclick="toggleEnv('light')" id="toggle-light" class="w-16 h-8 bg-blue-500 rounded-full relative transition-colors duration-300 focus:outline-none">
+                            <div class="w-6 h-6 bg-white rounded-full absolute top-1 left-1 transition-transform duration-300 transform translate-x-8 shadow-sm"></div>
+                        </button>
+                    </div>
+                    <p id="desc-light" class="text-xs text-red-500 mt-1">⚠️ ブルーライトON: 脳が「昼間」と誤認します。</p>
+
+                    <div class="flex items-center justify-between pt-4 border-t border-slate-200">
+                        <label class="font-bold text-slate-700">室温・湿度</label>
+                        <button onclick="toggleEnv('temp')" id="toggle-temp" class="w-16 h-8 bg-stone-300 rounded-full relative transition-colors duration-300 focus:outline-none">
+                            <div class="w-6 h-6 bg-white rounded-full absolute top-1 left-1 transition-transform duration-300 shadow-sm"></div>
+                        </button>
+                    </div>
+                    <p id="desc-temp" class="text-xs text-slate-500 mt-1">快適な温度ではありません。</p>
+
+                    <div class="mt-6 pt-4 border-t border-slate-200">
+                         <div class="text-center">
+                            <span class="text-sm font-bold text-slate-500 uppercase tracking-wider">睡眠準備スコア</span>
+                            <div class="text-4xl font-bold text-slate-800 mt-2" id="env-score">0%</div>
+                         </div>
+                    </div>
+                </div>
+
+                <!-- Explanation -->
+                <div class="flex flex-col justify-center">
+                    <h3 class="text-lg font-bold text-slate-800 mb-4">環境づくりのポイント</h3>
+                    <div class="space-y-4">
+                        <div class="bg-indigo-50 p-4 rounded-lg border-l-4 border-indigo-500">
+                            <h4 class="font-bold text-indigo-900 text-sm mb-1">ブルーライトをカット</h4>
+                            <p class="text-sm text-indigo-800">スマホの光はメラトニンを破壊します。寝る前は「ナイトモード」にするか、画面を見ないのがベストです。</p>
+                        </div>
+                        <div class="bg-teal-50 p-4 rounded-lg border-l-4 border-teal-500">
+                            <h4 class="font-bold text-teal-900 text-sm mb-1">快適な室温</h4>
+                            <p class="text-sm text-teal-800">暑すぎず寒すぎない温度（夏26℃/冬16-19℃）と湿度50%前後が、脳が「不快」と感じない条件です。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Action Plan -->
+        <section class="bg-slate-800 text-stone-100 rounded-2xl shadow-lg p-6 md:p-10 text-center">
+            <h2 class="text-2xl md:text-3xl font-bold mb-4">今日から始めるアクション</h2>
+            <p class="text-stone-300 mb-8 max-w-2xl mx-auto">
+                全てを一気に変える必要はありません。まずは「1つだけ」選んで、今日から試してみましょう。
+            </p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl mx-auto">
+                <button onclick="selectAction(this, 'Sunlight')" class="action-card bg-slate-700 hover:bg-slate-600 p-6 rounded-xl border border-slate-600 transition-all hover:-translate-y-1">
+                    <div class="text-3xl mb-3">☀️</div>
+                    <h3 class="font-bold mb-2">朝イチの日光浴</h3>
+                    <p class="text-xs text-stone-400">起きたらすぐにカーテンを開ける</p>
+                </button>
+                <button onclick="selectAction(this, 'Caffeine')" class="action-card bg-slate-700 hover:bg-slate-600 p-6 rounded-xl border border-slate-600 transition-all hover:-translate-y-1">
+                    <div class="text-3xl mb-3">☕</div>
+                    <h3 class="font-bold mb-2">カフェイン制限</h3>
+                    <p class="text-xs text-stone-400">14時以降はコーヒーを控える</p>
+                </button>
+                <button onclick="selectAction(this, 'Bath')" class="action-card bg-slate-700 hover:bg-slate-600 p-6 rounded-xl border border-slate-600 transition-all hover:-translate-y-1">
+                    <div class="text-3xl mb-3">🛁</div>
+                    <h3 class="font-bold mb-2">90分前入浴</h3>
+                    <p class="text-xs text-stone-400">寝る90分前にお風呂から上がる</p>
+                </button>
+            </div>
+
+            <div id="commitment-msg" class="mt-8 hidden animate-fade-in">
+                <p class="text-lg font-bold text-yellow-400">素晴らしい選択です！</p>
+                <p class="text-sm text-stone-300 mt-2">小さな一歩が、明日の大きなパフォーマンス向上につながります。</p>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-stone-100 py-8 text-center text-stone-500 text-sm mt-12 border-t border-stone-200">
+        <p>© Sleep Performance Optimizer | Based on Scientific Research</p>
+    </footer>
+
+    <script>
+        // --- 1. Impact Section Logic ---
+        let impactChart;
+
+        function initImpactChart() {
+            const ctx = document.getElementById('impactChart').getContext('2d');
+            impactChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['認知パフォーマンス'],
+                    datasets: [
+                        {
+                            label: '正常時 (8時間睡眠)',
+                            data: [100],
+                            backgroundColor: '#10b981', // Emerald 500
+                            borderRadius: 6,
+                            barPercentage: 0.6
+                        },
+                        {
+                            label: '現在の状態',
+                            data: [0], // Initial hidden
+                            backgroundColor: '#64748b', // Slate 500
+                            borderRadius: 6,
+                            barPercentage: 0.6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 120,
+                            ticks: { display: false },
+                            grid: { display: false }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: true },
+                        tooltip: { enabled: true }
+                    },
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeOutQuart'
+                    }
+                }
+            });
+            // Initial render as healthy
+            updateImpact('healthy');
+        }
+
+        const impactData = {
+            healthy: {
+                val: 100,
+                color: '#10b981',
+                label: '正常時',
+                title: '健康な状態',
+                desc: '脳の「前頭前野」が正常に働き、集中力、判断力、記憶力が最大限に発揮されます。感情のコントロールも安定しています。',
+                btnId: 'btn-healthy',
+                btnClass: 'bg-emerald-100 text-emerald-800 border-emerald-200'
+            },
+            deprived: {
+                val: 60,
+                color: '#ef4444',
+                label: '6時間睡眠×2週間',
+                title: '⚠️ 脳機能の低下',
+                desc: '【危険】2晩徹夜したのと同じレベルまで機能が低下しています。単純ミスが増え、論理的思考ができなくなり、本人はその低下に気づきにくい状態です。',
+                btnId: 'btn-deprived',
+                btnClass: 'bg-red-100 text-red-800 border-red-200'
+            },
+            drunk: {
+                val: 60,
+                color: '#f59e0b',
+                label: 'ほろ酔い状態',
+                title: '🍺 酩酊状態と同等',
+                desc: '判断力が鈍り、リスクを見積もる能力が下がります。感情のブレーキも効きにくくなり、イライラしやすくなります。',
+                btnId: 'btn-drunk',
+                btnClass: 'bg-amber-100 text-amber-800 border-amber-200'
+            }
+        };
+
+        function updateImpact(state) {
+            const data = impactData[state];
+            
+            // Update Chart
+            impactChart.data.datasets[1].data = [data.val];
+            impactChart.data.datasets[1].backgroundColor = data.color;
+            impactChart.data.datasets[1].label = data.label;
+            impactChart.update();
+
+            // Update Text
+            document.getElementById('detail-title').innerText = data.title;
+            document.getElementById('detail-text').innerText = data.desc;
+            document.getElementById('detail-title').className = `font-bold mb-2 flex items-center ${state === 'healthy' ? 'text-emerald-800' : 'text-red-600'}`;
+
+            // Update Buttons Styles
+            document.querySelectorAll('.impact-btn').forEach(btn => {
+                // Reset to default
+                btn.className = 'impact-btn bg-stone-100 hover:bg-stone-200 text-slate-700 font-bold py-3 px-4 rounded-lg transition-all-300 text-left flex items-center group w-full border border-stone-200 opacity-60';
+            });
+            
+            // Highlight active button
+            const activeBtn = document.getElementById(data.btnId);
+            activeBtn.className = `impact-btn ${data.btnClass} font-bold py-3 px-4 rounded-lg transition-all-300 text-left flex items-center group w-full border opacity-100 shadow-md transform scale-[1.02]`;
+        }
+
+        // --- 2. Timeline Logic ---
+        const timelineData = {
+            morning: {
+                title: '朝：夜の眠気を「予約」する',
+                icon: '🌅',
+                bg: 'bg-orange-50',
+                border: 'border-orange-100',
+                color: 'text-orange-900',
+                items: [
+                    '<strong>日光を15秒浴びる:</strong> 体内時計をリセットし、約15時間後に眠くなるようタイマーをセットします。曇りでも窓際なら効果あり！',
+                    '<strong>トリプトファンを摂る:</strong> 朝食に卵、納豆、バナナ、プロテインなどを。これらが夜、睡眠ホルモン（メラトニン）の材料になります。'
+                ]
+            },
+            noon: {
+                title: '昼：睡眠圧を管理する',
+                icon: '🕛',
+                bg: 'bg-blue-50',
+                border: 'border-blue-100',
+                color: 'text-blue-900',
+                items: [
+                    '<strong>カフェインは14時まで:</strong> 覚醒作用が抜けるには時間がかかります。夕方のコーヒーは夜の睡眠を物理的にブロックしてしまいます。',
+                    '<strong>仮眠のルール:</strong> 「15時まで」に「20分以内」。これ以上寝ると夜の眠気エネルギーを消費してしまい、逆効果です。'
+                ]
+            },
+            night: {
+                title: '夜：深部体温を急降下させる',
+                icon: '🌙',
+                bg: 'bg-indigo-50',
+                border: 'border-indigo-100',
+                color: 'text-indigo-900',
+                items: [
+                    '<strong>90分前にお風呂から上がる:</strong> 人は深部体温が下がる時に強烈な眠気を感じます。40℃のお湯に15分浸かるのが目安。',
+                    '<strong>夕食は3時間前までに:</strong> 胃腸が動いていると深部体温が下がらず、脳も休息モードに入れません。'
+                ]
+            }
+        };
+
+        function updateTimeline(phase) {
+            const data = timelineData[phase];
+            const contentDiv = document.getElementById('timeline-content');
+            
+            // Update Visuals (Nodes)
+            document.querySelectorAll('.timeline-node').forEach(node => {
+                node.classList.remove('active', 'bg-orange-100', 'border-orange-200', 'bg-blue-100', 'border-blue-200', 'bg-indigo-100', 'border-indigo-200');
+                node.classList.add('bg-white', 'border-stone-200'); // Reset base
+            });
+
+            const activeNode = document.getElementById(`node-${phase}`);
+            activeNode.classList.remove('bg-white', 'border-stone-200');
+            activeNode.classList.add('active');
+            
+            // specific color per phase
+            if(phase === 'morning') activeNode.classList.add('bg-orange-100', 'border-orange-200');
+            if(phase === 'noon') activeNode.classList.add('bg-blue-100', 'border-blue-200');
+            if(phase === 'night') activeNode.classList.add('bg-indigo-100', 'border-indigo-200');
+
+            // Update Content
+            contentDiv.className = `rounded-xl p-6 md:p-8 border transition-all-300 ${data.bg} ${data.border}`;
+            document.getElementById('phase-icon').innerText = data.icon;
+            document.getElementById('phase-title').innerText = data.title;
+            document.getElementById('phase-title').className = `text-xl md:text-2xl font-bold mb-3 ${data.color}`;
+            
+            const list = document.getElementById('phase-list');
+            list.innerHTML = '';
+            data.items.forEach(item => {
+                const li = document.createElement('li');
+                li.className = 'flex items-start mb-3';
+                li.innerHTML = `<span class="bg-white rounded-full p-1 mr-3 text-xs border shadow-sm mt-1 shrink-0 ${phase === 'morning' ? 'text-orange-500 border-orange-200' : phase === 'noon' ? 'text-blue-500 border-blue-200' : 'text-indigo-500 border-indigo-200'}">✔</span><span class="text-slate-700 text-sm md:text-base">${item}</span>`;
+                list.appendChild(li);
+            });
+        }
+
+        // --- 3. Environment Logic ---
+        let envState = {
+            light: false, // false = Blue Light ON (Bad), true = Night Mode (Good)
+            temp: false   // false = Bad, true = Good
+        };
+
+        function toggleEnv(type) {
+            envState[type] = !envState[type];
+            updateEnvUI();
+        }
+
+        function updateEnvUI() {
+            // Light
+            const lightBtn = document.getElementById('toggle-light');
+            const lightDesc = document.getElementById('desc-light');
+            
+            if (envState.light) { // Good state (Night mode)
+                lightBtn.classList.remove('bg-blue-500');
+                lightBtn.classList.add('bg-orange-400');
+                lightBtn.children[0].classList.remove('translate-x-8'); // Left
+                lightBtn.children[0].classList.add('translate-x-1');
+                lightDesc.innerHTML = '✅ ナイトモード: メラトニン分泌を妨げません。';
+                lightDesc.className = 'text-xs text-emerald-600 mt-1 font-bold';
+            } else { // Bad state (Blue light)
+                lightBtn.classList.remove('bg-orange-400');
+                lightBtn.classList.add('bg-blue-500');
+                lightBtn.children[0].classList.remove('translate-x-1');
+                lightBtn.children[0].classList.add('translate-x-8'); // Right
+                lightDesc.innerHTML = '⚠️ ブルーライトON: 脳が「昼間」と誤認します。';
+                lightDesc.className = 'text-xs text-red-500 mt-1 font-bold';
+            }
+
+            // Temp
+            const tempBtn = document.getElementById('toggle-temp');
+            const tempDesc = document.getElementById('desc-temp');
+            
+            if (envState.temp) { // Good state
+                tempBtn.classList.remove('bg-stone-300');
+                tempBtn.classList.add('bg-emerald-500');
+                tempBtn.children[0].classList.remove('translate-x-1');
+                tempBtn.children[0].classList.add('translate-x-8');
+                tempDesc.innerHTML = '✅ 快適: 脳が休息モードに入りやすい環境です。';
+                tempDesc.className = 'text-xs text-emerald-600 mt-1 font-bold';
+            } else { // Bad state
+                tempBtn.classList.remove('bg-emerald-500');
+                tempBtn.classList.add('bg-stone-300');
+                tempBtn.children[0].classList.remove('translate-x-8');
+                tempBtn.children[0].classList.add('translate-x-1');
+                tempDesc.innerHTML = '不快: 暑すぎ・寒すぎは睡眠の質を下げます。';
+                tempDesc.className = 'text-xs text-slate-500 mt-1';
+            }
+
+            // Score
+            let score = 0;
+            if (envState.light) score += 50;
+            if (envState.temp) score += 50;
+            const scoreEl = document.getElementById('env-score');
+            scoreEl.innerText = score + '%';
+            scoreEl.className = `text-4xl font-bold mt-2 transition-colors ${score === 100 ? 'text-emerald-600' : score === 50 ? 'text-yellow-600' : 'text-slate-800'}`;
+        }
+
+        // --- 4. Action Logic ---
+        function selectAction(btn, type) {
+            // Reset others
+            document.querySelectorAll('.action-card').forEach(c => {
+                c.classList.remove('ring-4', 'ring-yellow-400', 'bg-slate-600');
+                c.classList.add('bg-slate-700');
+            });
+            
+            // Highlight selected
+            btn.classList.remove('bg-slate-700');
+            btn.classList.add('bg-slate-600', 'ring-4', 'ring-yellow-400');
+            
+            // Show message
+            const msg = document.getElementById('commitment-msg');
+            msg.classList.remove('hidden');
+            msg.classList.add('block');
+        }
+
+        // Initialization
+        document.addEventListener('DOMContentLoaded', () => {
+            initImpactChart();
+            updateEnvUI(); // Set initial env state
+        });
+
+    </script>
+</body>
+</html>
