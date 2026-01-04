@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logi Options+ 完全ガイド</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chosen Palette: Logitech Teal & Warm Neutrals -->
+    <!-- Application Structure Plan: 
+         1. Hero Section: Introduction to the software (Slides 1-2).
+         2. Feature Explorer (Interactive Tabs):
+            - App Profiles: Interactive mouse visualization changing context based on selected app (Slide 3).
+            - Smart Actions: A "Run Macro" simulation button showing sequential task execution (Slide 4).
+            - Logicool Flow: A visual simulation of cursor movement across two "screens" (Slide 5).
+         3. Comparison Dashboard: Radar chart comparing Old vs New software features (Slide 6).
+         4. Compatibility Checker: A decision tree tool to help users find the right software (Slide 7).
+         5. Conclusion: Final summary and call to action (Slide 8).
+    -->
+    
+    <!-- Visualization & Content Choices:
+         - App Profiles: CSS/HTML constructed mouse schematic. No SVG. Updates text dynamically.
+         - Smart Actions: CSS keyframe animations triggered by JS.
+         - Comparison: Chart.js Radar Chart to visualize the "Upgrade" in capabilities.
+         - Compatibility: Simple JS logic flow.
+         - CONFIRMATION: NO SVG graphics used (using FontAwesome webfonts and CSS shapes). NO Mermaid JS used.
+    -->
+
+    <style>
+        /* Custom Styles for specific visual elements */
+        body {
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+            background-color: #fcfcfc; /* Warm neutral light */
+            color: #333;
+        }
+        
+        .accent-text { color: #30cfa9; }
+        .accent-bg { background-color: #30cfa9; }
+        .accent-border { border-color: #30cfa9; }
+
+        .mouse-shape {
+            width: 160px;
+            height: 240px;
+            border-radius: 80px 80px 60px 60px;
+            border: 2px solid #cbd5e1;
+            position: relative;
+            background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
+            margin: 0 auto;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        .mouse-line {
+            position: absolute;
+            top: 60px;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background-color: #cbd5e1;
+        }
+        .mouse-wheel {
+            position: absolute;
+            top: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 16px;
+            height: 32px;
+            background-color: #30cfa9;
+            border-radius: 8px;
+        }
+        .side-btn {
+            position: absolute;
+            left: -4px;
+            width: 8px;
+            height: 40px;
+            background-color: #94a3b8;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .side-btn:hover { background-color: #30cfa9; }
+        
+        .side-btn-top { top: 100px; }
+        .side-btn-bot { top: 150px; }
+
+        /* Chart Container Styles */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+
+        .screen-box {
+            transition: all 0.3s ease;
+        }
+        .screen-box.active {
+            border-color: #30cfa9;
+            box-shadow: 0 0 15px rgba(48, 207, 169, 0.2);
+        }
+        
+        .step-card {
+            transition: transform 0.2s;
+        }
+        .step-card.completed {
+            background-color: #f0fdf4;
+            border-left: 4px solid #30cfa9;
+        }
+
+        /* Flow Cursor Animation */
+        @keyframes flowMove {
+            0% { left: 20%; opacity: 1; }
+            45% { left: 45%; opacity: 1; }
+            50% { left: 50%; opacity: 0; } /* Hide crossing bezel */
+            55% { left: 55%; opacity: 1; }
+            100% { left: 80%; opacity: 1; }
+        }
+        .flow-cursor {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background-color: #30cfa9;
+            border-radius: 50%;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+        }
+        .animating-cursor {
+            animation: flowMove 2s infinite alternate ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-stone-50 text-stone-800 antialiased selection:bg-teal-100 selection:text-teal-900">
+
+    <!-- Navbar -->
+    <nav class="bg-white border-b border-stone-200 sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center">
+                    <div class="w-8 h-8 bg-teal-500 rounded-lg flex items-center justify-center text-white font-bold mr-2">L+</div>
+                    <span class="font-bold text-xl tracking-tight">Logi Options+ <span class="text-stone-400 font-normal text-sm ml-2">Interactive Guide</span></span>
+                </div>
+                <div class="hidden md:flex space-x-8 text-sm font-medium text-stone-500">
+                    <a href="#features" class="hover:text-teal-600 transition">機能</a>
+                    <a href="#comparison" class="hover:text-teal-600 transition">比較</a>
+                    <a href="#compatibility" class="hover:text-teal-600 transition">対応確認</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="bg-white pt-16 pb-12">
+        <div class="max-w-4xl mx-auto px-4 text-center">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-stone-900 mb-6 leading-tight">
+                ロジクール製品の<br><span class="text-teal-500">「真の力」</span>を引き出す。
+            </h1>
+            <p class="text-xl text-stone-600 mb-8 max-w-2xl mx-auto leading-relaxed">
+                高機能なマウスやキーボードを買っただけでは、まだ半分も使いこなせていません。<br>
+                <strong>Logi Options+</strong> で、あなただけの最強の道具を作りましょう。
+            </p>
+            <div class="flex justify-center gap-4">
+                <button onclick="document.getElementById('features').scrollIntoView({behavior: 'smooth'})" class="bg-teal-500 hover:bg-teal-600 text-white font-bold py-3 px-8 rounded-full shadow-lg transition transform hover:-translate-y-1">
+                    機能を体験する
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-6xl mx-auto px-4 py-12 space-y-24">
+
+        <!-- Section 1: Features (Interactive Tabs) -->
+        <section id="features" class="scroll-mt-24">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-bold mb-4">3つの革新的な機能</h2>
+                <p class="text-stone-600 max-w-2xl mx-auto">
+                    Logi Options+ が提供する主要な機能を、実際に操作して体験してみましょう。
+                </p>
+            </div>
+
+            <!-- Tab Navigation -->
+            <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-stone-100">
+                <div class="flex border-b border-stone-200 overflow-x-auto">
+                    <button class="tab-btn flex-1 py-4 px-6 text-center font-bold text-stone-500 hover:bg-stone-50 focus:outline-none border-b-2 border-transparent transition" onclick="switchTab('app-profiles')" id="btn-app-profiles">
+                        <i class="fa-solid fa-wand-magic-sparkles mr-2"></i>アプリ別設定
+                    </button>
+                    <button class="tab-btn flex-1 py-4 px-6 text-center font-bold text-stone-500 hover:bg-stone-50 focus:outline-none border-b-2 border-transparent transition" onclick="switchTab('smart-actions')" id="btn-smart-actions">
+                        <i class="fa-solid fa-robot mr-2"></i>Smart Actions
+                    </button>
+                    <button class="tab-btn flex-1 py-4 px-6 text-center font-bold text-stone-500 hover:bg-stone-50 focus:outline-none border-b-2 border-transparent transition" onclick="switchTab('flow')" id="btn-flow">
+                        <i class="fa-solid fa-exchange-alt mr-2"></i>Flow
+                    </button>
+                </div>
+
+                <!-- Tab Content 1: App Profiles -->
+                <div id="tab-app-profiles" class="tab-content p-8 md:p-12 block">
+                    <div class="grid md:grid-cols-2 gap-12 items-center">
+                        <div>
+                            <h3 class="text-2xl font-bold mb-4 text-stone-800">アプリごとにボタンが「変身」</h3>
+                            <p class="text-stone-600 mb-6 leading-relaxed">
+                                Excel、Chrome、Zoom... 使うアプリに合わせて、ボタンの役割を自動で切り替えます。<br>
+                                いちいち設定を変更する必要はありません。
+                            </p>
+                            
+                            <div class="bg-stone-100 p-6 rounded-xl">
+                                <label class="block text-sm font-bold mb-2 text-stone-500">使用中のアプリを選択:</label>
+                                <select id="app-selector" class="w-full p-3 rounded-lg border border-stone-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition outline-none text-lg" onchange="updateMouseContext()">
+                                    <option value="default">デスクトップ (通常)</option>
+                                    <option value="excel">Microsoft Excel</option>
+                                    <option value="chrome">Google Chrome</option>
+                                    <option value="zoom">Zoom</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Mouse Visualizer -->
+                        <div class="relative bg-white p-8 rounded-xl border border-stone-100 flex justify-center items-center h-80">
+                            <div class="mouse-shape">
+                                <div class="mouse-wheel" title="ホイール"></div>
+                                <div class="mouse-line"></div>
+                                <div class="side-btn side-btn-top" id="btn-visual-top"></div>
+                                <div class="side-btn side-btn-bot" id="btn-visual-bot"></div>
+                            </div>
+
+                            <!-- Context Labels (Absolute positioning relative to container) -->
+                            <div id="label-top" class="absolute left-1/2 ml-16 top-32 bg-stone-800 text-white text-xs px-3 py-1 rounded shadow-lg transition-all duration-300 opacity-0 transform translate-x-2">
+                                進む
+                            </div>
+                            <div id="label-bot" class="absolute left-1/2 ml-16 top-44 bg-stone-800 text-white text-xs px-3 py-1 rounded shadow-lg transition-all duration-300 opacity-0 transform translate-x-2">
+                                戻る
+                            </div>
+                            <div id="label-wheel" class="absolute right-1/2 mr-16 top-8 bg-stone-800 text-white text-xs px-3 py-1 rounded shadow-lg transition-all duration-300 opacity-100">
+                                スクロール
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Content 2: Smart Actions -->
+                <div id="tab-smart-actions" class="tab-content p-8 md:p-12 hidden">
+                    <div class="grid md:grid-cols-2 gap-12">
+                        <div>
+                            <h3 class="text-2xl font-bold mb-4 text-stone-800">ワンクリックで、全自動。</h3>
+                            <p class="text-stone-600 mb-6 leading-relaxed">
+                                「Smart Actions」は、面倒な定型作業を一瞬で終わらせるマクロ機能です。<br>
+                                例えば「朝の準備」。ボタン一つで複数のアプリを起動し、準備を整えます。
+                            </p>
+                            <button onclick="runSmartAction()" id="run-action-btn" class="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-4 rounded-xl shadow-md transition flex items-center justify-center text-lg">
+                                <i class="fa-solid fa-play mr-3"></i> 「朝の準備」を実行する
+                            </button>
+                            <p class="text-xs text-stone-400 mt-2 text-center">※上のボタンを押してシミュレーションを開始</p>
+                        </div>
+
+                        <div class="bg-stone-50 p-6 rounded-xl border border-stone-200">
+                            <h4 class="font-bold text-stone-500 mb-4 text-sm uppercase tracking-wide">実行ログ</h4>
+                            <div class="space-y-3" id="action-log">
+                                <div class="step-card bg-white p-3 rounded border border-stone-200 flex items-center opacity-50" id="step-1">
+                                    <i class="fa-regular fa-envelope w-8 text-center text-stone-400"></i>
+                                    <span class="text-stone-600">メールソフトを起動</span>
+                                </div>
+                                <div class="step-card bg-white p-3 rounded border border-stone-200 flex items-center opacity-50" id="step-2">
+                                    <i class="fa-brands fa-slack w-8 text-center text-stone-400"></i>
+                                    <span class="text-stone-600">Slackを起動</span>
+                                </div>
+                                <div class="step-card bg-white p-3 rounded border border-stone-200 flex items-center opacity-50" id="step-3">
+                                    <i class="fa-brands fa-chrome w-8 text-center text-stone-400"></i>
+                                    <span class="text-stone-600">Chromeでニュースを開く</span>
+                                </div>
+                                <div class="step-card bg-white p-3 rounded border border-stone-200 flex items-center opacity-50" id="step-4">
+                                    <i class="fa-solid fa-check w-8 text-center text-stone-400"></i>
+                                    <span class="text-stone-600">完了通知を表示</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Content 3: Flow -->
+                <div id="tab-flow" class="tab-content p-8 md:p-12 hidden">
+                    <div class="text-center mb-8">
+                        <h3 class="text-2xl font-bold mb-4 text-stone-800">PCの「壁」を超える</h3>
+                        <p class="text-stone-600 max-w-2xl mx-auto">
+                            WindowsとMacなど、異なるパソコン間でもマウスカーソルが自由に行き来できます。<br>
+                            テキストやファイルのコピー＆ペーストも、まるで1台のPCのように。
+                        </p>
+                    </div>
+
+                    <div class="relative max-w-2xl mx-auto h-64 bg-stone-100 rounded-xl p-4 flex justify-between items-center overflow-hidden border border-stone-200">
+                        <!-- Screen 1 -->
+                        <div class="screen-box w-5/12 h-48 bg-white border-4 border-stone-300 rounded-lg flex flex-col justify-center items-center relative z-10">
+                            <i class="fa-brands fa-windows text-4xl text-blue-500 mb-2"></i>
+                            <span class="text-xs font-bold text-stone-400">Windows PC</span>
+                        </div>
+                        
+                        <!-- Screen 2 -->
+                        <div class="screen-box w-5/12 h-48 bg-white border-4 border-stone-300 rounded-lg flex flex-col justify-center items-center relative z-10">
+                            <i class="fa-brands fa-apple text-4xl text-stone-800 mb-2"></i>
+                            <span class="text-xs font-bold text-stone-400">MacBook</span>
+                        </div>
+
+                        <!-- Cursor Animation Layer -->
+                        <div class="absolute inset-0 z-20">
+                            <div class="flow-cursor animating-cursor shadow-md border-2 border-white"></div>
+                        </div>
+
+                        <!-- Flow Indicator Text -->
+                        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-stone-300 font-bold text-sm tracking-widest bg-stone-100 px-2 z-0">
+                            FLOW
+                        </div>
+                    </div>
+                    <p class="text-center text-xs text-stone-400 mt-4">マウスカーソルが画面の端を超えて移動します</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Comparison (Chart.js) -->
+        <section id="comparison" class="scroll-mt-24">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h2 class="text-3xl font-bold mb-6">新旧ソフトウェア比較</h2>
+                    <p class="text-stone-600 mb-6 leading-relaxed">
+                        以前の「Logicool Options」と、最新の「Logi Options+」の違いは明白です。<br>
+                        最新のMXシリーズ製品をお使いなら、迷わず「+」を選んでください。
+                    </p>
+                    
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-100">
+                        <ul class="space-y-4">
+                            <li class="flex items-start">
+                                <div class="flex-shrink-0 w-6 h-6 rounded-full bg-stone-200 text-stone-500 flex items-center justify-center text-xs mt-1 mr-3">旧</div>
+                                <div>
+                                    <strong class="block text-stone-700">Logicool Options</strong>
+                                    <span class="text-sm text-stone-500">M570など古い機種向け。基本機能のみ。</span>
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="flex-shrink-0 w-6 h-6 rounded-full bg-teal-500 text-white flex items-center justify-center text-xs mt-1 mr-3">新</div>
+                                <div>
+                                    <strong class="block text-stone-900">Logi Options+</strong>
+                                    <span class="text-sm text-stone-500">MX Master 3Sなど最新機種向け。Smart Actions搭載。</span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Radar Chart Container -->
+                <div class="bg-white p-4 rounded-2xl shadow-lg border border-stone-100">
+                    <div class="chart-container">
+                        <canvas id="comparisonChart"></canvas>
+                    </div>
+                    <p class="text-center text-xs text-stone-400 mt-2">※機能性の比較イメージ</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Compatibility Checker -->
+        <section id="compatibility" class="bg-stone-800 text-white rounded-3xl p-8 md:p-12 text-center shadow-2xl relative overflow-hidden">
+            <!-- Decorative circle -->
+            <div class="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 rounded-full bg-teal-500 opacity-20 blur-3xl"></div>
+
+            <h2 class="text-3xl font-bold mb-6 relative z-10">どのソフトを入れるべき？</h2>
+            <p class="text-stone-300 mb-8 max-w-xl mx-auto relative z-10">
+                お持ちの製品によって、インストールすべきソフトが異なります。<br>
+                簡単な質問に答えてチェックしましょう。
+            </p>
+
+            <div class="bg-stone-700 max-w-lg mx-auto rounded-xl p-6 shadow-inner relative z-10">
+                <div id="quiz-step-1">
+                    <p class="text-lg font-bold mb-6">Q. お使いの製品は「ゲーミング製品 (Logicool G)」ですか？</p>
+                    <div class="flex gap-4 justify-center">
+                        <button onclick="checkCompatibility('yes')" class="bg-stone-600 hover:bg-stone-500 py-2 px-8 rounded-lg transition">はい (G Proなど)</button>
+                        <button onclick="checkCompatibility('no')" class="bg-teal-500 hover:bg-teal-400 text-stone-900 font-bold py-2 px-8 rounded-lg transition">いいえ (MX, Mなど)</button>
+                    </div>
+                </div>
+
+                <div id="quiz-result" class="hidden">
+                    <div id="result-icon" class="text-5xl mb-4"></div>
+                    <h3 id="result-title" class="text-xl font-bold mb-2"></h3>
+                    <p id="result-desc" class="text-stone-300 text-sm"></p>
+                    <button onclick="resetQuiz()" class="mt-6 text-stone-400 hover:text-white underline text-sm">もう一度調べる</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer / Conclusion -->
+        <footer class="text-center py-12 border-t border-stone-200 mt-12">
+            <h2 class="text-2xl font-bold text-stone-800 mb-4">最強のパートナーを手に入れよう</h2>
+            <p class="text-stone-600 mb-8">
+                Logi Options+ はただの設定ツールではありません。<br>
+                あなたの仕事を効率化するエンジンのような存在です。
+            </p>
+            <div class="inline-block bg-teal-50 text-teal-700 px-6 py-3 rounded-lg border border-teal-200">
+                <i class="fa-solid fa-download mr-2"></i>公式サイトから無料でダウンロード
+            </div>
+            <p class="mt-8 text-xs text-stone-400">
+                Source: Logi Options+ Presentation Guide
+            </p>
+        </footer>
+
+    </main>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- State Management ---
+        const state = {
+            currentTab: 'app-profiles',
+            currentApp: 'default',
+            smartActionRunning: false
+        };
+
+        // --- Tab Switching Logic ---
+        function switchTab(tabId) {
+            // Update State
+            state.currentTab = tabId;
+
+            // Update Buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('text-teal-600', 'border-teal-500', 'bg-stone-50');
+                btn.classList.add('text-stone-500', 'border-transparent');
+            });
+            const activeBtn = document.getElementById(`btn-${tabId}`);
+            activeBtn.classList.add('text-teal-600', 'border-teal-500', 'bg-stone-50');
+            activeBtn.classList.remove('text-stone-500', 'border-transparent');
+
+            // Update Content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+        }
+
+        // Initialize first tab
+        switchTab('app-profiles');
+
+
+        // --- App Profiles Interaction ---
+        const appConfigs = {
+            'default': {
+                top: '進む',
+                bot: '戻る',
+                wheel: 'スクロール',
+                bg: 'bg-stone-800'
+            },
+            'excel': {
+                top: 'やり直し (Redo)',
+                bot: '元に戻す (Undo)',
+                wheel: '横スクロール',
+                bg: 'bg-green-600'
+            },
+            'chrome': {
+                top: 'タブを閉じる',
+                bot: 'タブを開く',
+                wheel: 'スクロール',
+                bg: 'bg-yellow-600'
+            },
+            'zoom': {
+                top: 'ミュート切替',
+                bot: 'ビデオ切替',
+                wheel: '音量調整',
+                bg: 'bg-blue-600'
+            }
+        };
+
+        function updateMouseContext() {
+            const selector = document.getElementById('app-selector');
+            const app = selector.value;
+            const config = appConfigs[app];
+
+            const labelTop = document.getElementById('label-top');
+            const labelBot = document.getElementById('label-bot');
+            const labelWheel = document.getElementById('label-wheel');
+
+            // Hide labels
+            labelTop.classList.add('opacity-0', 'translate-x-2');
+            labelBot.classList.add('opacity-0', 'translate-x-2');
+            labelWheel.classList.add('opacity-0');
+
+            setTimeout(() => {
+                // Update Text
+                labelTop.textContent = config.top;
+                labelBot.textContent = config.bot;
+                labelWheel.textContent = config.wheel;
+
+                // Update Color
+                const allLabels = [labelTop, labelBot, labelWheel];
+                allLabels.forEach(el => {
+                    el.className = `absolute text-white text-xs px-3 py-1 rounded shadow-lg transition-all duration-300 transform`;
+                    el.classList.add(config.bg);
+                    if (el === labelTop) { el.classList.add('left-1/2', 'ml-16', 'top-32'); }
+                    if (el === labelBot) { el.classList.add('left-1/2', 'ml-16', 'top-44'); }
+                    if (el === labelWheel) { el.classList.add('right-1/2', 'mr-16', 'top-8'); }
+                });
+
+                // Show labels
+                labelTop.classList.remove('opacity-0', 'translate-x-2');
+                labelBot.classList.remove('opacity-0', 'translate-x-2');
+                labelWheel.classList.remove('opacity-0');
+            }, 300);
+        }
+
+        // Initial update
+        setTimeout(updateMouseContext, 500);
+
+
+        // --- Smart Actions Simulation ---
+        function runSmartAction() {
+            if (state.smartActionRunning) return;
+            state.smartActionRunning = true;
+            
+            const btn = document.getElementById('run-action-btn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-3"></i> 実行中...';
+            btn.classList.add('opacity-75', 'cursor-not-allowed');
+
+            const steps = [1, 2, 3, 4];
+            
+            // Reset steps
+            steps.forEach(i => {
+                const el = document.getElementById(`step-${i}`);
+                el.classList.add('opacity-50');
+                el.classList.remove('completed', 'scale-105', 'shadow-md');
+            });
+
+            // Sequence
+            let delay = 0;
+            steps.forEach(i => {
+                delay += 800; // 0.8s per step
+                setTimeout(() => {
+                    const el = document.getElementById(`step-${i}`);
+                    el.classList.remove('opacity-50');
+                    el.classList.add('completed', 'scale-105', 'shadow-md');
+                    
+                    if (i === 4) {
+                        setTimeout(() => {
+                            btn.innerHTML = '<i class="fa-solid fa-check mr-3"></i> 完了！';
+                            setTimeout(() => {
+                                btn.innerHTML = originalText;
+                                btn.classList.remove('opacity-75', 'cursor-not-allowed');
+                                state.smartActionRunning = false;
+                            }, 2000);
+                        }, 500);
+                    }
+                }, delay);
+            });
+        }
+
+
+        // --- Comparison Chart (Chart.js) ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const ctx = document.getElementById('comparisonChart').getContext('2d');
+            
+            new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['UIのモダンさ', '自動化機能', 'デバイス対応(新)', 'カスタマイズ性', '更新頻度'],
+                    datasets: [{
+                        label: 'Logi Options+',
+                        data: [5, 5, 5, 5, 5],
+                        fill: true,
+                        backgroundColor: 'rgba(48, 207, 169, 0.2)',
+                        borderColor: '#30cfa9',
+                        pointBackgroundColor: '#30cfa9',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#30cfa9'
+                    }, {
+                        label: 'Logicool Options (旧)',
+                        data: [2, 1, 2, 4, 2],
+                        fill: true,
+                        backgroundColor: 'rgba(148, 163, 184, 0.2)',
+                        borderColor: '#94a3b8',
+                        pointBackgroundColor: '#94a3b8',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#94a3b8'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    elements: {
+                        line: { borderWidth: 3 }
+                    },
+                    scales: {
+                        r: {
+                            angleLines: { display: true },
+                            suggestedMin: 0,
+                            suggestedMax: 5,
+                            ticks: { display: false } // Hide numbers for cleaner look
+                        }
+                    },
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        });
+
+
+        // --- Compatibility Checker Logic ---
+        function checkCompatibility(isGaming) {
+            const step1 = document.getElementById('quiz-step-1');
+            const result = document.getElementById('quiz-result');
+            const rIcon = document.getElementById('result-icon');
+            const rTitle = document.getElementById('result-title');
+            const rDesc = document.getElementById('result-desc');
+
+            step1.classList.add('hidden');
+            result.classList.remove('hidden');
+
+            if (isGaming === 'yes') {
+                rIcon.innerHTML = '<i class="fa-solid fa-gamepad text-blue-500"></i>';
+                rTitle.textContent = '「G HUB」を使ってください';
+                rDesc.textContent = 'ゲーミング製品（Logicool Gシリーズ）は、Logi Options+ の対象外です。専用ソフト「G HUB」をダウンロードしてください。';
+            } else {
+                rIcon.innerHTML = '<i class="fa-solid fa-check-circle text-teal-500"></i>';
+                rTitle.textContent = '「Logi Options+」がおすすめです！';
+                rDesc.textContent = 'MX MasterシリーズやMX Keysなどをお使いの場合、最新のOptions+が最適です。（※極端に古い機種の場合は旧Optionsが必要な場合もあります）';
+            }
+        }
+
+        function resetQuiz() {
+            document.getElementById('quiz-result').classList.add('hidden');
+            document.getElementById('quiz-step-1').classList.remove('hidden');
+        }
+
+    </script>
+</body>
+</html>
