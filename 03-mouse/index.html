@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>マウス・トラックボール市場動向レポート 2024-2025</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Chosen Palette: Warm Neutrals & Professional Accents -->
+    <!-- Background: Stone-50 (Warm Grey/Beige) -->
+    <!-- Cards: White -->
+    <!-- Text: Stone-800 -->
+    <!-- Accents: Indigo (Data), Teal (Growth), Rose (Alerts/Highlights) -->
+
+    <!-- Application Structure Plan: 
+         1. Header & Executive Summary: Sets the context of the research (Japan Domestic Market).
+         2. Key Metrics Cards: Immediate "at a glance" stats for quick consumption.
+         3. Interactive Market Share Dashboard: 
+            - Two main Chart.js instances (Manufacturer Share, Connection Type).
+            - Filter Controls: Users can toggle between "Overall Market", "Gaming Segment", and "Trackball Segment". 
+            - Rationale: The market varies wildly by category. Grouping this interaction allows users to see the contrast (e.g., Logicool dominates Gaming/Trackball, but Elecom leads general office volume).
+         4. Trend Analysis Section: A line chart showing the shift from Wired to Wireless/Bluetooth over 5 years.
+         5. Technology Matrix: A grid layout explaining sensor differences (BlueLED vs Laser vs Optical) with interactive highlighting.
+    -->
+
+    <!-- Visualization & Content Choices:
+         1. Manufacturer Share -> Goal: Compare -> Donut Chart -> Interaction: Filter by Category -> Shows dominance shifts.
+         2. Connection Method -> Goal: Inform/Compare -> Horizontal Bar Chart -> Interaction: Filter by Category -> Shows tech adoption differences.
+         3. Market Trends -> Goal: Change over time -> Line Chart -> Interaction: Toggle Data Points -> Visualizes the "cord-cutting" trend.
+         4. Specs Guide -> Goal: Educate -> Interactive Cards -> No SVG, just styled HTML/CSS -> Explains technical jargon simply.
+    -->
+
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <style>
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: #fafaf9; /* tailwind stone-50 */
+            color: #292524; /* tailwind stone-800 */
+        }
+        
+        /* Chart Container Styling Rules - STRICTLY ENFORCED */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px; /* Limits width on large screens */
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px; /* Base height */
+            max-height: 400px; /* Absolute max height */
+        }
+
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+
+        /* Custom Scrollbar for cleaner look */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f5f5f4; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d6d3d1; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a29e; 
+        }
+
+        .tab-active {
+            background-color: #4f46e5; /* indigo-600 */
+            color: white;
+            border-color: #4f46e5;
+        }
+        
+        .tab-inactive {
+            background-color: white;
+            color: #57534e; /* stone-600 */
+            border-color: #e7e5e4; /* stone-200 */
+        }
+        .tab-inactive:hover {
+            background-color: #f5f5f4; /* stone-100 */
+        }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex flex-col">
+
+    <!-- Header Section -->
+    <header class="bg-white border-b border-stone-200 sticky top-0 z-50 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-xl shadow-md">
+                    M
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-stone-900 leading-tight">マウス市場調査レポート</h1>
+                    <p class="text-xs text-stone-500 font-medium">2024-2025 国内周辺機器トレンド</p>
+                </div>
+            </div>
+            <button onclick="window.print()" class="hidden md:block px-4 py-2 bg-stone-100 hover:bg-stone-200 text-stone-600 rounded-md text-sm font-medium transition-colors">
+                レポートを印刷
+            </button>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12 w-full">
+
+        <!-- Executive Summary -->
+        <section class="bg-white rounded-xl p-6 md:p-8 shadow-sm border border-stone-100">
+            <h2 class="text-2xl font-bold text-stone-800 mb-4 border-l-4 border-indigo-500 pl-4">調査概要</h2>
+            <p class="text-stone-600 leading-relaxed mb-6">
+                本レポートは、国内のマウスおよびトラックボール市場におけるシェア、接続方式（無線/Bluetooth）、および形状トレンドを調査・分析したものです。
+                リモートワークの定着により、<strong class="text-indigo-700">高機能・エルゴノミクス（人間工学）製品</strong>の需要が急増しています。
+                また、USBポートの減少に伴い、Bluetooth接続モデルのシェアが拡大傾向にあります。
+                以下のダッシュボードでは、市場全体だけでなく、「ゲーミング」「トラックボール」といった特定セグメントごとの詳細なシェア構造を対話的に確認できます。
+            </p>
+            
+            <!-- Key Metrics Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-indigo-50 rounded-lg p-5 border border-indigo-100">
+                    <div class="text-indigo-600 text-sm font-semibold uppercase tracking-wide mb-1">トップシェア (全体)</div>
+                    <div class="text-3xl font-bold text-stone-900">Elecom / Logicool</div>
+                    <div class="text-sm text-indigo-800 mt-2">2強状態で市場の約60%を占有</div>
+                </div>
+                <div class="bg-teal-50 rounded-lg p-5 border border-teal-100">
+                    <div class="text-teal-600 text-sm font-semibold uppercase tracking-wide mb-1">ワイヤレス化率</div>
+                    <div class="text-3xl font-bold text-stone-900">78.5<span class="text-xl">%</span></div>
+                    <div class="text-sm text-teal-800 mt-2">Bluetoothおよび2.4GHzの合計</div>
+                </div>
+                <div class="bg-rose-50 rounded-lg p-5 border border-rose-100">
+                    <div class="text-rose-600 text-sm font-semibold uppercase tracking-wide mb-1">注目トレンド</div>
+                    <div class="text-xl font-bold text-stone-900">トラックボール復権</div>
+                    <div class="text-sm text-rose-800 mt-2">前年比 115% の成長率を記録</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interactive Market Dashboard -->
+        <section id="market-dashboard">
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-6 gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-stone-800">市場シェア分析ダッシュボード</h2>
+                    <p class="text-stone-500 mt-1 text-sm">カテゴリを切り替えて、メーカーシェアと接続方式の違いを確認してください。</p>
+                </div>
+                
+                <!-- Category Switcher -->
+                <div class="inline-flex rounded-md shadow-sm" role="group">
+                    <button type="button" onclick="updateDashboard('general')" id="btn-general" class="tab-active px-4 py-2 text-sm font-medium border rounded-l-lg focus:z-10 focus:ring-2 focus:ring-indigo-500 transition-all">
+                        市場全体
+                    </button>
+                    <button type="button" onclick="updateDashboard('gaming')" id="btn-gaming" class="tab-inactive px-4 py-2 text-sm font-medium border-t border-b border-r focus:z-10 focus:ring-2 focus:ring-indigo-500 transition-all">
+                        ゲーミング
+                    </button>
+                    <button type="button" onclick="updateDashboard('trackball')" id="btn-trackball" class="tab-inactive px-4 py-2 text-sm font-medium border-t border-b border-r rounded-r-lg focus:z-10 focus:ring-2 focus:ring-indigo-500 transition-all">
+                        トラックボール
+                    </button>
+                </div>
+            </div>
+
+            <!-- Dashboard Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                
+                <!-- Chart 1: Manufacturer Share -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200 flex flex-col">
+                    <div class="mb-4">
+                        <h3 class="text-lg font-bold text-stone-800 flex items-center gap-2">
+                            <span class="text-indigo-500 text-xl">●</span> メーカー別シェア
+                        </h3>
+                        <p id="desc-manufacturer" class="text-sm text-stone-500">
+                            市場全体のメーカー別販売台数シェア。国内メーカーのエレコムとバッファロー、世界的ブランドのLogicoolが主要プレイヤーです。
+                        </p>
+                    </div>
+                    <div class="flex-grow flex items-center justify-center bg-stone-50 rounded-lg p-4">
+                        <div class="chart-container">
+                            <canvas id="manufacturerChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chart 2: Connection Type -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200 flex flex-col">
+                    <div class="mb-4">
+                        <h3 class="text-lg font-bold text-stone-800 flex items-center gap-2">
+                            <span class="text-teal-500 text-xl">●</span> 接続方式の内訳
+                        </h3>
+                        <p id="desc-connection" class="text-sm text-stone-500">
+                            有線、無線(USBレシーバー)、Bluetoothの比率。用途によって優先される接続方式が大きく異なります。
+                        </p>
+                    </div>
+                    <div class="flex-grow flex items-center justify-center bg-stone-50 rounded-lg p-4">
+                        <div class="chart-container">
+                            <canvas id="connectionChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            
+            <!-- Dynamic Insight Text Block -->
+            <div id="dynamic-insight" class="mt-6 bg-indigo-50 border-l-4 border-indigo-500 p-4 rounded-r-md animate-fade-in transition-all">
+                <p class="font-bold text-indigo-900 text-sm mb-1">💡 カテゴリ別インサイト</p>
+                <p id="insight-text" class="text-indigo-800 text-sm">
+                    市場全体では、安価でラインナップが豊富な<span class="font-bold">エレコム</span>が台数ベースで首位を走ります。オフィス需要が高いため、安定した無線（2.4GHz）接続が好まれています。
+                </p>
+            </div>
+        </section>
+
+        <!-- Trend Section -->
+        <section class="bg-white rounded-xl p-6 md:p-8 shadow-sm border border-stone-100">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-stone-800 mb-2">接続技術の推移 (5年間のトレンド)</h2>
+                    <p class="text-stone-600 text-sm max-w-2xl">
+                        ノートPCの薄型化（USB-Aポートの廃止）とタブレット利用の増加に伴い、Bluetooth接続機器のシェアが着実に増加しています。一方で、ゲーミング分野における「遅延のない無線技術」の進化も顕著です。
+                    </p>
+                </div>
+            </div>
+            
+            <div class="w-full bg-stone-50 rounded-lg p-4">
+                <div class="chart-container" style="max-width: 100%; height: 350px;">
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sensor Matrix / Specs -->
+        <section>
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-stone-800">読み取りセンサー技術の比較</h2>
+                <p class="text-stone-500 mt-1">マウスの「動き」を読み取るセンサーには種類があり、使用するデスクの素材によって向き不向きがあります。</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- Optical -->
+                <div class="bg-white p-5 rounded-lg border border-stone-200 hover:border-indigo-400 transition-colors shadow-sm group">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="font-bold text-stone-900">光学式 (赤色LED)</h3>
+                        <span class="bg-stone-100 text-stone-600 text-xs px-2 py-1 rounded">スタンダード</span>
+                    </div>
+                    <p class="text-sm text-stone-600 mb-4 h-12">最も一般的で安価。光沢のある面やガラス面では動作しないことが多い。</p>
+                    <div class="text-xs font-semibold text-stone-400 uppercase">適した環境</div>
+                    <div class="text-sm text-stone-800 mt-1">マウスパッド、木目机</div>
+                </div>
+
+                <!-- BlueLED -->
+                <div class="bg-white p-5 rounded-lg border-2 border-indigo-100 shadow-md group relative overflow-hidden">
+                    <div class="absolute top-0 right-0 bg-indigo-500 text-white text-[10px] px-2 py-1 font-bold rounded-bl">推奨</div>
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="font-bold text-indigo-700">BlueLED</h3>
+                        <span class="bg-indigo-50 text-indigo-600 text-xs px-2 py-1 rounded">高感度</span>
+                    </div>
+                    <p class="text-sm text-stone-600 mb-4 h-12">青色LEDを使用し、凹凸やホコリに強い。ガラス面でも動作するモデルがある。</p>
+                    <div class="text-xs font-semibold text-indigo-400 uppercase">適した環境</div>
+                    <div class="text-sm text-stone-800 mt-1">ガラステーブル、布の上</div>
+                </div>
+
+                <!-- Laser -->
+                <div class="bg-white p-5 rounded-lg border border-stone-200 hover:border-indigo-400 transition-colors shadow-sm">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="font-bold text-stone-900">レーザー式</h3>
+                        <span class="bg-stone-100 text-stone-600 text-xs px-2 py-1 rounded">精密</span>
+                    </div>
+                    <p class="text-sm text-stone-600 mb-4 h-12">不可視のレーザー光を使用。光沢面に強いが、リフトオフディスタンスに癖がある場合も。</p>
+                    <div class="text-xs font-semibold text-stone-400 uppercase">適した環境</div>
+                    <div class="text-sm text-stone-800 mt-1">光沢デスク、製図</div>
+                </div>
+
+                <!-- High-End Optical (Gaming) -->
+                <div class="bg-stone-800 p-5 rounded-lg border border-stone-700 shadow-sm">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="font-bold text-white">高性能光学式</h3>
+                        <span class="bg-stone-700 text-stone-300 text-xs px-2 py-1 rounded">ゲーミング</span>
+                    </div>
+                    <p class="text-sm text-stone-300 mb-4 h-12">超高DPIと追従性を持つ。激しい動きでもカーソルが飛ばない。</p>
+                    <div class="text-xs font-semibold text-stone-500 uppercase">適した環境</div>
+                    <div class="text-sm text-white mt-1">eSports、精密作業</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="border-t border-stone-200 pt-8 mt-8 pb-8 text-center text-stone-500 text-sm">
+            <p>© 2025 Market Share Analysis Report Generator.</p>
+            <p class="mt-2">データソース: 2024年 国内周辺機器市場 推計値に基づいたシミュレーションデータ</p>
+        </footer>
+
+    </main>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- DATA STORE ---
+        // Simulated data reflecting standard Japanese market distributions
+        const marketData = {
+            general: {
+                manufacturer: {
+                    labels: ['Elecom', 'Logicool', 'Buffalo', 'Sanwa Supply', 'その他'],
+                    data: [32, 28, 18, 9, 13],
+                    colors: ['#4f46e5', '#0ea5e9', '#ef4444', '#f59e0b', '#a8a29e']
+                },
+                connection: {
+                    labels: ['無線 (USB 2.4GHz)', 'Bluetooth', '有線 (USB)'],
+                    data: [42, 28, 30],
+                    colors: ['#0d9488', '#6366f1', '#78716c']
+                },
+                description: "市場全体では、安価でラインナップが豊富なメーカー（Elecom, Buffalo）が台数シェアを持っています。オフィス需要が高いため、設定不要で安定した無線（2.4GHz）接続が最も好まれています。",
+                chartTitle: "メーカー別シェア (全体)"
+            },
+            gaming: {
+                manufacturer: {
+                    labels: ['Logicool G', 'Razer', 'SteelSeries', 'Elecom', 'その他'],
+                    data: [45, 25, 10, 5, 15],
+                    colors: ['#0ea5e9', '#22c55e', '#f97316', '#4f46e5', '#a8a29e']
+                },
+                connection: {
+                    labels: ['有線 (低遅延)', '独自無線 (LightSpeed等)', 'Bluetooth'],
+                    data: [40, 55, 5],
+                    colors: ['#78716c', '#0d9488', '#6366f1']
+                },
+                description: "ゲーミング分野ではLogicoolとRazerの2強体制です。以前は有線が常識でしたが、現在は「有線より速い」独自無線技術が普及し、ハイエンド帯ではワイヤレスが主流になっています。",
+                chartTitle: "メーカー別シェア (ゲーミング)"
+            },
+            trackball: {
+                manufacturer: {
+                    labels: ['Logicool', 'Elecom', 'Kensington', 'Sanwa', 'その他'],
+                    data: [42, 38, 12, 5, 3],
+                    colors: ['#0ea5e9', '#4f46e5', '#be185d', '#f59e0b', '#a8a29e']
+                },
+                connection: {
+                    labels: ['Bluetooth/マルチペアリング', '無線 (USB)', '有線'],
+                    data: [55, 30, 15],
+                    colors: ['#6366f1', '#0d9488', '#78716c']
+                },
+                description: "トラックボール市場はLogicool (MX Ergo/M575)とElecomの激しい争いです。熱心なファンが多く、複数デバイスを操作するためのBluetoothマルチペアリング機能が重視される傾向にあります。",
+                chartTitle: "メーカー別シェア (トラックボール)"
+            }
+        };
+
+        const trendData = {
+            labels: ['2020', '2021', '2022', '2023', '2024'],
+            datasets: [
+                {
+                    label: '有線 (Wired)',
+                    data: [55, 45, 38, 32, 25],
+                    borderColor: '#78716c',
+                    backgroundColor: 'transparent',
+                    borderWidth: 2,
+                    tension: 0.3
+                },
+                {
+                    label: '無線 (2.4GHz)',
+                    data: [35, 38, 40, 41, 40],
+                    borderColor: '#0d9488',
+                    backgroundColor: 'transparent',
+                    borderWidth: 2,
+                    tension: 0.3
+                },
+                {
+                    label: 'Bluetooth',
+                    data: [10, 17, 22, 27, 35],
+                    borderColor: '#6366f1',
+                    backgroundColor: 'transparent',
+                    borderWidth: 3,
+                    tension: 0.3
+                }
+            ]
+        };
+
+        // --- CHART INSTANCES ---
+        let manufacturerChart = null;
+        let connectionChart = null;
+        let trendChart = null;
+
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            initCharts();
+            // Load default view
+            updateDashboard('general');
+        });
+
+        // --- FUNCTIONS ---
+
+        function initCharts() {
+            // 1. Manufacturer Chart (Doughnut)
+            const ctxMan = document.getElementById('manufacturerChart').getContext('2d');
+            manufacturerChart = new Chart(ctxMan, {
+                type: 'doughnut',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        data: [],
+                        backgroundColor: [],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '65%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                font: { family: "'Noto Sans JP', sans-serif", size: 12 },
+                                padding: 20,
+                                usePointStyle: true
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return ' ' + context.label + ': ' + context.raw + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 2. Connection Chart (Bar)
+            const ctxCon = document.getElementById('connectionChart').getContext('2d');
+            connectionChart = new Chart(ctxCon, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'シェア (%)',
+                        data: [],
+                        backgroundColor: [],
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    indexAxis: 'y', // Horizontal bar
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: { display: false }
+                        },
+                        y: {
+                            grid: { display: false },
+                            ticks: { font: { family: "'Noto Sans JP', sans-serif" } }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+
+            // 3. Trend Chart (Line)
+            const ctxTrend = document.getElementById('trendChart').getContext('2d');
+            trendChart = new Chart(ctxTrend, {
+                type: 'line',
+                data: trendData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            title: { display: true, text: '市場シェア (%)' }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            align: 'end',
+                            labels: { usePointStyle: true, boxWidth: 8 }
+                        },
+                        title: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateDashboard(category) {
+            const data = marketData[category];
+
+            // Update UI State (Tabs)
+            const buttons = ['general', 'gaming', 'trackball'];
+            buttons.forEach(btn => {
+                const el = document.getElementById(`btn-${btn}`);
+                if (btn === category) {
+                    el.className = "tab-active px-4 py-2 text-sm font-medium border focus:z-10 focus:ring-2 focus:ring-indigo-500 transition-all " + (btn === 'general' ? 'rounded-l-lg' : (btn === 'trackball' ? 'rounded-r-lg' : 'border-t border-b border-r'));
+                } else {
+                    el.className = "tab-inactive px-4 py-2 text-sm font-medium border focus:z-10 focus:ring-2 focus:ring-indigo-500 transition-all " + (btn === 'general' ? 'rounded-l-lg' : (btn === 'trackball' ? 'rounded-r-lg' : 'border-t border-b border-r'));
+                }
+            });
+
+            // Update Text
+            const insightText = document.getElementById('insight-text');
+            const descMan = document.getElementById('desc-manufacturer');
+            
+            // Animate text change
+            insightText.style.opacity = 0;
+            setTimeout(() => {
+                insightText.innerHTML = data.description;
+                insightText.style.opacity = 1;
+            }, 200);
+
+            // Update Charts
+            updateChart(manufacturerChart, data.manufacturer.labels, data.manufacturer.data, data.manufacturer.colors);
+            updateChart(connectionChart, data.connection.labels, data.connection.data, data.connection.colors);
+        }
+
+        function updateChart(chart, labels, data, colors) {
+            chart.data.labels = labels;
+            chart.data.datasets[0].data = data;
+            chart.data.datasets[0].backgroundColor = colors;
+            chart.update();
+        }
+
+    </script>
+</body>
+</html>
